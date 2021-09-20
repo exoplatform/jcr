@@ -136,12 +136,8 @@ public class SessionEventMatcher implements ActionMatcher
          }
       }
 
-      if (conditions.get(CURRENT_ITEM) != null && ignoredProperties != null)
-      {
-         if (isIgnoredProperties((String)conditions.get(CURRENT_ITEM)))
-         {
-            return false;
-         }
+      if (conditions.get(CURRENT_ITEM) != null && ignoredProperties != null && isIgnoredProperties((String) conditions.get(CURRENT_ITEM))) {
+         return false;
       }
 
       if (!isWorkspaceMatch((String)conditions.get(WORKSPACE_KEY)))

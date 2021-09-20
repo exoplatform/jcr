@@ -39,10 +39,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 import java.util.*;
 
-import javax.jcr.ItemExistsException;
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
+import javax.jcr.*;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.observation.Event;
@@ -104,6 +101,48 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       assertEquals(0, dAction.getActionExecuterCount());
       lockedNode.lock(true, true);
       assertEquals(1, dAction.getActionExecuterCount());
+   }
+
+   public void testIgnoreProperties() throws Exception {
+      // Given
+      SessionActionCatalog catalog =
+              (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+      catalog.clear();
+
+      Node node = root.addNode("new node");
+      node.setProperty("exo:title", "title");
+      node.setProperty("exo:desc", "desc");
+      root.save();
+
+      // When
+      SessionEventMatcher matcher =
+              new SessionEventMatcher(Event.PROPERTY_CHANGED, null, false, null, null,
+                      ntHolder, null);
+      DummyAction dAction = new DummyAction();
+      catalog.addAction(matcher, dAction);
+      assertEquals(0, dAction.getActionExecuterCount());
+
+      // Then
+      node.setProperty("exo:title", "title1");
+      node.setProperty("exo:desc", "desc1");
+      root.save();
+      assertEquals(2, dAction.getActionExecuterCount());
+
+      // When
+      catalog.clear();
+      matcher =
+              new SessionEventMatcher(Event.PROPERTY_CHANGED, null, false, null, null,
+                      ntHolder, new String[]{"exo:title", "exo:desc"});
+
+      dAction = new DummyAction();
+      catalog.addAction(matcher, dAction);
+
+      // Then
+      node.setProperty("exo:title", "title2");
+      node.setProperty("exo:desc", "desc2");
+      root.save();
+      assertEquals(0, dAction.getActionExecuterCount());
+
    }
 
    public void testMatchDeepPath() throws Exception
