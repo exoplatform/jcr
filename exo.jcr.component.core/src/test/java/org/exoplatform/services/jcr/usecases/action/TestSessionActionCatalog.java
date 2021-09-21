@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.usecases.action;
 
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ObjectParameter;
-import org.exoplatform.services.command.action.ActionMatcher;
 import org.exoplatform.services.command.action.Condition;
 import org.exoplatform.services.ext.action.InvocationContext;
 import org.exoplatform.services.jcr.access.PermissionType;
@@ -40,10 +39,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 import java.util.*;
 
-import javax.jcr.ItemExistsException;
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
+import javax.jcr.*;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.observation.Event;
@@ -61,8 +57,8 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       QPath[] paths = new QPath[]{node.getInternalPath(), node1.getInternalPath()};
 
       SessionEventMatcher matcher =
-         new SessionEventMatcher(Event.NODE_ADDED, paths, true, null, new InternalQName[]{Constants.NT_BASE,
-            Constants.NT_UNSTRUCTURED, Constants.NT_QUERY}, ntHolder);
+              new SessionEventMatcher(Event.NODE_ADDED, paths, true, null, new InternalQName[]{Constants.NT_BASE,
+                      Constants.NT_UNSTRUCTURED, Constants.NT_QUERY}, ntHolder, null);
    }
 
    @Override
@@ -88,8 +84,8 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
 
       // test by path
       SessionEventMatcher matcher =
-         new SessionEventMatcher(ExtendedEvent.LOCK, null, true, null, new InternalQName[]{Constants.NT_UNSTRUCTURED},
-            ntHolder);
+              new SessionEventMatcher(ExtendedEvent.LOCK, null, true, null, new InternalQName[]{Constants.NT_UNSTRUCTURED},
+                      ntHolder, null);
       DummyAction dAction = new DummyAction();
       catalog.addAction(matcher, dAction);
 
@@ -107,6 +103,48 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       assertEquals(1, dAction.getActionExecuterCount());
    }
 
+   public void testIgnoreProperties() throws Exception {
+      // Given
+      SessionActionCatalog catalog =
+              (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+      catalog.clear();
+
+      Node node = root.addNode("new node");
+      node.setProperty("exo:title", "title");
+      node.setProperty("exo:desc", "desc");
+      root.save();
+
+      // When
+      SessionEventMatcher matcher =
+              new SessionEventMatcher(Event.PROPERTY_CHANGED, null, false, null, null,
+                      ntHolder, null);
+      DummyAction dAction = new DummyAction();
+      catalog.addAction(matcher, dAction);
+      assertEquals(0, dAction.getActionExecuterCount());
+
+      // Then
+      node.setProperty("exo:title", "title1");
+      node.setProperty("exo:desc", "desc1");
+      root.save();
+      assertEquals(2, dAction.getActionExecuterCount());
+
+      // When
+      catalog.clear();
+      matcher =
+              new SessionEventMatcher(Event.PROPERTY_CHANGED, null, false, null, null,
+                      ntHolder, new String[]{"exo:title", "exo:desc"});
+
+      dAction = new DummyAction();
+      catalog.addAction(matcher, dAction);
+
+      // Then
+      node.setProperty("exo:title", "title2");
+      node.setProperty("exo:desc", "desc2");
+      root.save();
+      assertEquals(0, dAction.getActionExecuterCount());
+
+   }
+
    public void testMatchDeepPath() throws Exception
    {
       SessionActionCatalog catalog =
@@ -116,7 +154,7 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
 
       // test by path
       SessionEventMatcher matcher =
-         new SessionEventMatcher(Event.NODE_ADDED, new QPath[]{node.getInternalPath()}, true, null, null, ntHolder);
+              new SessionEventMatcher(Event.NODE_ADDED, new QPath[]{node.getInternalPath()}, true, null, null, ntHolder, null);
       catalog.addAction(matcher, new DummyAction());
       Condition cond = new Condition();
 
@@ -156,7 +194,7 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       // ((NodeTypeImpl)node.getPrimaryNodeType()).getQName());
 
       // test by event type
-      SessionEventMatcher matcher = new SessionEventMatcher(Event.NODE_ADDED, null, true, null, null, ntHolder);
+      SessionEventMatcher matcher = new SessionEventMatcher(Event.NODE_ADDED, null, true, null, null, ntHolder, null);
       catalog.addAction(matcher, new DummyAction());
       Condition cond = new Condition();
       cond.put(SessionEventMatcher.EVENTTYPE_KEY, Event.NODE_ADDED);
@@ -174,8 +212,8 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
 
       // test by path
       SessionEventMatcher matcher =
-         new SessionEventMatcher(ExtendedEvent.ADD_MIXIN, null, true, null,
-            new InternalQName[]{Constants.MIX_LOCKABLE}, ntHolder);
+              new SessionEventMatcher(ExtendedEvent.ADD_MIXIN, null, true, null,
+                      new InternalQName[]{Constants.MIX_LOCKABLE}, ntHolder, null);
       catalog.addAction(matcher, new DummyAction());
       Condition cond = new Condition();
       cond.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.ADD_MIXIN);
@@ -196,8 +234,8 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
 
       // test by path
       SessionEventMatcher matcher =
-         new SessionEventMatcher(ExtendedEvent.NODE_ADDED, null, true, null,
-            new InternalQName[]{Constants.NT_HIERARCHYNODE}, ntHolder);
+              new SessionEventMatcher(ExtendedEvent.NODE_ADDED, null, true, null,
+                      new InternalQName[]{Constants.NT_HIERARCHYNODE}, ntHolder, null);
       catalog.addAction(matcher, new DummyAction());
       Condition cond = new Condition();
       cond.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.NODE_ADDED);
@@ -226,8 +264,8 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
 
       // test by path
       SessionEventMatcher matcher =
-         new SessionEventMatcher(Event.NODE_ADDED, new QPath[]{((NodeImpl)root).getInternalPath()}, false, null, null,
-            ntHolder);
+              new SessionEventMatcher(Event.NODE_ADDED, new QPath[]{((NodeImpl) root).getInternalPath()}, false, null, null,
+                      ntHolder, null);
       catalog.addAction(matcher, new DummyAction());
       Condition cond = new Condition();
 
@@ -257,7 +295,7 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
 
       //
       SessionEventMatcher matcher =
-         new SessionEventMatcher(Event.NODE_ADDED, null, true, new String[]{"production"}, null, ntHolder);
+              new SessionEventMatcher(Event.NODE_ADDED, null, true, new String[]{"production"}, null, ntHolder, null);
       catalog.addAction(matcher, new DummyAction());
       Condition cond = new Condition();
       cond.put(SessionEventMatcher.EVENTTYPE_KEY, Event.NODE_ADDED);
@@ -275,7 +313,7 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
    {
       ActionConfiguration ac =
          new ActionConfiguration("org.exoplatform.services.jcr.usecases.action.DummyAction", "addNode,addProperty",
-            "/test,/exo:test1", true, null, "nt:base", null);
+            "/test,/exo:test1", true, null, "nt:base", null, "");
       List actionsList = new ArrayList();
       ActionsConfig actions = new ActionsConfig();
       actions.setActions(actionsList);
@@ -318,8 +356,8 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       root.save();
 
       SessionEventMatcher matcher =
-         new SessionEventMatcher(ExtendedEvent.READ, new QPath[]{prop.getData().getQPath()}, true, null,
-            new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder);
+              new SessionEventMatcher(ExtendedEvent.READ, new QPath[]{prop.getData().getQPath()}, true, null,
+                      new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder, null);
       DummyAction dAction = new DummyAction();
 
       catalog.addAction(matcher, dAction);
@@ -338,8 +376,8 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
 
       // test by path
       SessionEventMatcher matcher =
-         new SessionEventMatcher(ExtendedEvent.ADD_MIXIN, null, true, null, new InternalQName[]{
-            Constants.MIX_REFERENCEABLE, Constants.EXO_OWNEABLE}, ntHolder);
+              new SessionEventMatcher(ExtendedEvent.ADD_MIXIN, null, true, null, new InternalQName[]{
+                      Constants.MIX_REFERENCEABLE, Constants.EXO_OWNEABLE}, ntHolder, null);
       DummyAction dAction = new DummyAction();
       catalog.addAction(matcher, dAction);
 
@@ -359,8 +397,8 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       catalog.clear();
 
       SessionEventMatcher matcher =
-              new SessionEventMatcher(ExtendedEvent.PERMISSION_CHANGED, new QPath[]{((NodeImpl)root).getInternalPath()}, true, null,
-                      new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder);
+              new SessionEventMatcher(ExtendedEvent.PERMISSION_CHANGED, new QPath[]{((NodeImpl) root).getInternalPath()}, true, null,
+                      new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder, null);
       DummyAction dAction = new DummyAction();
       catalog.addAction(matcher, dAction);
 
@@ -398,8 +436,8 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
 
       // test by path
       SessionEventMatcher matcher =
-         new SessionEventMatcher(ExtendedEvent.REMOVE_MIXIN, null, true, null,
-            new InternalQName[]{Constants.EXO_OWNEABLE}, ntHolder);
+              new SessionEventMatcher(ExtendedEvent.REMOVE_MIXIN, null, true, null,
+                      new InternalQName[]{Constants.EXO_OWNEABLE}, ntHolder, null);
       DummyAction dAction = new DummyAction();
       catalog.addAction(matcher, dAction);
 
@@ -424,8 +462,8 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       root.save();
 
       SessionEventMatcher matcher =
-                new SessionEventMatcher(ExtendedEvent.NODE_MOVED, new QPath[]{((NodeImpl)root).getInternalPath()}, true, null,
-                        new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder);
+              new SessionEventMatcher(ExtendedEvent.NODE_MOVED, new QPath[]{((NodeImpl) root).getInternalPath()}, true, null,
+                      new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder, null);
       DummyAction dAction = new DummyAction();
       catalog.addAction(matcher, dAction);
 
@@ -470,8 +508,8 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       session.save();
 
       SessionEventMatcher matcher =
-               new SessionEventMatcher(ExtendedEvent.NODE_MOVED, new QPath[]{((NodeImpl) root).getInternalPath()}, true, null,
-                       new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder);
+              new SessionEventMatcher(ExtendedEvent.NODE_MOVED, new QPath[]{((NodeImpl) root).getInternalPath()}, true, null,
+                      new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder, null);
       DummyAction dAction = new DummyAction();
       catalog.addAction(matcher, dAction);
 

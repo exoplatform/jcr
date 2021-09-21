@@ -47,12 +47,14 @@ public class ActionConfiguration
 
    private Action action;
 
+   private String ignoredProperties;
+
    public ActionConfiguration()
    {
    }
 
    public ActionConfiguration(String actionClassName, String eventTypes, String path, boolean isDeep, String workspace,
-      String nodeTypes, Action action)
+                              String nodeTypes, Action action, String ignoredProperties)
    {
       this.actionClassName = actionClassName;
       this.action = action;
@@ -61,6 +63,7 @@ public class ActionConfiguration
       this.isDeep = isDeep;
       this.workspace = workspace;
       this.nodeTypes = nodeTypes;
+      this.ignoredProperties = ignoredProperties;
    }
 
    /**
@@ -127,6 +130,16 @@ public class ActionConfiguration
     * directly under the list of provided paths or the descendants should be included too
     * 
     */
+
+   /**
+    * @return returns a comma separated value corresponding to a list of properties
+    * for which we want ignore
+    */
+   public String getIgnoredProperties()
+   {
+      return ignoredProperties;
+   }
+
    public boolean isDeep()
    {
       return isDeep;
@@ -185,5 +198,13 @@ public class ActionConfiguration
    public void setWorkspace(String workspace)
    {
       this.workspace = workspace;
+   }
+
+   /**
+    * @param  ignoredProperties comma separated value corresponding to a list of properties
+    * for which we want ignore
+    */
+   public void setIgnoredProperties(String ignoredProperties) {
+      this.ignoredProperties = ignoredProperties;
    }
 }

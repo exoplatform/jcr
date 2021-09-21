@@ -77,7 +77,7 @@ public class SessionActionCatalog extends ActionCatalog
             {
                SessionEventMatcher matcher =
                   new SessionEventMatcher(getEventTypes(ac.getEventTypes()), getPaths(ac.getPath()), ac.isDeep(),
-                     getWorkspaces(ac.getWorkspace()), getNames(ac.getNodeTypes()), typeDataManager);
+                     getWorkspaces(ac.getWorkspace()), getNames(ac.getNodeTypes()), typeDataManager, getIgnoredProperties(ac.getIgnoredProperties()));
 
                Action action =
                   ac.getAction() != null ? ac.getAction() : (Action)ClassLoading.forName(ac.getActionClassName(), this)
@@ -132,6 +132,13 @@ public class SessionActionCatalog extends ActionCatalog
          return null;
       }
       return workspaces.split(",");
+   }
+
+   private String[] getIgnoredProperties(String ignoredProperties) {
+      if (ignoredProperties == null) {
+         return null;
+      }
+      return ignoredProperties.split(",");
    }
 
    private static int getEventTypes(String names)

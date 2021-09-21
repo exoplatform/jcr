@@ -24,6 +24,8 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 
+import java.util.Arrays;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -54,6 +56,11 @@ public class SessionEventMatcher implements ActionMatcher
     */
    public static final String NODETYPES_KEY = "nodeTypes";
 
+   /**
+    * Current item.
+    */
+   public static final String CURRENT_ITEM = "currentItem";
+
    private final int eventTypes;
 
    private final String[] workspaces;
@@ -64,10 +71,12 @@ public class SessionEventMatcher implements ActionMatcher
 
    private final InternalQName[] nodeTypeNames;
 
+   private final String[] ignoredProperties;
+
    private final NodeTypeDataManager typeDataManager;
 
    public SessionEventMatcher(int eventTypes, QPath[] paths, boolean isDeep, String[] workspaces,
-      InternalQName[] nodeTypeNames, NodeTypeDataManager typeDataManager)
+                              InternalQName[] nodeTypeNames, NodeTypeDataManager typeDataManager, String[] ignoredProperties)
    {
       super();
       this.eventTypes = eventTypes;
@@ -75,6 +84,7 @@ public class SessionEventMatcher implements ActionMatcher
       this.isDeep = isDeep;
 
       this.nodeTypeNames = nodeTypeNames;
+      this.ignoredProperties = ignoredProperties;
       this.workspaces = workspaces;
       this.typeDataManager = typeDataManager;
    }
@@ -124,6 +134,10 @@ public class SessionEventMatcher implements ActionMatcher
          {
             return false;
          }
+      }
+
+      if (conditions.get(CURRENT_ITEM) != null && ignoredProperties != null && isIgnoredProperties((String) conditions.get(CURRENT_ITEM))) {
+         return false;
       }
 
       if (!isWorkspaceMatch((String)conditions.get(WORKSPACE_KEY)))
@@ -180,6 +194,11 @@ public class SessionEventMatcher implements ActionMatcher
       }
 
       return false;
+   }
+
+   private boolean isIgnoredProperties(String propertyName)
+   {
+      return Arrays.asList(this.ignoredProperties).contains(propertyName);
    }
 
    protected boolean internalMatch(Condition conditions)

@@ -378,6 +378,7 @@ public class SessionActionInterceptor
          conditions.put(SessionEventMatcher.PATH_KEY, currentProperty.getInternalPath());
          conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames(parent));
          conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
+         conditions.put(SessionEventMatcher.CURRENT_ITEM, currentProperty.getName());
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, currentProperty);
