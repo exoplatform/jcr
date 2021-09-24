@@ -678,6 +678,12 @@ public class SessionDataManager implements ItemDataConsumer
       {
          return item = readItem(getItemData(identifier), null, pool, apiRead);
       }
+      catch (RepositoryException e) {
+        throw e;
+      }
+      catch (Exception e) {
+        throw new RepositoryException("An error occurred while reading item data with identifier: " + identifier, e);
+      }
       finally
       {
          if (LOG.isDebugEnabled())
