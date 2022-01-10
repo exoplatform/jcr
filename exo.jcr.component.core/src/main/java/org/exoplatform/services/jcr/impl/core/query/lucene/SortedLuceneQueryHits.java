@@ -21,8 +21,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopFieldCollector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public final class SortedLuceneQueryHits extends AbstractQueryHits
    /**
     * The Logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.SortedLuceneQueryHits");
+   private static final Log      log            = ExoLogger.getLogger("exo.jcr.component.core.SortedLuceneQueryHits");
 
    /**
     * The upper limit for the initial fetch size.

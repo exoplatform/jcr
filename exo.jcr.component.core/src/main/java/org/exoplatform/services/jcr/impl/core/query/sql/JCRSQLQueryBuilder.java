@@ -38,8 +38,8 @@ import org.exoplatform.services.jcr.impl.core.query.QueryNodeFactory;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
 import org.exoplatform.services.jcr.impl.core.query.TextsearchQueryNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
@@ -65,7 +65,8 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
    /**
     * logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.JCRSQLQueryBuilder");
+   private static final Log                         log             =
+                                                        ExoLogger.getLogger("exo.jcr.component.core.JCRSQLQueryBuilder");
 
    /**
     * DateFormat pattern for type

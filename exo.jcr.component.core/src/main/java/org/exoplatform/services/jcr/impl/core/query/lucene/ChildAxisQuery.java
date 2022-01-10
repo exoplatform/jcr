@@ -36,8 +36,8 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.hits.AbstractHitColle
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.AdaptingHits;
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.Hits;
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.ScorerHits;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,7 +65,7 @@ class ChildAxisQuery extends Query implements JcrQuery
    /**
     * The logger instance for this class.
     */
-   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.ChildAxisQuery");
+   private static final Log        LOG                    = ExoLogger.getLogger("exo.jcr.component.core.ChildAxisQuery");
 
    /**
     * Threshold when children calculation is switched to

@@ -19,8 +19,8 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.store.Directory;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexInputStream;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexOutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -48,7 +48,7 @@ class RedoLog
    /**
     * Logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.RedoLog");
+   private static final Log     log           = ExoLogger.getLogger("exo.jcr.component.core.RedoLog");
 
    /**
     * Default name of the redo log file

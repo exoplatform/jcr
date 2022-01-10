@@ -29,8 +29,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -56,7 +56,7 @@ abstract class AbstractIndex
 {
 
    /** The logger instance for this class */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.AbstractIndex");
+   private static final Log               log                   = ExoLogger.getLogger("exo.jcr.component.core.AbstractIndex");
 
    /** PrintStream that pipes all calls to println(String) into log.info() */
    private static final LoggingPrintStream STREAM_LOGGER = new LoggingPrintStream();

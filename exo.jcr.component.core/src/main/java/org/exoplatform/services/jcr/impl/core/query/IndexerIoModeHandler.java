@@ -16,8 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -34,7 +34,7 @@ public class IndexerIoModeHandler
    /**
     * The logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.IndexerIoModeHandler");
+   private static final Log                 log = ExoLogger.getLogger("exo.jcr.component.core.IndexerIoModeHandler");
 
    /**
     * The current mode

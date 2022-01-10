@@ -31,8 +31,8 @@ import org.exoplatform.services.jcr.impl.core.nodetype.ItemAutocreator;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.text.NumberFormat;
 
@@ -60,7 +60,7 @@ public class QueryImpl extends AbstractQueryImpl
    /**
     * The logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.QueryImpl");
+   private static final Log  log         = ExoLogger.getLogger("exo.jcr.component.core.QueryImpl");
 
    /**
     * A string constant representing the JCR-SQL2 query language.

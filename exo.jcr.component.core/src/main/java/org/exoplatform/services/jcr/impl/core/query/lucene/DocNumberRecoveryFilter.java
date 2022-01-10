@@ -21,8 +21,8 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.exoplatform.services.rpc.RPCException;
 import org.exoplatform.services.rpc.RPCService;
 import org.exoplatform.services.rpc.RemoteCommand;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -39,7 +39,7 @@ import javax.jcr.RepositoryException;
 public class DocNumberRecoveryFilter extends AbstractRecoveryFilter
 {
 
-   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.index.DocNumberRecoveryFilter");
+  private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.index.DocNumberRecoveryFilter");
 
    protected RemoteCommand getDocsNumCommand;
 

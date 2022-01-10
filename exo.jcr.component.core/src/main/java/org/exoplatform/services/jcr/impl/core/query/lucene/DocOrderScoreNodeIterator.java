@@ -20,8 +20,8 @@ import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +41,7 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
 {
 
    /** Logger instance for this class */
-   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.DocOrderScoreNodeIterator");
+   private static final Log        LOG = ExoLogger.getLogger("exo.jcr.component.core.DocOrderScoreNodeIterator");
 
    /** A node iterator with ordered nodes */
    private ScoreNodeIterator orderedNodes;

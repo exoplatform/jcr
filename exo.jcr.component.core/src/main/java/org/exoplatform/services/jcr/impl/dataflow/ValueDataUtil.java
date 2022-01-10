@@ -40,8 +40,8 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.StringPersistedValu
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.ValueFileIOHelper;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -66,7 +66,7 @@ public class ValueDataUtil
     /**
      * The logger instance for this class
      */
-    private static final Logger LOG = LoggerFactory.getLogger("org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil");
+    private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil");
 
     /**
     * Read value data from stream.

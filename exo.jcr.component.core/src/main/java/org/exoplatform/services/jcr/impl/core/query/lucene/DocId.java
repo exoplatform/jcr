@@ -18,8 +18,8 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import java.io.IOException;
 import java.util.BitSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 
 /**
@@ -29,7 +29,8 @@ import org.slf4j.LoggerFactory;
 abstract class DocId {
 
     static final int[] EMPTY = new int[0];
-    private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.DocId");
+
+    private static final Log        log         = ExoLogger.getLogger("exo.jcr.component.core.DocId");
 
     /**
      * All DocIds with a value smaller than {@link Short#MAX_VALUE}.

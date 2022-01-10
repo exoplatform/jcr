@@ -38,8 +38,8 @@ import org.exoplatform.services.jcr.impl.core.query.*;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.rpc.RPCException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -106,7 +106,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * The logger instance for this class
     */
-   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.MultiIndex");
+   private static final Log           LOG                  = ExoLogger.getLogger("exo.jcr.component.core.MultiIndex");
 
    /**
     * Names of active persistent index directories.
