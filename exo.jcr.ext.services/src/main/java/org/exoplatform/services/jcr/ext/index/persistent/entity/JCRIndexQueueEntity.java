@@ -55,7 +55,7 @@ import org.exoplatform.services.jcr.ext.index.persistent.JCRIndexingOperationTyp
 public class JCRIndexQueueEntity {
   @Id
   @Column(name = "INDEXING_QUEUE_ID")
-  @SequenceGenerator(name = "SEQ_JCR_INDEXING_QUEUE", sequenceName = "SEQ_JCR_INDEXING_QUEUE")
+  @SequenceGenerator(name = "SEQ_JCR_INDEXING_QUEUE", sequenceName = "SEQ_JCR_INDEXING_QUEUE", allocationSize = 1)
   @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_JCR_INDEXING_QUEUE")
   private long                     id;
 
