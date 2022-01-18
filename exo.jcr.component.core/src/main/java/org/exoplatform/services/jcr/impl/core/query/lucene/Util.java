@@ -25,8 +25,8 @@ import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -45,7 +45,7 @@ public class Util
    /**
     * The logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.Util");
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.Util");
 
    /**
     * Disposes the document <code>old</code>. Closes any potentially open

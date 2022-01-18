@@ -26,8 +26,8 @@ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ class RowIteratorImpl implements RowIterator
    /**
     * The logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.RowIteratorImpl");
+   private static final Log          log                  = ExoLogger.getLogger("exo.jcr.component.core.RowIteratorImpl");
 
    /**
     * The name of the excerpt function without prefix but with left

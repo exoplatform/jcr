@@ -28,8 +28,8 @@ import org.apache.lucene.index.TermFreqVector;
 import org.apache.lucene.index.TermPositionVector;
 import org.apache.lucene.index.TermVectorOffsetInfo;
 import org.apache.lucene.search.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -51,7 +51,7 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
    /**
     * Logger instance for this class.
     */
-   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.AbstractExcerpt");
+   private static final Log LOG      = ExoLogger.getLogger("exo.jcr.component.core.AbstractExcerpt");
 
    /**
     * The search index.

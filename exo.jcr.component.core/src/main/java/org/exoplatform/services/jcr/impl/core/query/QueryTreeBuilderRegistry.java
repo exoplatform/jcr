@@ -16,8 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +37,7 @@ public class QueryTreeBuilderRegistry
    /**
     * Logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.QueryTreeBuilderRegistry");
+   private static final Log                   log      = ExoLogger.getLogger("exo.jcr.component.core.QueryTreeBuilderRegistry");
 
    /**
     * List of <code>QueryTreeBuilder</code> instances known to the classloader.

@@ -17,8 +17,8 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.commons.collections.map.LRUMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Implements a Document number cache with a fixed size and a LRU strategy.
@@ -29,7 +29,7 @@ final class DocNumberCache
    /**
     * Logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.DocNumberCache");
+   private static final Log log                 = ExoLogger.getLogger("exo.jcr.component.core.DocNumberCache");
 
    /**
     * Log cache statistics at most every 10 seconds.

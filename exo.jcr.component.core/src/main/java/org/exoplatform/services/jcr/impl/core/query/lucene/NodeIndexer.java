@@ -32,8 +32,8 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.itemfilters.ExactQPathEntryFilter;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +59,7 @@ public class NodeIndexer
    /**
     * The logger instance for this class.
     */
-   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.NodeIndexer");
+   private static final Log             LOG                   = ExoLogger.getLogger("exo.jcr.component.core.NodeIndexer");
 
    /**
     * The default boost for a lucene field: 1.0f.

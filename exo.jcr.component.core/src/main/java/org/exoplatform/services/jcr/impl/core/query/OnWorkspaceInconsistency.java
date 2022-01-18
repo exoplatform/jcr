@@ -18,8 +18,8 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +37,8 @@ public abstract class OnWorkspaceInconsistency
    /**
     * Logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.OnWorkspaceInconsistency");
+   private static final Log                                    log       =
+                                                                   ExoLogger.getLogger("exo.jcr.component.core.OnWorkspaceInconsistency");
 
    /**
     * An handler that simply logs the path of the parent node and the name

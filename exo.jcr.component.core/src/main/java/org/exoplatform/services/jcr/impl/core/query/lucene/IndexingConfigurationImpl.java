@@ -35,8 +35,9 @@ import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
 import org.exoplatform.services.jcr.impl.core.query.misc.Pattern;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Element;
@@ -67,7 +68,8 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
    /**
     * The logger instance for this class
     */
-   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.IndexingConfigurationImpl");
+   private static final Log                      LOG            =
+                                                     ExoLogger.getLogger("exo.jcr.component.core.IndexingConfigurationImpl");
 
    /**
     * A namespace resolver for parsing QNames in the configuration.

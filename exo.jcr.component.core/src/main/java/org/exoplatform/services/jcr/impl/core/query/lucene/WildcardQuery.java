@@ -30,8 +30,8 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.ToStringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.util.BitSet;
@@ -60,7 +60,7 @@ public class WildcardQuery extends Query implements Transformable
    /**
     * Logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.WildcardQuery");
+   private static final Log log              = ExoLogger.getLogger("exo.jcr.component.core.WildcardQuery");
 
    /**
     * Name of the field to search.

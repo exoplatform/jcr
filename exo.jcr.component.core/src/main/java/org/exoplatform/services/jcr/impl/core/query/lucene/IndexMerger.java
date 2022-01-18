@@ -24,8 +24,8 @@ import org.apache.commons.collections.BufferUtils;
 import org.apache.commons.collections.buffer.UnboundedFifoBuffer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ class IndexMerger extends Thread implements IndexListener
    /**
     * Logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.IndexMerger");
+   private static final Log       log              = ExoLogger.getLogger("exo.jcr.component.core.IndexMerger");
 
    /**
     * Marker task to signal the background thread to quit.

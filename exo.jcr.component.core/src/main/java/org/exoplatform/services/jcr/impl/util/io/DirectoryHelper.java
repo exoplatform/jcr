@@ -18,8 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.util.io;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.Closeable;
 import java.io.File;
@@ -51,7 +51,7 @@ public class DirectoryHelper
    /**
     * The logger instance for this class
     */
-   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.DirectoryHelper");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DirectoryHelper");
 
    /**
     * Returns the files list of whole directory including its sub directories. 

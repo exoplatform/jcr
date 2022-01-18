@@ -18,8 +18,8 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.NoSuchElementException;
 
@@ -35,7 +35,7 @@ class NodeIteratorImpl implements TwoWayRangeIterator, NodeIterator
 {
 
    /** Logger instance for this class */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.NodeIteratorImpl");
+   private static final Log          log     = ExoLogger.getLogger("exo.jcr.component.core.NodeIteratorImpl");
 
    /** The node ids of the nodes in the result set with their score value */
    protected final ScoreNodeIterator scoreNodes;

@@ -27,8 +27,8 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.Weight;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.AbstractHitCollector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.util.BitSet;
@@ -56,7 +56,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
    /**
     * The logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.DescendantSelfAxisQuery");
+   private static final Log     log              = ExoLogger.getLogger("exo.jcr.component.core.DescendantSelfAxisQuery");
 
    /**
     * The context query

@@ -24,8 +24,8 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.security.IdentityConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public abstract class QueryResultImpl implements QueryResult
    /**
     * The logger instance for this class
     */
-   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.QueryResultImpl");
+   private static final Log          LOG         = ExoLogger.getLogger("exo.jcr.component.core.QueryResultImpl");
 
    /**
     * The search index to execute the query.

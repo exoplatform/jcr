@@ -68,8 +68,9 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.directory.FSDirectory
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
 import org.exoplatform.services.jcr.statistics.JCRStatisticsManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -104,7 +105,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
 
    /** The logger instance for this class */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.SearchIndex");
+   private static final Log                       log                                          =
+                                                      ExoLogger.getLogger("exo.jcr.component.core.SearchIndex");
 
    /**
     * Name of the file to persist search internal namespace mappings.

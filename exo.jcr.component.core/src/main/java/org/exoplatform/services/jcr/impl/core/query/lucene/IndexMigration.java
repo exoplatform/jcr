@@ -31,10 +31,11 @@ import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * <code>IndexMigration</code> implements a utility that migrates a Jackrabbit
@@ -51,7 +52,7 @@ public class IndexMigration
    /**
     * The logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.IndexMigration");
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexMigration");
 
    /**
     * Checks if the given <code>index</code> needs to be migrated.
