@@ -42,7 +42,7 @@
     </dependency>
     <dependency>
       <groupId>javax.resource</groupId>
-      <artifactId>connector-api</artifactId>
+      <artifactId>javax.resource-api</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -58,11 +58,6 @@
     <dependency>
       <groupId>javax.jcr</groupId>
       <artifactId>jcr</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>javax.transaction</groupId>
-      <artifactId>jta</artifactId>
       <scope>provided</scope>
     </dependency>
   </dependencies>
