@@ -44,7 +44,7 @@
   </scm>
 
   <properties>
-    <org.exoplatform.social.version>6.3.x-SNAPSHOT</org.exoplatform.social.version>
+    <org.exoplatform.social.version>6.3.0-20220131</org.exoplatform.social.version>
     
     <!-- Sonar properties -->
     <sonar.organization>exoplatform</sonar.organization>
