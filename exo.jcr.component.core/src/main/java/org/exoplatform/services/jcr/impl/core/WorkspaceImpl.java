@@ -462,16 +462,22 @@ public class WorkspaceImpl implements ExtendedWorkspace
             (NodeData)srcParentNode.getData(), nodeTypeManager, session.getTransientNodesManager(), true,
             triggerEventsForDescendants, session.maxDescendantNodesAllowed);
 
-      srcNode.getData().accept(initializer);
-      PlainChangesLog changes = new PlainChangesLogImpl(initializer.getAllStates(), session);
+      try {
+         srcNode.getData().accept(initializer);
+      } catch (Exception e) {
+         LOG.warn(e.getMessage());
+      }
+      finally {
+         PlainChangesLog changes = new PlainChangesLogImpl(initializer.getAllStates(), session);
 
-      // reload items pool
-      session.getTransientNodesManager().reloadItems(initializer);
+         // reload items pool
+         session.getTransientNodesManager().reloadItems(initializer);
 
-      session.getActionHandler().postMove(srcNode, (NodeImpl) session.getTransientNodesManager().
-         readItem(initializer.getItemMoveState().getData(), destParentNode.nodeData(), false, false));
-      // persist the changes
-      session.getTransientNodesManager().getTransactManager().save(changes);
+         session.getActionHandler().postMove(srcNode, (NodeImpl) session.getTransientNodesManager().
+                 readItem(initializer.getItemMoveState().getData(), destParentNode.nodeData(), false, false));
+         // persist the changes
+         session.getTransientNodesManager().getTransactManager().save(changes);
+      }
    }
 
    /**
