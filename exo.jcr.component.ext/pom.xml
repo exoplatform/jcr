@@ -523,7 +523,7 @@
             <dependency>
                <groupId>org.postgresql</groupId>
                <artifactId>postgresql</artifactId>
-               <version>9.2-1003-jdbc4</version>
+               <version>42.4.1</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
@@ -537,7 +537,7 @@
             <dependency>
                <groupId>org.postgresql</groupId>
                <artifactId>postgresql</artifactId>
-               <version>9.3-1102-jdbc4</version>
+               <version>42.4.1</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
@@ -551,7 +551,7 @@
             <dependency>
                <groupId>org.postgresql</groupId>
                <artifactId>postgresql</artifactId>
-               <version>9.4-1203-jdbc4</version>
+               <version>42.4.1</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
