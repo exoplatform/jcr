@@ -865,7 +865,7 @@
             <dependency>
                <groupId>mysql</groupId>
                <artifactId>mysql-connector-java</artifactId>
-               <version>5.0.8</version>
+               <version>8.0.28</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
@@ -879,7 +879,7 @@
             <dependency>
                <groupId>mysql</groupId>
                <artifactId>mysql-connector-java</artifactId>
-               <version>5.1.14</version>
+               <version>8.0.28</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
@@ -893,7 +893,7 @@
             <dependency>
                <groupId>mysql</groupId>
                <artifactId>mysql-connector-java</artifactId>
-               <version>5.1.18</version>
+               <version>8.0.28</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
@@ -907,7 +907,7 @@
             <dependency>
                <groupId>mysql</groupId>
                <artifactId>mysql-connector-java</artifactId>
-               <version>5.1.30</version>
+               <version>8.0.28</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
