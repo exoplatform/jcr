@@ -59,7 +59,7 @@
          <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <argLine>@{argLine} ${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+              <argLine>@{argLine} ${env.MAVEN_OPTS} --add-opens=java.base/java.util=ALL-UNNAMED -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
             </configuration>
          </plugin>
          <plugin>

@@ -207,7 +207,7 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * Get node type for store scripts, may throw {@link IllegalStateException}
-    * if <tt>nodeType</tt> not initialized yet.
+    * if <code>nodeType</code> not initialized yet.
     * 
     * @return return node type
     */
@@ -1163,8 +1163,8 @@ public class GroovyScript2RestLoader implements Startable
    /**
     * Deploy groovy script as REST service. If this property set to 'true' then
     * script will be deployed as REST service if 'false' the script will be
-    * undeployed. NOTE is script already deployed and <tt>state</tt> is
-    * <tt>true</tt> script will be re-deployed.
+    * undeployed. NOTE is script already deployed and <code>state</code> is
+    * <code>true</code> script will be re-deployed.
     * 
     * @param repository repository name
     * @param workspace workspace name

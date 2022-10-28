@@ -17,6 +17,8 @@
 package org.exoplatform.services.jcr.api.core.query;
 
 import org.apache.jackrabbit.test.AbstractJCRTest;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryManagerImpl;
 
