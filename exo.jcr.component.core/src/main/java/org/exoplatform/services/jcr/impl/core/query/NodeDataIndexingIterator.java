@@ -35,11 +35,11 @@ import javax.jcr.RepositoryException;
 public interface NodeDataIndexingIterator
 {
    /**
-    * Returns <tt>true</tt> if the iteration has more elements. (In other
-    * words, returns <tt>true</tt> if <tt>next</tt> would return element 
+    * Returns <code>true</code> if the iteration has more elements. (In other
+    * words, returns <code>true</code> if <code>next</code> would return element
     * rather than throwing an exception.)
     *
-    * @return <tt>true</tt> if the iterator has more elements.
+    * @return <code>true</code> if the iterator has more elements.
     */
    boolean hasNext();
 

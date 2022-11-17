@@ -41,7 +41,7 @@ import java.net.URLStreamHandler;
 import javax.jcr.RepositoryException;
 
 /**
- * URLStreamHandler for protocol <tt>jcr://</tt>.
+ * URLStreamHandler for protocol <code>jcr://</code>.
  *
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id: $
@@ -57,7 +57,7 @@ public class Handler extends URLStreamHandler implements Startable
    /**
     * It specifies the package prefix name with should be added in System
     * property java.protocol.handler.pkgs. Protocol handlers will be in a class
-    * called <tt>jcr</tt>.Handler.
+    * called <code>jcr</code>.Handler.
     */
    private static final String protocolPathPkg = "org.exoplatform.services.jcr.ext.resource";
 

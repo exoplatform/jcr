@@ -84,7 +84,7 @@ import java.util.Set;
  *
  *
  * <p>
- * <h3>Initial Usage</h3>
+ * <code>&lt;h3&gt;Initial Usage&lt;/h3&gt;</code>
  *
  * This class has lots of options to try to make it efficient and flexible.
  *
@@ -112,7 +112,7 @@ import java.util.Set;
  * <li> call the searcher to find the similar docs
  * </ol>
  *
- * <h3>More Advanced Usage</h3>
+ * <code>&lt;h3&gt;Initial Usage&lt;/h3&gt;</code>
  *
  * You may want to use {@link #setFieldNames setFieldNames(...)} so you can examine
  * multiple fields (e.g. body and title) for similarity.
