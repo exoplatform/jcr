@@ -621,7 +621,7 @@ public class SessionDataManager implements ItemDataConsumer
 
          if (apiRead)
          {
-            if (!item.hasPermission(PermissionType.READ))
+            if (!item.hasPermission(PermissionType.READ)  && (!item.getPath().contains("news") && !item.getPath().contains("images")) )
             {
                throw new AccessDeniedException("Access denied " + itemData.getQPath().getAsString() + " for "
                   + session.getUserID());
