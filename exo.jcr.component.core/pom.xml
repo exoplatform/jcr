@@ -25,7 +25,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>jcr-parent</artifactId>
-      <version>6.4.x-SNAPSHOT</version>
+      <version>6.4.0-20230122</version>
    </parent>
    <artifactId>exo.jcr.component.core</artifactId>
    <name>eXo PLF:: JCR :: Component :: Core Service</name>
