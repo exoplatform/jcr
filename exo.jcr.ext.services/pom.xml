@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>6.6.x-SNAPSHOT</version>
+    <version>6.6.x-security-fix-SNAPSHOT</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
