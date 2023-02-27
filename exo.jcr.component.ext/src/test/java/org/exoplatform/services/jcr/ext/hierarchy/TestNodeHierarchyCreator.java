@@ -270,4 +270,8 @@ public class TestNodeHierarchyCreator extends BaseStandaloneTest
          // ignore me
       }      
    }
+
+   public void testIsNodeHierarchyCreatorInitialized() {
+     assertTrue(creator.isNodeHierarchyCreatorInitialized());
+   }
 }
