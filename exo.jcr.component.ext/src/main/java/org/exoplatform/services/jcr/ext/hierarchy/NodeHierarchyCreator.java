@@ -92,4 +92,9 @@ public interface NodeHierarchyCreator
     * @param plugin the plugin to register
     */
    void addPlugin(ComponentPlugin plugin);
+
+   /**
+    * @return  if the service has started or not
+    */
+   boolean isNodeHierarchyCreatorInitialized();
 }
