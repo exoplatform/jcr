@@ -61,7 +61,9 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
 
    private static final String USER_PUBLIC = "userPublic";
 
-   private final RepositoryService jcrService_;
+   private boolean isNodeHierarchyCreatorInitialized = false;
+
+    private final RepositoryService jcrService_;
 
    private final DataDistributionManager dataDistributionManager_;
 
@@ -114,6 +116,7 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
       try
       {
          processAddPathPlugin(pathPlugins_, "/", null);
+         isNodeHierarchyCreatorInitialized = true;
       }
       catch (Exception e)
       {
@@ -459,6 +462,11 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
             }
          }
       }
+   }
+   
+   @Override
+   public boolean isNodeHierarchyCreatorInitialized() {
+     return isNodeHierarchyCreatorInitialized;
    }
 
    private boolean isNeededToMigrate()
