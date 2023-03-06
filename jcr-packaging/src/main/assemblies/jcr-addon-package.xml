@@ -108,7 +108,8 @@
         <exclude>*:asm-debug-all:jar</exclude>
         <exclude>*:aspectjrt:jar</exclude>
         <exclude>*:bcmail-jdk15:jar</exclude>
-        <exclude>*:bcprov-jdk15:jar</exclude>
+        <exclude>*:bcprov-jdk15on:jar</exclude>
+        <exclude>*:c3p0:jar</exclude>
         <exclude>*:cdi-api:jar</exclude>
         <exclude>*:common-common:jar</exclude>
         <exclude>*:common-logging:jar</exclude>
@@ -121,7 +122,7 @@
         <exclude>*:commons-digester:jar</exclude>
         <exclude>*:commons-fileupload:jar</exclude>
         <exclude>*:commons-io:jar</exclude>
-        <exclude>*:commons-lang:jar</exclude>
+        <exclude>*:commons-lang3:jar</exclude>
         <exclude>*:commons-pool:jar</exclude>
         <exclude>*:dom4j:jar</exclude>
         <exclude>*:fontbox:jar</exclude>
@@ -129,12 +130,13 @@
         <exclude>*:hibernate-commons-annotations:jar</exclude>
         <exclude>*:hibernate-core:jar</exclude>
         <exclude>*:hibernate-jpa-2.0-api:jar</exclude>
-        <exclude>*:htmllexer:jar</exclude>
-        <exclude>*:htmlparser:jar</exclude>
+        <exclude>*:httpclient:jar</exclude>
         <exclude>*:infinispan-commons:jar</exclude>
         <exclude>*:infinispan-core:jar</exclude>
         <exclude>*:isoparser:jar</exclude>
+        <exclude>*:guava:jar</exclude>
         <exclude>*:jakarta-regexp:jar</exclude>
+        <exclude>*:jakarta.annotation-api:jar</exclude>
         <exclude>*:javax.inject:jar</exclude>
         <exclude>*:jboss-logging:jar</exclude>
         <exclude>*:jboss-logging-annotations:jar</exclude>
@@ -145,25 +147,22 @@
         <exclude>*:jgroups:jar</exclude>
         <exclude>*:jhighlight:jar</exclude>
         <exclude>*:jibx-run:jar</exclude>
+        <exclude>*:json-simple:jar</exclude>
         <exclude>*:jsr250-api:jar</exclude>
         <exclude>*:jsr311-api:jar</exclude>
         <exclude>*:jta:jar</exclude>
         <exclude>*:jtidy:jar</exclude>
+        <exclude>*:jul-to-slf4j:jar</exclude>
         <exclude>*:juniversalchardet:jar</exclude>
         <exclude>*:mail:jar</exclude>
         <exclude>*:metadata-extractor:jar</exclude>
         <exclude>*:mime-util:jar</exclude>
         <exclude>*:netcdf:jar</exclude>
-        <exclude>*:pdfbox:jar</exclude>
-        <exclude>*:poi-ooxml-schemas:jar</exclude>
+        <exclude>*:protobuf-java:jar</exclude>
         <exclude>*:poi-ooxml:jar</exclude>
-        <exclude>*:poi-scratchpad:jar</exclude>
         <exclude>*:poi:jar</exclude>
         <exclude>*:quartz:jar</exclude>
         <exclude>*:rome:jar</exclude>
-        <exclude>*:tagsoup:jar</exclude>
-        <exclude>*:tika-core:jar</exclude>
-        <exclude>*:tika-parsers:jar</exclude>
         <exclude>*:vorbis-java-core:jar</exclude>
         <exclude>*:vorbis-java-tika:jar</exclude>
         <exclude>*:wci-wci:jar</exclude>
