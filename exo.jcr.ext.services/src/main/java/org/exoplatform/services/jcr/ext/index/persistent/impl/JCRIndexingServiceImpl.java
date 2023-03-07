@@ -26,10 +26,9 @@ import java.util.stream.Collectors;
 import javax.jcr.RepositoryException;
 import javax.servlet.ServletContext;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.picocontainer.Startable;
-
-import com.google.api.client.util.IOUtils;
 
 import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.persistence.impl.EntityManagerService;

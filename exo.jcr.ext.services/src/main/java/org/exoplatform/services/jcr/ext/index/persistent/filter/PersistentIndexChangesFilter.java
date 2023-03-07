@@ -18,7 +18,8 @@ package org.exoplatform.services.jcr.ext.index.persistent.filter;
 
 import java.util.Set;
 
-import org.exoplatform.commons.utils.CommonsUtils;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingService;
@@ -38,8 +39,8 @@ public class PersistentIndexChangesFilter extends DefaultChangesFilter implement
                                       ConfigurationManager cfm)
       throws Exception {
     super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler, cfm, false);
-
-    getJcrIndexingQueueService().init(handler, config);
+    this.jcrIndexingQueueService= ExoContainerContext.getService(JCRIndexingService.class);
+    this.jcrIndexingQueueService.init(handler, config);
 
     super.init();
   }
@@ -53,12 +54,12 @@ public class PersistentIndexChangesFilter extends DefaultChangesFilter implement
                                Set<String> parentRemovedNodes,
                                Set<String> parentAddedNodes) {
     try {
-      getJcrIndexingQueueService().processIndexingQueue();
+      jcrIndexingQueueService.processIndexingQueue();
     } catch (Exception e) {
       throw new IllegalStateException("An error occurred while indexing from queue before applying Index changes", e);
     }
     super.doUpdateIndex(removedNodes, addedNodes, parentRemovedNodes, parentAddedNodes);
-    getJcrIndexingQueueService().applyIndexChangesOnQueue(removedNodes,
+    jcrIndexingQueueService.applyIndexChangesOnQueue(removedNodes,
                                                           addedNodes,
                                                           parentRemovedNodes,
                                                           parentAddedNodes,
@@ -68,19 +69,13 @@ public class PersistentIndexChangesFilter extends DefaultChangesFilter implement
   @Override
   protected void doUpdateIndex(final ChangesFilterListsWrapper changes) {
     try {
-      getJcrIndexingQueueService().processIndexingQueue();
+      jcrIndexingQueueService.processIndexingQueue();
     } catch (Exception e) {
       throw new IllegalStateException("An error occurred while indexing from queue before applying Index changes", e);
     }
     super.doUpdateIndex(changes);
-    getJcrIndexingQueueService().applyIndexChangesOnQueue(changes, getSearchManager().getWsId());
+    jcrIndexingQueueService.applyIndexChangesOnQueue(changes, getSearchManager().getWsId());
   }
 
-  private JCRIndexingService getJcrIndexingQueueService() {
-    if (jcrIndexingQueueService == null) {
-      jcrIndexingQueueService = CommonsUtils.getService(JCRIndexingService.class);
-    }
-    return jcrIndexingQueueService;
-  }
 
 }

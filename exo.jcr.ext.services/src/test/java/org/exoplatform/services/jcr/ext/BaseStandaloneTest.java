@@ -95,10 +95,10 @@ public abstract class BaseStandaloneTest extends TestCase
       String containerConf = getClass().getResource("/conf/standalone/test-configuration.xml").toString();
       String loginConf = Thread.currentThread().getContextClassLoader().getResource("login.conf").toString();
 
-      // Workaround to initialize Database tables and then stop it
-      // To let top container a StandaloneContainer
-      RootContainer rootContainer = RootContainer.getInstance();
-      rootContainer.stop();
+//      // Workaround to initialize Database tables and then stop it
+//      // To let top container a StandaloneContainer
+//      RootContainer rootContainer = RootContainer.getInstance();
+//      rootContainer.stop();
 
       StandaloneContainer.addConfigurationURL(containerConf);
       container = StandaloneContainer.getInstance();
