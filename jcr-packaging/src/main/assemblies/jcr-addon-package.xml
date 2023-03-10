@@ -37,6 +37,7 @@
         <exclude>org.exoplatform.ws:*:*</exclude>
         <exclude>org.exoplatform.kernel:*:*</exclude>
         <exclude>org.exoplatform.core:*:*</exclude>
+        <exclude>org.apache.cxf:*</exclude>
         <!-- No Apache Tomcat artifacts have to be added in the packaging -->
         <exclude>org.apache.tomcat:*</exclude>
         <!-- Ant and related aren't really useful for us at runtime -->
