@@ -1283,7 +1283,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
             "INSERT INTO " + iTable + " VALUES ('" + propId + "','" + parentId + "','[]" + name + "',1,'"
                + wsEntry.getName() + "',2,1,NULL,1,FALSE)").execute();
       }
-      conn.prepareStatement("INSERT INTO " + vTable + " VALUES ('10000','data','1','" + propId + "',NULL)").execute();
+      conn.prepareStatement("INSERT INTO " + vTable + "(DATA,ORDER_NUM,PROPERTY_ID,STORAGE_DESC) VALUES (NULL,1,'" + propId + "',NULL)").execute();
 
       conn.commit();
       conn.close();

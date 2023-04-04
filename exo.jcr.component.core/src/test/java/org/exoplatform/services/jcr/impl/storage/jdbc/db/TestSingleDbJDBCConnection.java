@@ -63,9 +63,9 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
          st.executeUpdate("insert into JCR_SITEM values" + "('C','B','test3',20090825,'ws3',1,1233,5,10,2)");
          st.executeUpdate("insert into JCR_SITEM values" + "('ws3B','A','test4',2009525,'ws3',2,1233,1,10,5)");
          st.executeUpdate("insert into JCR_SVALUE(DATA,ORDER_NUM,PROPERTY_ID,STORAGE_DESC) values"
-            + "('0xfa',16,'A','testConn')");
+            + "(CAST('fa' AS VARBINARY(16777216)),16,'A','testConn')");
          st.executeUpdate("insert into JCR_SVALUE(DATA,ORDER_NUM,PROPERTY_ID,STORAGE_DESC) values"
-            + "('0xce',16,'B','testConn2')");
+            + "(CAST('ce' AS VARBINARY(16777216)),16,'B','testConn2')");
          st.executeUpdate("insert into JCR_SREF values" + "('D','A',2)");
          st.executeUpdate("insert into JCR_SREF values" + "('E','B',2)");
          JDBCDataContainerConfig jdbcDataContainerConfig = new JDBCDataContainerConfig();
