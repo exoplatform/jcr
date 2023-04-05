@@ -65,9 +65,9 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
          st.executeUpdate("insert into JCR_MITEM (ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM, P_TYPE, P_MULTIVALUED) values"
             + "('C','B','test3',20090825,1,1233,5,10,1)");
          st.executeUpdate("insert into JCR_MVALUE(DATA,ORDER_NUM,PROPERTY_ID,STORAGE_DESC) values"
-            + "('0xfa',16,'A','testConn')");
+            + "(CAST('fa' AS VARBINARY(16777216)),16,'A','testConn')");
          st.executeUpdate("insert into JCR_MVALUE(DATA,ORDER_NUM,PROPERTY_ID,STORAGE_DESC) values"
-            + "('0xce',16,'B','testConn2')");
+            + "(CAST('ce' AS VARBINARY(16777216)),16,'B','testConn2')");
          st.executeUpdate("insert into JCR_MREF values" + "('D','A',2)");
          st.executeUpdate("insert into JCR_MREF values" + "('E','B',2)");
          JDBCDataContainerConfig jdbcDataContainerConfig = new JDBCDataContainerConfig();
