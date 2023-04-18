@@ -144,7 +144,6 @@
         <exclude>*:jboss-marshalling-osgi:jar</exclude>
         <exclude>*:jbossjta:jar</exclude>
         <exclude>*:jcl-over-slf4j:jar</exclude>
-        <exclude>*:jempbox:jar</exclude>
         <exclude>*:jgroups:jar</exclude>
         <exclude>*:jhighlight:jar</exclude>
         <exclude>*:jibx-run:jar</exclude>
