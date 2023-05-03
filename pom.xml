@@ -25,7 +25,7 @@
   <parent>
     <artifactId>maven-parent-exo-pom</artifactId>
     <groupId>org.exoplatform</groupId>
-    <version>26-SNAPSHOT</version>
+    <version>26-security-fix-SNAPSHOT</version>
     <relativePath />
   </parent>
 
