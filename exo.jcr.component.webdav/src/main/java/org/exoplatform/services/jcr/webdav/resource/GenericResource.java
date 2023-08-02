@@ -29,6 +29,7 @@ import javax.xml.namespace.QName;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -256,8 +257,8 @@ public abstract class GenericResource implements Resource
       do {
          currentValue = value;
          try {
-            value = URLDecoder.decode(value, "UTF-8");
-         } catch (UnsupportedEncodingException e) {
+            value = URLDecoder.decode(value, StandardCharsets.UTF_8);
+         } catch (IllegalArgumentException e) {
             LOG.warn("Unable to decode value: ", e.getMessage());
             return value;
          }
