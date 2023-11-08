@@ -7,6 +7,7 @@ jobs:
     uses: exoplatform/swf-scripts/.github/workflows/cibuild.yml@partial
     with:
       maven_profiles: 'exo-release,coverage'
+      extra_maven_opts: -Xms1G -Xmx2G -XX:MaxMetaspaceSize=1G
     secrets:
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
       NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
