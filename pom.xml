@@ -25,13 +25,13 @@
   <parent>
     <artifactId>maven-exo-parent-pom</artifactId>
     <groupId>org.exoplatform</groupId>
-    <version>27-M02</version>
+    <version>27-mips-SNAPSHOT</version>
     <relativePath />
   </parent>
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>6.6.x-SNAPSHOT</version>
+  <version>6.6.x-mips-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo PLF:: JCR</name>
   <description>Exoplatform SAS 'eXo JCR'(JSR-170 implementation) project.</description>
@@ -44,7 +44,7 @@
   </scm>
 
   <properties>
-    <org.exoplatform.commons-exo.version>6.6.x-SNAPSHOT</org.exoplatform.commons-exo.version>
+    <org.exoplatform.commons-exo.version>6.6.x-mips-SNAPSHOT</org.exoplatform.commons-exo.version>
     
     <!-- Sonar properties -->
     <sonar.organization>exoplatform</sonar.organization>
