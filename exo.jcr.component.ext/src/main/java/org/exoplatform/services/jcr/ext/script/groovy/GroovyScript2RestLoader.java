@@ -18,37 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.script.groovy;
 
-import org.apache.commons.fileupload.FileItem;
-import org.codehaus.groovy.control.CompilationFailedException;
-import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.container.component.ComponentPlugin;
-import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.container.xml.ObjectParameter;
-import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.ext.app.SessionProviderService;
-import org.exoplatform.services.jcr.ext.common.SessionProvider;
-import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
-import org.exoplatform.services.jcr.ext.registry.RegistryService;
-import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
-import org.exoplatform.services.jcr.impl.core.query.lucene.IndexOfflineRepositoryException;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
-import org.exoplatform.services.rest.ext.groovy.GroovyJaxrsPublisher;
-import org.exoplatform.services.rest.ext.groovy.MalformedScriptException;
-import org.exoplatform.services.rest.ext.groovy.ResourceId;
-import org.exoplatform.services.rest.ext.groovy.SourceFile;
-import org.exoplatform.services.rest.ext.groovy.SourceFolder;
-import org.exoplatform.services.rest.impl.ResourceBinder;
-import org.exoplatform.services.rest.impl.ResourcePublicationException;
-import org.exoplatform.services.script.groovy.GroovyScriptInstantiator;
-import org.picocontainer.Startable;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -89,6 +58,38 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.commons.fileupload2.core.FileItem;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.picocontainer.Startable;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.component.ComponentPlugin;
+import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.xml.ObjectParameter;
+import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.ext.app.SessionProviderService;
+import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
+import org.exoplatform.services.jcr.ext.registry.RegistryService;
+import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexOfflineRepositoryException;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
+import org.exoplatform.services.rest.ext.groovy.GroovyJaxrsPublisher;
+import org.exoplatform.services.rest.ext.groovy.MalformedScriptException;
+import org.exoplatform.services.rest.ext.groovy.ResourceId;
+import org.exoplatform.services.rest.ext.groovy.SourceFile;
+import org.exoplatform.services.rest.ext.groovy.SourceFolder;
+import org.exoplatform.services.rest.impl.ResourceBinder;
+import org.exoplatform.services.rest.impl.ResourcePublicationException;
+import org.exoplatform.services.script.groovy.GroovyScriptInstantiator;
 
 /**
  * GroovyScript2RestLoader allows to save a Groovy script in JCR.

@@ -20,7 +20,6 @@ package org.exoplatform.services.ext.action;
 
 import org.apache.commons.chain.Context;
 import org.exoplatform.container.ExoContainer;
-import org.exoplatform.services.jcr.impl.core.ItemImpl;
 
 import java.util.HashMap;
 
@@ -35,9 +34,11 @@ import javax.jcr.Item;
  * @version $Id: InvocationContext.java 11907 2008-03-13 15:36:21Z ksm $
  * @LevelAPI Provisional
  */
-public class InvocationContext extends HashMap implements Context
-{
-   /**
+public class InvocationContext extends HashMap<String, Object> implements Context {
+
+  private static final long serialVersionUID = 8562120359133701200L;
+
+  /**
     * Exo container.
     */
    public static final String EXO_CONTAINER = "exocontainer".intern();
@@ -56,21 +57,6 @@ public class InvocationContext extends HashMap implements Context
     * Context event.
     */
    public static final String EVENT = "event".intern();
-
-   public Object put(String key, ItemImpl item)
-   {
-      return super.put(key, item);
-   }
-
-   public Object put(String key, ExoContainer container)
-   {
-      return super.put(key, container);
-   }
-
-   public Object put(String key, int eventType)
-   {
-      return super.put(key, eventType);
-   }
 
    public boolean getBoolean(final String name)
    {

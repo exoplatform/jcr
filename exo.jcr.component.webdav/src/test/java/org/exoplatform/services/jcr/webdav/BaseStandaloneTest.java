@@ -18,7 +18,15 @@
  */
 package org.exoplatform.services.jcr.webdav;
 
-import junit.framework.TestCase;
+import java.io.ByteArrayInputStream;
+import java.net.URI;
+
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Workspace;
+import javax.ws.rs.core.MultivaluedMap;
+
 import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
@@ -30,19 +38,21 @@ import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ContainerResponseWriter;
-import org.exoplatform.services.rest.impl.*;
+import org.exoplatform.services.rest.impl.ApplicationContextImpl;
+import org.exoplatform.services.rest.impl.ContainerRequest;
+import org.exoplatform.services.rest.impl.ContainerResponse;
+import org.exoplatform.services.rest.impl.EnvironmentContext;
+import org.exoplatform.services.rest.impl.InputHeadersMap;
+import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
+import org.exoplatform.services.rest.impl.ProviderBinder;
+import org.exoplatform.services.rest.impl.RequestHandlerImpl;
+import org.exoplatform.services.rest.impl.ResourceBinder;
 import org.exoplatform.services.rest.tools.DummyContainerResponseWriter;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Workspace;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.MultivaluedMap;
-import java.io.ByteArrayInputStream;
-import java.net.URI;
+import jakarta.servlet.http.HttpServletRequest;
+import junit.framework.TestCase;
 
 /**
  * Created by The eXo Platform SAS.

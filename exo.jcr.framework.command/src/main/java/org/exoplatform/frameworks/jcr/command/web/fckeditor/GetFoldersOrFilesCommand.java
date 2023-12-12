@@ -18,17 +18,19 @@
  */
 package org.exoplatform.frameworks.jcr.command.web.fckeditor;
 
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
-import org.exoplatform.frameworks.jcr.command.web.GenericWebAppContext;
-import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.exoplatform.frameworks.jcr.command.web.GenericWebAppContext;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Created by The eXo Platform SAS .

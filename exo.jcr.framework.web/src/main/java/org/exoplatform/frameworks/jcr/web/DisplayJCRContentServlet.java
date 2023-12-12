@@ -18,7 +18,12 @@
  */
 package org.exoplatform.frameworks.jcr.web;
 
+import java.io.IOException;
+
+import javax.jcr.RepositoryException;
+
 import org.apache.commons.chain.Command;
+
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.frameworks.jcr.command.web.GenericWebAppContext;
@@ -27,14 +32,11 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 
-import java.io.IOException;
-
-import javax.jcr.RepositoryException;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Created by The eXo Platform SAS . Shortcut for

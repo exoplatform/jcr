@@ -277,6 +277,21 @@
       <dependency>
          <groupId>org.apache.jackrabbit</groupId>
          <artifactId>jackrabbit-jcr-tests</artifactId>
+         <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <groupId>org.slf4j</groupId>
+               <artifactId>slf4j-api</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>junit</groupId>
+               <artifactId>junit</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.jackrabbit</groupId>
+         <artifactId>jackrabbit-jcr-tests</artifactId>
          <classifier>sources</classifier>
          <scope>test</scope>
          <exclusions>

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.ispn;
 
-import org.apache.regexp.RE;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
