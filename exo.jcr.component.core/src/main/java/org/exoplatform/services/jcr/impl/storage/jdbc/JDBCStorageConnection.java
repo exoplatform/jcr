@@ -55,7 +55,6 @@ import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -1841,12 +1840,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
       catch (SQLException e)
       {
-         throw new RepositoryException(e);
-      }
-      catch (FileNotFoundException e)
-      {
-         LOG.error("Unable to read binary content from disk for node " + parent.getQPath() + ". The binary content is not "
-                       + "accessible, it was removed, or may have been quarantined by an antivirus.",e);
          throw new RepositoryException(e);
       }
       catch (IOException e)
