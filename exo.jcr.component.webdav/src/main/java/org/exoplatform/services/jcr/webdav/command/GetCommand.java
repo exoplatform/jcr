@@ -173,11 +173,7 @@ public class GetCommand
             }
 
             try {
-               if (resource instanceof VersionResource){
-                  ((VersionResource) resource).contentNode().getProperty("jcr:data");
-               } else {
-                  resource.getProperty(new QName("jcr","data","jcr"));
-               }
+               resource.getProperty(new QName("jcr","data","jcr"));
             } catch (RepositoryException exc) {
                //it can fail here if the binary data is not available
                //(due to data corruption or antivirus quarantine)
