@@ -18,12 +18,6 @@
  */
 package org.exoplatform.frameworks.jcr.command.web;
 
-import org.apache.commons.chain.Command;
-import org.apache.commons.chain.Context;
-import org.exoplatform.commons.utils.MimeTypeResolver;
-import org.exoplatform.frameworks.jcr.command.DefaultKeys;
-import org.exoplatform.frameworks.jcr.command.JCRCommandHelper;
-
 import java.io.InputStream;
 import java.io.PrintWriter;
 
@@ -31,9 +25,17 @@ import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.chain.Command;
+import org.apache.commons.chain.Context;
+
+import org.exoplatform.commons.utils.MimeTypeResolver;
+import org.exoplatform.frameworks.jcr.command.DefaultKeys;
+import org.exoplatform.frameworks.jcr.command.JCRCommandHelper;
+
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Created by The eXo Platform SAS .<br> the command to output nt:resource to Servlet Response gets
@@ -72,7 +74,7 @@ public class DisplayResourceCommand implements Command
       // or included?
       if (servletPath == null)
       {
-         servletPath = (String)request.getAttribute("javax.servlet.include.path_info");
+         servletPath = (String)request.getAttribute("jakarta.servlet.include.path_info");
          if (servletPath != null)
             doClose = false;
       }

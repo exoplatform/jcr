@@ -18,7 +18,7 @@
  */
 package org.exoplatform.frameworks.jcr.web.fckeditor;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * The main class of the class lib.<br>

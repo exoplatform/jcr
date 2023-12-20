@@ -2,11 +2,14 @@ package org.exoplatform.frameworks.jcr.web;
 
 import java.util.EnumSet;
 
-import javax.servlet.*;
-import javax.servlet.FilterRegistration.Dynamic;
-
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration.Dynamic;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * This is a service that is injected via Kernel Container to install a JCR Web

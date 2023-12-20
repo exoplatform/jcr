@@ -18,6 +18,8 @@
  */
 package org.exoplatform.frameworks.jcr.web;
 
+import java.io.IOException;
+
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.web.AbstractFilter;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
@@ -29,14 +31,12 @@ import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.StateKey;
 import org.exoplatform.services.security.web.HttpSessionStateKey;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Created by The eXo Platform SAS . <br> Checks out if there are SessionProvider instance in
@@ -54,8 +54,8 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
 
    /*
     * (non-Javadoc)
-    * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse,
-    * javax.servlet.FilterChain)
+    * @see jakarta.servlet.Filter#doFilter(jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse,
+    * jakarta.servlet.FilterChain)
     */
    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
       ServletException

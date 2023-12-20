@@ -16,15 +16,24 @@
  */
 package org.exoplatform.services.jcr.ext.index.persistent.impl;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import javax.jcr.RepositoryException;
-import javax.servlet.ServletContext;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -33,22 +42,34 @@ import org.picocontainer.Startable;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.persistence.impl.EntityManagerService;
 import org.exoplatform.commons.utils.IOUtil;
-import org.exoplatform.container.*;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.RootContainer.PortalContainerPostInitTask;
 import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.config.*;
+import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerParams;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.index.persistent.JCRIndexingOperationType;
-import org.exoplatform.services.jcr.ext.index.persistent.api.*;
+import org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingQueueDAO;
+import org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingService;
+import org.exoplatform.services.jcr.ext.index.persistent.api.TransientQueueEntrySet;
 import org.exoplatform.services.jcr.ext.index.persistent.entity.JCRIndexQueueEntity;
-import org.exoplatform.services.jcr.impl.core.query.*;
+import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
+import org.exoplatform.services.jcr.impl.core.query.IndexRecovery;
+import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
+import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rpc.RPCService;
+
+import jakarta.servlet.ServletContext;
 
 public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
 

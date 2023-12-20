@@ -18,22 +18,26 @@
  */
 package org.exoplatform.frameworks.jcr.command.web.fckeditor;
 
-import org.apache.commons.chain.Command;
-import org.apache.commons.chain.Context;
-import org.apache.commons.fileupload.DiskFileUpload;
-import org.apache.commons.fileupload.FileItem;
-import org.exoplatform.frameworks.jcr.command.JCRCommandHelper;
-import org.exoplatform.frameworks.jcr.command.web.GenericWebAppContext;
-
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.jcr.Node;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.chain.Command;
+import org.apache.commons.chain.Context;
+import org.apache.commons.fileupload2.core.DiskFileItem;
+import org.apache.commons.fileupload2.core.FileItem;
+import org.apache.commons.fileupload2.jakarta.JakartaServletDiskFileUpload;
+
+import org.exoplatform.frameworks.jcr.command.JCRCommandHelper;
+import org.exoplatform.frameworks.jcr.command.web.GenericWebAppContext;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Created by The eXo Platform SAS .<br>
@@ -99,8 +103,9 @@ public class UploadFileCommand extends AbstractFCKConnector implements Command
 
       Node parentFolder = (Node)webCtx.getSession().getItem(currentFolderStr);
 
-      DiskFileUpload upload = new DiskFileUpload();
-      List items = upload.parseRequest(request);
+      JakartaServletDiskFileUpload servletUpload = new JakartaServletDiskFileUpload();
+      servletUpload.setHeaderCharset(StandardCharsets.UTF_8);
+      List<DiskFileItem> items = servletUpload.parseRequest(request);
 
       Map fields = new HashMap();
 
