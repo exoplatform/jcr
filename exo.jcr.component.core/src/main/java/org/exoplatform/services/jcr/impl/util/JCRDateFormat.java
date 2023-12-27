@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.util;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.exoplatform.commons.utils.ISO8601;
 import org.exoplatform.commons.utils.Tools;

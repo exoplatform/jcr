@@ -29,7 +29,7 @@ import org.exoplatform.services.rpc.TopologyChangeEvent;
 import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.exoplatform.services.rpc.jgv3.RPCServiceImpl;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.util.file.Files;
 import org.jgroups.Address;
 

@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.api.namespaces;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.lucene.search.BooleanQuery;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;

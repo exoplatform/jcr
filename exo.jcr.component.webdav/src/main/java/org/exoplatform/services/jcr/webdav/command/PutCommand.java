@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.webdav.command;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.jcr.ext.utils.VersionHistoryUtils;
 import org.exoplatform.services.jcr.webdav.MimeTypeRecognizer;

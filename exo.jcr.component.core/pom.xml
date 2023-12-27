@@ -141,6 +141,10 @@
          <artifactId>log4j-api</artifactId>
       </dependency>
       <dependency>
+         <groupId>org.apache.logging.log4j</groupId>
+         <artifactId>log4j-to-slf4j</artifactId>
+      </dependency>
+      <dependency>
          <groupId>org.apache.tika</groupId>
          <artifactId>tika-core</artifactId>
       </dependency>
@@ -188,6 +192,10 @@
                <artifactId>boilerpipe</artifactId>
             </exclusion>
          </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
       </dependency>
 
       <dependency>

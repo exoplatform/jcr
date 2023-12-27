@@ -32,7 +32,7 @@ import javax.jcr.nodetype.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;

@@ -18,7 +18,7 @@ package org.exoplatform.services.jcr.analyzer;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -47,7 +47,7 @@ public class UnescapeHTMLFilter extends TokenFilter {
     
     String tokenText = new String(buffer);
     tokenText = tokenText.replaceAll("</?\\s*\\w*\\s*/?>", ""); // Remove all HTML Tags
-    tokenText = StringEscapeUtils.unescapeHtml(tokenText);
+    tokenText = StringEscapeUtils.unescapeHtml4(tokenText);
     tokenText = tokenText.replaceAll("<|>", ""); // Remove trailing HTML character
     tokenText = tokenText.trim();// Remove empty characters replaced by regex to get the right term length
     
