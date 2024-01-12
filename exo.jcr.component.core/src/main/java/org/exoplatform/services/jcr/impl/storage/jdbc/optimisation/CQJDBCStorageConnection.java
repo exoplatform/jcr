@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;

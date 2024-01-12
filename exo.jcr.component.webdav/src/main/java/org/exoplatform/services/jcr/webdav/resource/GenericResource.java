@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.webdav.resource;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 import org.exoplatform.services.log.ExoLogger;
