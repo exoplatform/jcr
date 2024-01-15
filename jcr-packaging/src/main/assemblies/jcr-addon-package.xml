@@ -47,6 +47,7 @@
         <exclude>commons-logging:*</exclude>
         <!-- log4j is forbidden and must be replaced by org.slf4j:log4j-over-slf4j -->
         <exclude>log4j:*</exclude>
+        <exclude>org.apache.logging.log4j:*</exclude>
         <!-- We use jcl-over-slf4j, thus this one is forbidden to avoid infinite loops -->
         <exclude>org.slf4j:slf4j-jcl:*</exclude>
         <!-- We use log4j-over-slf4j, thus this one is forbidden to avoid infinite loops -->
