@@ -31,7 +31,7 @@
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>6.6.0-20240124</version>
+  <version>6.6.x-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo PLF:: JCR</name>
   <description>Exoplatform SAS 'eXo JCR'(JSR-170 implementation) project.</description>
@@ -40,11 +40,11 @@
     <connection>scm:git:git://github.com/exoplatform/jcr.git</connection>
     <developerConnection>scm:git:git@github.com:exoplatform/jcr.git</developerConnection>
     <url>https://fisheye.exoplatform.org/browse/jcr-dev</url>
-    <tag>6.6.0-20240124</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
-    <org.exoplatform.commons-exo.version>6.6.0-20240124</org.exoplatform.commons-exo.version>
+    <org.exoplatform.commons-exo.version>6.6.x-SNAPSHOT</org.exoplatform.commons-exo.version>
     
     <!-- Sonar properties -->
     <sonar.organization>exoplatform</sonar.organization>
