@@ -23,6 +23,7 @@ import javax.jcr.Property;
 
 import org.apache.commons.chain.Context;
 import org.exoplatform.services.command.action.Action;
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.security.ConversationState;
 
 /**
@@ -49,6 +50,10 @@ public class ModifyNodeAction implements Action {
                                                     conversationState.getIdentity().getUserId();
     if(node.canAddMixin("exo:modify")) {
       node.addMixin("exo:modify");
+    }
+    String propertyName =((PropertyImpl) item).getInternalName().getName();
+    if (propertyName.equals("documentViews") || propertyName.equals("documentViewers")) {
+      return false;
     }
     node.setProperty("exo:lastModifiedDate", new GregorianCalendar());
     node.setProperty("exo:lastModifier",userName);
