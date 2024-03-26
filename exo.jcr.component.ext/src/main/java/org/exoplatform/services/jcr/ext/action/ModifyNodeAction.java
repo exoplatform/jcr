@@ -51,9 +51,11 @@ public class ModifyNodeAction implements Action {
     if(node.canAddMixin("exo:modify")) {
       node.addMixin("exo:modify");
     }
-    String propertyName =((PropertyImpl) item).getInternalName().getName();
-    if (propertyName.equals("documentViews") || propertyName.equals("documentViewers")) {
-      return false;
+    if (item instanceof Property) {
+      String propertyName = ((PropertyImpl) item).getInternalName().getName();
+      if (propertyName.equals("documentViews") || propertyName.equals("documentViewers")) {
+        return false;
+      }
     }
     node.setProperty("exo:lastModifiedDate", new GregorianCalendar());
     node.setProperty("exo:lastModifier",userName);
