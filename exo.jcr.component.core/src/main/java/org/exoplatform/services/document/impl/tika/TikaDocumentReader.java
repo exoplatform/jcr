@@ -19,8 +19,6 @@ package org.exoplatform.services.document.impl.tika;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
@@ -40,7 +38,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import org.exoplatform.commons.utils.QName;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.document.AdvancedDocumentReader;
 import org.exoplatform.services.document.DCMetaData;
 import org.exoplatform.services.document.DocumentReadException;
@@ -76,73 +73,21 @@ public class TikaDocumentReader implements AdvancedDocumentReader
    public Reader getContentAsReader(final InputStream is, final String encoding) throws IOException,
       DocumentReadException
    {
-      try
-      {
-         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Reader>()
-         {
-
-            public Reader run() throws Exception
-            {
-               Metadata metadata = new Metadata();
-               metadata.set(Metadata.CONTENT_TYPE, mimeType);
-               metadata.set(Metadata.CONTENT_ENCODING, encoding);
-               ParseContext context = new ParseContext();
-               context.set(Parser.class, parser);
-               return new ParsingReader(parser, is, metadata, context, executor);
-            }
-         });
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof IOException)
-         {
-            throw (IOException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      Metadata metadata = new Metadata();
+      metadata.set(Metadata.CONTENT_TYPE, mimeType);
+      metadata.set(Metadata.CONTENT_ENCODING, encoding);
+      ParseContext context = new ParseContext();
+      context.set(Parser.class, parser);
+      return new ParsingReader(parser, is, metadata, context, executor);
    }
 
    public Reader getContentAsReader(final InputStream is) throws IOException, DocumentReadException
    {
-      try
-      {
-         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Reader>()
-         {
-
-            public Reader run() throws Exception
-            {
-               Metadata metadata = new Metadata();
-               metadata.set(Metadata.CONTENT_TYPE, mimeType);
-               ParseContext context = new ParseContext();
-               context.set(Parser.class, parser);
-               return new ParsingReader(parser, is, metadata, context, executor);
-            }
-         });
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof IOException)
-         {
-            throw (IOException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      Metadata metadata = new Metadata();
+      metadata.set(Metadata.CONTENT_TYPE, mimeType);
+      ParseContext context = new ParseContext();
+      context.set(Parser.class, parser);
+      return new ParsingReader(parser, is, metadata, context, executor);
 
    }
 
@@ -154,62 +99,43 @@ public class TikaDocumentReader implements AdvancedDocumentReader
       }
       try
       {
-         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<String>()
-         {
+         Metadata metadata = new Metadata();
+         metadata.set(Metadata.CONTENT_TYPE, mimeType);
 
-            public String run() throws Exception
-            {
-               try
-               {
-                  Metadata metadata = new Metadata();
-                  metadata.set(Metadata.CONTENT_TYPE, mimeType);
-
-                  ContentHandler handler = new BodyContentHandler();
-                  ParseContext context = new ParseContext();
-                  context.set(Parser.class, parser);
-                  // Workaround for XMLBEANS-512 - ensure that when we parse
-                  //  the file, we start with a fresh XML Parser each time,
-                  //  and avoid the risk of getting a SaxHandler that's in error
-                  SystemCache.get().setSaxLoader(null);
-                  try
-                  {
-                     parser.parse(is, handler, metadata, context);
-                     return handler.toString();
-                  }
-                  catch (SAXException e)
-                  {
-                     throw new DocumentReadException(e.getMessage(), e);
-                  }
-                  catch (TikaException e)
-                  {
-                     throw new DocumentReadException(e.getMessage(), e);
-                  }
-               }
-               finally
-               {
-                  try
-                  {
-                     is.close();
-                  }
-                  catch (IOException e)
-                  {
-                     if (LOG.isTraceEnabled())
-                     {
-                        LOG.trace("An exception occurred: " + e.getMessage());
-                     }
-                  }
-               }
-            }
-         });
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof IOException)
+         ContentHandler handler = new BodyContentHandler();
+         ParseContext context = new ParseContext();
+         context.set(Parser.class, parser);
+         // Workaround for XMLBEANS-512 - ensure that when we parse
+         //  the file, we start with a fresh XML Parser each time,
+         //  and avoid the risk of getting a SaxHandler that's in error
+         SystemCache.get().setSaxLoader(null);
+         try
          {
-            throw (IOException)cause;
+            parser.parse(is, handler, metadata, context);
+            return handler.toString();
          }
-         throw new DocumentReadException("Can not get the content: " + cause.getMessage(), cause);
+         catch (SAXException e)
+         {
+            throw new DocumentReadException(e.getMessage(), e);
+         }
+         catch (TikaException e)
+         {
+            throw new DocumentReadException(e.getMessage(), e);
+         }
+      }
+      finally
+      {
+         try
+         {
+            is.close();
+         }
+         catch (IOException e)
+         {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
       }
    }
 
@@ -222,58 +148,40 @@ public class TikaDocumentReader implements AdvancedDocumentReader
       }
       try
       {
-         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<String>()
-         {
-            public String run() throws Exception
-            {
-               try
-               {
-                  Metadata metadata = new Metadata();
-                  metadata.set(Metadata.CONTENT_TYPE, mimeType);
-                  metadata.set(Metadata.CONTENT_ENCODING, encoding);
+         Metadata metadata = new Metadata();
+         metadata.set(Metadata.CONTENT_TYPE, mimeType);
+         metadata.set(Metadata.CONTENT_ENCODING, encoding);
 
-                  ContentHandler handler = new BodyContentHandler();
-                  ParseContext context = new ParseContext();
-                  context.set(Parser.class, parser);
-                  try
-                  {
-                     parser.parse(is, handler, metadata, context);
-                     return handler.toString();
-                  }
-                  catch (SAXException e)
-                  {
-                     throw new DocumentReadException(e.getMessage(), e);
-                  }
-                  catch (TikaException e)
-                  {
-                     throw new DocumentReadException(e.getMessage(), e);
-                  }
-               }
-               finally
-               {
-                  try
-                  {
-                     is.close();
-                  }
-                  catch (IOException e)
-                  {
-                     if (LOG.isTraceEnabled())
-                     {
-                        LOG.trace("An exception occurred: " + e.getMessage());
-                     }
-                  }
-               }
-            }
-         });
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof IOException)
+         ContentHandler handler = new BodyContentHandler();
+         ParseContext context = new ParseContext();
+         context.set(Parser.class, parser);
+         try
          {
-            throw (IOException)cause;
+            parser.parse(is, handler, metadata, context);
+            return handler.toString();
          }
-         throw new DocumentReadException("Can not get the content: " + cause.getMessage(), cause);
+         catch (SAXException e)
+         {
+            throw new DocumentReadException(e.getMessage(), e);
+         }
+         catch (TikaException e)
+         {
+            throw new DocumentReadException(e.getMessage(), e);
+         }
+      }
+      finally
+      {
+         try
+         {
+            is.close();
+         }
+         catch (IOException e)
+         {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
       }
    }
 
@@ -290,85 +198,65 @@ public class TikaDocumentReader implements AdvancedDocumentReader
       }
       try
       {
-         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Properties>()
+         Metadata metadata = new Metadata();
+         metadata.set(Metadata.CONTENT_TYPE, mimeType);
+
+         ContentHandler handler = new DefaultHandler();
+         ParseContext context = new ParseContext();
+         context.set(Parser.class, parser);
+         try
          {
-
-            @SuppressWarnings("deprecation")
-            public Properties run() throws Exception
-            {
-               try
-               {
-                  Metadata metadata = new Metadata();
-                  metadata.set(Metadata.CONTENT_TYPE, mimeType);
-
-                  ContentHandler handler = new DefaultHandler();
-                  ParseContext context = new ParseContext();
-                  context.set(Parser.class, parser);
-                  try
-                  {
-                     parser.parse(is, handler, metadata, context);
-                  }
-                  catch (SAXException e)
-                  {
-                     throw new DocumentReadException(e.getMessage(), e);
-                  }
-                  catch (TikaException e)
-                  {
-                     throw new DocumentReadException(e.getMessage(), e);
-                  }
-
-                  // construct Properties set
-                  Properties props = new Properties();
-                  convertProperty(metadata, props, DCMetaData.CONTRIBUTOR, new String[]{DublinCore.CONTRIBUTOR.getName(),
-                     MSOffice.LAST_AUTHOR});
-                  convertProperty(metadata, props, DCMetaData.COVERAGE, DublinCore.COVERAGE);
-                  convertProperty(metadata, props, DCMetaData.CREATOR,
-                     new String[]{MSOffice.AUTHOR, DublinCore.CREATOR.getName()});
-                  // different parsers return date in different formats, so keep it as String
-                  convertProperty(metadata, props, DCMetaData.DATE, new Property[]{DublinCore.DATE,
-                     MSOffice.LAST_SAVED, MSOffice.CREATION_DATE});
-                  convertProperty(metadata, props, DCMetaData.DESCRIPTION, new String[]{DublinCore.DESCRIPTION.getName(),
-                     MSOffice.COMMENTS});
-                  convertProperty(metadata, props, DCMetaData.FORMAT, DublinCore.FORMAT);
-                  convertProperty(metadata, props, DCMetaData.IDENTIFIER, DublinCore.IDENTIFIER);
-                  convertProperty(metadata, props, DCMetaData.LANGUAGE, DublinCore.LANGUAGE);
-                  //convertProperty(metadata, props, DCMetaData.?, DublinCore.MODIFIED);
-                  convertProperty(metadata, props, DCMetaData.PUBLISHER, DublinCore.PUBLISHER);
-                  convertProperty(metadata, props, DCMetaData.RELATION, DublinCore.RELATION);
-                  convertProperty(metadata, props, DCMetaData.RESOURCE, DublinCore.SOURCE);
-                  convertProperty(metadata, props, DCMetaData.RIGHTS, DublinCore.RIGHTS);
-                  convertProperty(metadata, props, DCMetaData.SUBJECT, new String[]{Metadata.SUBJECT,
-                     OfficeOpenXMLCore.SUBJECT.getName(), DublinCore.SUBJECT.getName(), MSOffice.KEYWORDS});
-                  convertProperty(metadata, props, DCMetaData.TITLE, DublinCore.TITLE);
-                  convertProperty(metadata, props, DCMetaData.TYPE, DublinCore.TYPE);
-
-                  return props;
-               }
-               finally
-               {
-                  try
-                  {
-                     is.close();
-                  }
-                  catch (IOException e)
-                  {
-                     if (LOG.isTraceEnabled())
-                     {
-                        LOG.trace("An exception occurred: " + e.getMessage());
-                     }
-                  }
-               }
-            }
-         });
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof IOException)
-         {
-            throw (IOException)cause;
+            parser.parse(is, handler, metadata, context);
          }
-         throw new DocumentReadException("Can not get properties: " + cause.getMessage(), cause);
+         catch (SAXException e)
+         {
+            throw new DocumentReadException(e.getMessage(), e);
+         }
+         catch (TikaException e)
+         {
+            throw new DocumentReadException(e.getMessage(), e);
+         }
+
+         // construct Properties set
+         Properties props = new Properties();
+         convertProperty(metadata, props, DCMetaData.CONTRIBUTOR, new String[]{DublinCore.CONTRIBUTOR.getName(),
+             MSOffice.LAST_AUTHOR});
+         convertProperty(metadata, props, DCMetaData.COVERAGE, DublinCore.COVERAGE);
+         convertProperty(metadata, props, DCMetaData.CREATOR,
+                         new String[]{MSOffice.AUTHOR, DublinCore.CREATOR.getName()});
+         // different parsers return date in different formats, so keep it as String
+         convertProperty(metadata, props, DCMetaData.DATE, new Property[]{DublinCore.DATE,
+             MSOffice.LAST_SAVED, MSOffice.CREATION_DATE});
+         convertProperty(metadata, props, DCMetaData.DESCRIPTION, new String[]{DublinCore.DESCRIPTION.getName(),
+             MSOffice.COMMENTS});
+         convertProperty(metadata, props, DCMetaData.FORMAT, DublinCore.FORMAT);
+         convertProperty(metadata, props, DCMetaData.IDENTIFIER, DublinCore.IDENTIFIER);
+         convertProperty(metadata, props, DCMetaData.LANGUAGE, DublinCore.LANGUAGE);
+         //convertProperty(metadata, props, DCMetaData.?, DublinCore.MODIFIED);
+         convertProperty(metadata, props, DCMetaData.PUBLISHER, DublinCore.PUBLISHER);
+         convertProperty(metadata, props, DCMetaData.RELATION, DublinCore.RELATION);
+         convertProperty(metadata, props, DCMetaData.RESOURCE, DublinCore.SOURCE);
+         convertProperty(metadata, props, DCMetaData.RIGHTS, DublinCore.RIGHTS);
+         convertProperty(metadata, props, DCMetaData.SUBJECT, new String[]{Metadata.SUBJECT,
+             OfficeOpenXMLCore.SUBJECT.getName(), DublinCore.SUBJECT.getName(), MSOffice.KEYWORDS});
+         convertProperty(metadata, props, DCMetaData.TITLE, DublinCore.TITLE);
+         convertProperty(metadata, props, DCMetaData.TYPE, DublinCore.TYPE);
+
+         return props;
+      }
+      finally
+      {
+         try
+         {
+            is.close();
+         }
+         catch (IOException e)
+         {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
       }
    }
 

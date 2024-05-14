@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
@@ -212,9 +211,9 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
       File[] list =folder.listFiles();
       for(File f : list)
       {
-         PrivilegedFileHelper.delete(f);
+         f.delete();
       }
-      PrivilegedFileHelper.delete(folder);
+      folder.delete();
       try
       {
          myNode.remove();

@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
@@ -30,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
@@ -37,7 +36,6 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -236,11 +234,11 @@ public class StreamPersistedValueData extends FilePersistedValueData
    {
       if (file != null)
       {
-         return PrivilegedFileHelper.length(file);
+         return file.length();
       }
       else if (tempFile != null)
       {
-         return PrivilegedFileHelper.length(tempFile);
+         return tempFile.length();
       }
       else if (stream instanceof FileInputStream)
       {
@@ -343,12 +341,12 @@ public class StreamPersistedValueData extends FilePersistedValueData
       {
          if (tempFile != null)
          {
-            return PrivilegedFileHelper.fileInputStream(tempFile);
+            return new FileInputStream(tempFile);
          }
          else if (spoolContent)
          {
             spoolContent();
-            return PrivilegedFileHelper.fileInputStream(tempFile);
+            return new FileInputStream(tempFile);
          }
          return url.openStream();
       }
@@ -373,7 +371,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
             spoolConfig.fileCleaner);
       try
       {
-         OutputStream os = PrivilegedFileHelper.fileOutputStream(swapFile); 
+         OutputStream os = new FileOutputStream(swapFile);
          try
          {
             byte[] bytes = new byte[1024];
@@ -485,19 +483,13 @@ public class StreamPersistedValueData extends FilePersistedValueData
          final String path = new String(buf, "UTF-8");
          File f = new File(path);
          // validate if exists
-         if (PrivilegedFileHelper.exists(f))
+         if (f.exists())
          {
             file = f;
          }
          else if (path.startsWith(ValueStorageURLStreamHandler.PROTOCOL + ":/"))
          {
-            url = SecurityHelper.doPrivilegedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
-            {
-               public URL run() throws Exception
-               {
-                  return new URL(null, path, ValueStorageURLStreamHandler.INSTANCE);
-               }
-            });
+            url = new URL(null, path, ValueStorageURLStreamHandler.INSTANCE);
          }
          else
          {

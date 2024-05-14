@@ -18,11 +18,9 @@
  */
 package org.exoplatform.services.jcr.infinispan;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.infinispan.Cache;
 
 import java.io.Serializable;
-import java.security.PrivilegedAction;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,15 +38,7 @@ public class PrivilegedISPNCacheHelper
     */
    public static void start(final Cache<Serializable, Object> cache)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            cache.start();
-            return null;
-         }
-      };
-      SecurityHelper.doPrivilegedAction(action);
+      cache.start();
    }
 
    /**
@@ -58,15 +48,7 @@ public class PrivilegedISPNCacheHelper
     */
    public static void stop(final Cache<Serializable, Object> cache)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            cache.stop();
-            return null;
-         }
-      };
-      SecurityHelper.doPrivilegedAction(action);
+      cache.stop();
    }
 
    /**
@@ -76,14 +58,7 @@ public class PrivilegedISPNCacheHelper
     */
    public static Object putIfAbsent(final Cache<Serializable, Object> cache, final Serializable key, final Object value)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            return cache.putIfAbsent(key, value);
-         }
-      };
-      return SecurityHelper.doPrivilegedAction(action);
+      return cache.putIfAbsent(key, value);
    }
 
    /**
@@ -93,14 +68,7 @@ public class PrivilegedISPNCacheHelper
     */
    public static Object put(final Cache<Serializable, Object> cache, final Serializable key, final Object value)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            return cache.put(key, value);
-         }
-      };
-      return SecurityHelper.doPrivilegedAction(action);
+      return cache.put(key, value);
    }
 
    /**
@@ -111,13 +79,6 @@ public class PrivilegedISPNCacheHelper
    public static Object put(final Cache<Serializable, Object> cache, final Serializable key, final Object value,
       final long lifespan, final TimeUnit unit)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            return cache.put(key, value, lifespan, unit);
-         }
-      };
-      return SecurityHelper.doPrivilegedAction(action);
+      return cache.put(key, value, lifespan, unit);
    }
 }

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.datamodel.Identifier;
@@ -45,6 +44,7 @@ import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -124,7 +124,7 @@ public class ValueDataUtil
                      buffer = null;
                      break;
                   }
-                  out = PrivilegedFileHelper.fileOutputStream(swapFile);
+                  out = new FileOutputStream(swapFile);
                   out.write(buffer, 0, len);
                   out.write(spoolBuffer, 0, read);
                   buffer = null;

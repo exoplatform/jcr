@@ -22,7 +22,6 @@ import org.apache.lucene.store.FSLockFactory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NativeFSLockFactory;
 import org.exoplatform.commons.utils.PropertyManager;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 
@@ -30,8 +29,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * <code>FSDirectoryManager</code> implements a directory manager for
@@ -96,14 +94,7 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public void init(final SearchIndex handler) throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            baseDir = new File(handler.getPath());
-            return null;
-         }
-      });
+      baseDir = new File(handler.getPath());
    }
 
    /**
@@ -111,14 +102,7 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public void init(final String path) throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            baseDir = new File(path);
-            return null;
-         }
-      });
+      baseDir = new File(path);
    }
 
    /**
@@ -126,14 +110,7 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public boolean hasDirectory(final String name) throws IOException
    {
-      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Boolean>()
-      {
-         public Boolean run() throws Exception
-         {
-            return new File(baseDir, name).exists();
-
-         }
-      });
+      return new File(baseDir, name).exists();
    }
 
    /**
@@ -141,42 +118,42 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public Directory getDirectory(final String name) throws IOException
    {
-      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Directory>()
+      File dir;
+      if (name.equals("."))
       {
-         public Directory run() throws Exception
+         dir = baseDir;
+      }
+      else
+      {
+         dir = new File(baseDir, name);
+      }
+      // FSDirectory itself doesnt create dirs now
+      if (!dir.exists())
+      {
+         if (!dir.mkdirs())
          {
-            File dir;
-            if (name.equals("."))
-            {
-               dir = baseDir;
-            }
-            else
-            {
-               dir = new File(baseDir, name);
-            }
-            // FSDirectory itself doesnt create dirs now
-            if (!dir.exists())
-            {
-               if (!dir.mkdirs())
-               {
-                  throw new IOException("Cannot create directory: " + dir);
-               }
-            }
-            LockFactory lockFactory =
-               (LOCK_FACTORY_CLASS == null) ? new NativeFSLockFactory() : (LockFactory)LOCK_FACTORY_CLASS.newInstance();
-
-            if (FS_DIRECTORY_CLASS == null)
-            {
-               return FSDirectory.open(dir, lockFactory);
-            }
-            else
-            {
-               Constructor<? extends FSDirectory> constructor =
-                  FS_DIRECTORY_CLASS.getConstructor(File.class, LockFactory.class);
-               return constructor.newInstance(dir, lockFactory);
-            }
+            throw new IOException("Cannot create directory: " + dir);
          }
-      });
+      }
+      try {
+         LockFactory lockFactory =
+          (LOCK_FACTORY_CLASS == null) ? new NativeFSLockFactory() : (LockFactory)LOCK_FACTORY_CLASS.newInstance();
+
+         if (FS_DIRECTORY_CLASS == null)
+         {
+            return FSDirectory.open(dir, lockFactory);
+         }
+         else
+         {
+
+               Constructor<? extends FSDirectory> constructor =
+                   FS_DIRECTORY_CLASS.getConstructor(File.class, LockFactory.class);
+               return constructor.newInstance(dir, lockFactory);
+
+         }
+      } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException  e) {
+         throw new IOException("Cannot create directory: " + dir);
+      }
    }
 
    /**
@@ -184,32 +161,26 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public String[] getDirectoryNames() throws IOException
    {
-      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<String[]>()
+      File[] dirs = baseDir.listFiles(new FileFilter()
       {
-         public String[] run() throws Exception
+         public boolean accept(File pathname)
          {
-            File[] dirs = baseDir.listFiles(new FileFilter()
-            {
-               public boolean accept(File pathname)
-               {
-                  return pathname.isDirectory();
-               }
-            });
-            if (dirs != null)
-            {
-               String[] names = new String[dirs.length];
-               for (int i = 0; i < dirs.length; i++)
-               {
-                  names[i] = dirs[i].getName();
-               }
-               return names;
-            }
-            else
-            {
-               throw new IOException("listFiles for " + baseDir.getPath() + " returned null");
-            }
+            return pathname.isDirectory();
          }
       });
+      if (dirs != null)
+      {
+         String[] names = new String[dirs.length];
+         for (int i = 0; i < dirs.length; i++)
+         {
+            names[i] = dirs[i].getName();
+         }
+         return names;
+      }
+      else
+      {
+         throw new IOException("listFiles for " + baseDir.getPath() + " returned null");
+      }
    }
 
    /**
@@ -217,36 +188,30 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public boolean delete(final String name)
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
+      File directory = new File(baseDir, name);
+      // trivial if it does not exist anymore
+      if (!directory.exists())
       {
-         public Boolean run()
+         return true;
+      }
+      // delete files first
+      File[] files = directory.listFiles();
+      if (files != null)
+      {
+         for (int i = 0; i < files.length; i++)
          {
-            File directory = new File(baseDir, name);
-            // trivial if it does not exist anymore
-            if (!directory.exists())
-            {
-               return true;
-            }
-            // delete files first
-            File[] files = directory.listFiles();
-            if (files != null)
-            {
-               for (int i = 0; i < files.length; i++)
-               {
-                  if (!files[i].delete())
-                  {
-                     return false;
-                  }
-               }
-            }
-            else
+            if (!files[i].delete())
             {
                return false;
             }
-            // now delete directory itself
-            return directory.delete();
          }
-      });
+      }
+      else
+      {
+         return false;
+      }
+      // now delete directory itself
+      return directory.delete();
    }
 
    /**
@@ -259,15 +224,7 @@ public class FSDirectoryManager implements DirectoryManager
 
       try
       {
-         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
-         {
-            public Void run() throws IOException
-            {
-               DirectoryHelper.renameFile(src, dest);
-
-               return null;
-            }
-         });
+         DirectoryHelper.renameFile(src, dest);
       }
       catch (IOException e)
       {

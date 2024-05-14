@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.backup;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -43,6 +42,7 @@ import java.io.EOFException;
 import java.io.Externalizable;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -95,7 +95,7 @@ public class JCRRestore
    {
       Pattern p = Pattern.compile(".+\\.0");
 
-      for (File f : PrivilegedFileHelper.listFiles(restoreDir, new FileFilter()
+      for (File f : restoreDir.listFiles(new FileFilter()
       {
          public boolean accept(File pathname)
          {
@@ -127,7 +127,7 @@ public class JCRRestore
 
       Pattern fullBackupPattern = Pattern.compile(".+\\.0");
 
-      for (File f : PrivilegedFileHelper.listFiles(restoreDir, new FileFilter()
+      for (File f : restoreDir.listFiles(new FileFilter()
       {
          public boolean accept(File pathname)
          {
@@ -162,7 +162,7 @@ public class JCRRestore
       ObjectInputStream ois = null;
       try
       {
-         ois = new ObjectInputStream(PrivilegedFileHelper.fileInputStream(incrementalBackupFile));
+         ois = new ObjectInputStream(new FileInputStream(incrementalBackupFile));
 
          while (true)
          {
@@ -340,7 +340,7 @@ public class JCRRestore
 
       SpoolFile tempFile =
          SpoolFile.createTempFile("vdincb" + System.currentTimeMillis(), ".stmp", spoolConfig.tempDirectory);
-      FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
+      FileOutputStream fos = new FileOutputStream(tempFile);
       long readBytes = fileSize;
 
       while (readBytes > 0)

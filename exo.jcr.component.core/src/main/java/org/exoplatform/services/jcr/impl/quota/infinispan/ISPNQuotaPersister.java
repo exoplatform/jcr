@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.quota.infinispan;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -33,7 +32,6 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.context.Flag;
 
 import java.io.Serializable;
-import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -148,17 +146,10 @@ public class ISPNQuotaPersister extends AbstractQuotaPersister
     */
    public void setWorkspaceQuota(final String repositoryName, final String workspaceName, final long quotaLimit)
    {
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-      {
-         public Void run()
-         {
-            String wsUniqueName = composeWorkspaceUniqueName(repositoryName, workspaceName);
-            CacheKey key = new WorkspaceQuotaKey(wsUniqueName);
+      String wsUniqueName = composeWorkspaceUniqueName(repositoryName, workspaceName);
+      CacheKey key = new WorkspaceQuotaKey(wsUniqueName);
 
-            cache.put(key, quotaLimit);
-            return null;
-         }
-      });
+      cache.put(key, quotaLimit);
    }
 
    /**
@@ -177,17 +168,10 @@ public class ISPNQuotaPersister extends AbstractQuotaPersister
     */
    public void setWorkspaceDataSize(final String repositoryName, final String workspaceName, final long dataSize)
    {
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-      {
-         public Void run()
-         {
-            String wsUniqueName = composeWorkspaceUniqueName(repositoryName, workspaceName);
-            CacheKey key = new WorkspaceDataSizeKey(wsUniqueName);
+      String wsUniqueName = composeWorkspaceUniqueName(repositoryName, workspaceName);
+      CacheKey key = new WorkspaceDataSizeKey(wsUniqueName);
 
-            cache.put(key, dataSize);
-            return null;
-         }
-      });
+      cache.put(key, dataSize);
    }
 
    /**
@@ -215,15 +199,8 @@ public class ISPNQuotaPersister extends AbstractQuotaPersister
     */
    public void setRepositoryQuota(final String repositoryName, final long quotaLimit)
    {
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-      {
-         public Void run()
-         {
-            CacheKey key = new RepositoryQuotaKey(repositoryName);
-            cache.put(key, quotaLimit);
-            return null;
-         }
-      });
+      CacheKey key = new RepositoryQuotaKey(repositoryName);
+      cache.put(key, quotaLimit);
    }
 
    /**
@@ -267,15 +244,8 @@ public class ISPNQuotaPersister extends AbstractQuotaPersister
     */
    public void setGlobalDataSize(final long dataSize)
    {
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-      {
-         public Void run()
-         {
-            CacheKey key = new GlobalDataSizeKey();
-            cache.put(key, dataSize);
-            return null;
-         }
-      });
+      CacheKey key = new GlobalDataSizeKey();
+      cache.put(key, dataSize);
    }
 
    /**
@@ -482,13 +452,7 @@ public class ISPNQuotaPersister extends AbstractQuotaPersister
     */
    private QuotaValue getQuotaValue(final CacheKey key) throws UnknownQuotaLimitException
    {
-      QuotaValue quotaValue = SecurityHelper.doPrivilegedAction(new PrivilegedAction<QuotaValue>()
-      {
-         public QuotaValue run()
-         {
-            return (QuotaValue)cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
-         }
-      });
+      QuotaValue quotaValue = (QuotaValue)cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
       if (quotaValue == null)
       {
          throw new UnknownQuotaLimitException("Quota was not set early");
@@ -502,13 +466,7 @@ public class ISPNQuotaPersister extends AbstractQuotaPersister
     */
    private long getDataSize(final CacheKey key) throws UnknownDataSizeException
    {
-      Long size = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Long>()
-      {
-         public Long run()
-         {
-            return (Long)cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
-         }
-      });
+      Long size = (Long)cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
       if (size == null)
       {
          throw new UnknownDataSizeException("Data size is unknown");

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.checker;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -62,16 +60,9 @@ public class InspectionReport
       final File reportFile =
          new File("report-" + forRepository + "-" + new SimpleDateFormat("dd-MMM-yy-HH-mm").format(new Date()) + ".txt");
 
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
-      {
-         public Void run() throws IOException
-         {
-            reportPath = reportFile.getAbsolutePath();
-            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(reportPath)));
+      reportPath = reportFile.getAbsolutePath();
+      writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(reportPath)));
 
-            return null;
-         }
-      });
 
    }
 

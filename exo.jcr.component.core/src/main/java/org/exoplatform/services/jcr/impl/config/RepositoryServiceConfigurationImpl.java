@@ -19,8 +19,6 @@
 package org.exoplatform.services.jcr.impl.config;
 
 import org.exoplatform.commons.utils.ClassLoading;
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
@@ -39,6 +37,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -193,51 +192,19 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
 
             try
             {
-               SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
-               {
-                  public Void run() throws IOException
-                  {
-                     DirectoryHelper.deleteDstAndRename(sourceConfig, backUp);
-                     return null;
-                  }
-               });
+               DirectoryHelper.deleteDstAndRename(sourceConfig, backUp);
             }
             catch (IOException ioe)
             {
                throw new RepositoryException("Can't back up configuration on path "
-                  + PrivilegedFileHelper.getAbsolutePath(sourceConfig), ioe);
+                  + sourceConfig.getAbsolutePath(), ioe);
             }
 
-            saveStream = PrivilegedFileHelper.fileOutputStream(sourceConfig);
+            saveStream = new FileOutputStream(sourceConfig);
          }
 
          IBindingFactory bfact;
-         try
-         {
-            bfact = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
-            {
-               public IBindingFactory run() throws Exception
-               {
-                  return BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
-               }
-            });
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof JiBXException)
-            {
-               throw (JiBXException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         bfact = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
          
          IMarshallingContext mctx = bfact.createMarshallingContext();
 

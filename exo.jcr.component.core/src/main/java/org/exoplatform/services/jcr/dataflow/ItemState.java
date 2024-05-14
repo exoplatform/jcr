@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
-import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -146,7 +144,6 @@ public class ItemState implements Externalizable
    public ItemState(ItemData data, int state, boolean eventFire, QPath ancestorToSave, boolean isInternalCreated,
       boolean isPersisted)
    {
-      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.INVOKE_INTERNAL_API_PERMISSION);
 
       this.data = data;
       this.state = state;

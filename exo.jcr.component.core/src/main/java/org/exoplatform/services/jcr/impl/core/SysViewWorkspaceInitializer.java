@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.apache.ws.commons.util.Base64;
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -53,6 +52,7 @@ import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -269,7 +269,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
             if (buffer.length >= spoolConfig.maxBufferSize)
             {
                buff =
-                  PrivilegedFileHelper.fileOutputStream(tmpFile =
+                  new FileOutputStream(tmpFile =
                      SpoolFile.createTempFile("jcrrestorewi", ".tmp", spoolConfig.tempDirectory));
             }
             else
@@ -281,7 +281,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          {
             // spool to file
             FileOutputStream fout =
-               PrivilegedFileHelper.fileOutputStream(tmpFile =
+               new FileOutputStream(tmpFile =
                   SpoolFile.createTempFile("jcrrestorewi", ".tmp", spoolConfig.tempDirectory));
             fout.write(((TempOutputStream)buff).getBuffer());
             buff.close();
@@ -559,7 +559,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       NamespaceException, RepositoryException, IllegalNameException
    {
 
-      InputStream input = PrivilegedFileHelper.fileInputStream(restorePath);
+      InputStream input = new FileInputStream(restorePath);
       try
       {
          XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
@@ -846,7 +846,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                               {
                                  vdata =
                                     new TransientValueData(currentProperty.getValues().size(), null, new SpoolFile(
-                                       PrivilegedFileHelper.getAbsolutePath(pfile)), spoolConfig);
+                                        pfile.getAbsolutePath()), spoolConfig);
                               }
                               else
                               {

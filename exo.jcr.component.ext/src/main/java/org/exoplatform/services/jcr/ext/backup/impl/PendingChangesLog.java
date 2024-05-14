@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
@@ -158,7 +156,7 @@ public class PendingChangesLog
       listFile = new ArrayList<SpoolFile>();
       identifier = IdGenerator.generate();
       this.fileCleaner = fileCleaner;
-      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
    /**
@@ -186,7 +184,7 @@ public class PendingChangesLog
       this.identifier = identifier;
       containerType = type;
       this.fileCleaner = fileCleaner;
-      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
    /**
@@ -201,7 +199,7 @@ public class PendingChangesLog
    {
       this.identifier = identifier;
       data = new byte[dataLength];
-      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
    /**
@@ -223,7 +221,7 @@ public class PendingChangesLog
       this.listFixupStream = listFixupStreams;
       this.listFile = listFiles;
       this.fileCleaner = fileCleaner;
-      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
    /**
@@ -471,7 +469,7 @@ public class PendingChangesLog
       SpoolFile f = SpoolFile.createTempFile("tempFile" + IdGenerator.generate(), ".tmp", tempDir);
 
       this.getListFile().add(f);
-      this.getListRandomAccessFiles().add(PrivilegedFileHelper.randomAccessFile(f, "rw"));
+      this.getListRandomAccessFiles().add(new RandomAccessFile(f, "rw"));
 
    }
 

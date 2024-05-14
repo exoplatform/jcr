@@ -19,7 +19,6 @@
 
 package org.exoplatform.services.jcr.ext.script.groovy;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
 import org.exoplatform.services.jcr.ext.script.groovy.JcrGroovyClassLoaderProvider.JcrGroovyClassLoader;
 import org.exoplatform.services.log.ExoLogger;
@@ -31,9 +30,6 @@ import org.picocontainer.Startable;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -166,13 +162,7 @@ public class JcrGroovyCompiler implements Startable
    @SuppressWarnings("rawtypes")
    private Class<?>[] doCompile(final JcrGroovyClassLoader cl, final SourceFile[] files) throws IOException
    {
-      Class[] classes = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Class[]>() {
-         public Class[] run()
-         {
-            return cl.parseClasses(files);
-         }
-      });
-      return classes;
+      return cl.parseClasses(files);
    }
 
    /**
@@ -188,21 +178,8 @@ public class JcrGroovyCompiler implements Startable
     */
    public URL[] getDependencies(final SourceFolder[] sources, final SourceFile[] files) throws IOException
    {
-      try
-      {
-         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<URL[]>() {
-            public URL[] run() throws IOException
-            {
-               return ((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader()).findDependencies(sources,
-                  files);
-            }
-         });
-      }
-      catch (PrivilegedActionException e)
-      {
-         Throwable cause = e.getCause();
-         throw (IOException)cause;
-      }
+      return ((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader()).findDependencies(sources,
+                                                                                                 files);
    }
 
    /**

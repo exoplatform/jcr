@@ -18,11 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
@@ -115,8 +113,6 @@ public class JDBCWorkspaceDataContainerChecker
     */
    public void checkLocksInDataBase(boolean autoRepair)
    {
-      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-
       ResultSet resultSet = null;
       PreparedStatement preparedStatement = null;
       Connection jdbcConnection = null;
@@ -224,8 +220,6 @@ public class JDBCWorkspaceDataContainerChecker
     */
    public void checkDataBase(boolean autoRepair)
    {
-      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-
       Connection jdbcConn = null;
       try
       {
@@ -293,8 +287,6 @@ public class JDBCWorkspaceDataContainerChecker
     */
    public void checkValueStorage(boolean autoRepair)
    {
-      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-
       Connection connection = null;
       PreparedStatement st = null;
       ResultSet resultSet = null;

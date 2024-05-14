@@ -57,8 +57,7 @@ public class WorkerService
       WorkerThreadFactory(String namePrefix, boolean isDaemon)
       {
          this.isDaemon = isDaemon;
-         SecurityManager s = System.getSecurityManager();
-         group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+         group = Thread.currentThread().getThreadGroup();
          this.namePrefix =
                   (namePrefix == null || namePrefix.isEmpty()) ? "pool-" + poolNumber.getAndIncrement() + "-thread-"
                            : namePrefix + " ";

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.cas;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.DialectDetecter;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -26,7 +25,6 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -161,14 +159,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          Statement st = null;
          try
          {
-            conn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-            {
-               public Connection run() throws Exception
-               {
-                  return dataSource.getConnection();
-               }
-            });
-
+            conn = dataSource.getConnection();
             DatabaseMetaData dbMetaData = conn.getMetaData();
 
             String dialect = props.getProperty(JDBC_DIALECT_PARAM);

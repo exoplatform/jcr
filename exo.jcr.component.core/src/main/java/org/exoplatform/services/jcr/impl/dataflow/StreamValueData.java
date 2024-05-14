@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
@@ -36,6 +35,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -120,7 +120,7 @@ public abstract class StreamValueData extends AbstractValueData
       {
          if (spoolFile != null)
          {
-            return PrivilegedFileHelper.fileInputStream(spoolFile); // from spool file
+            return new FileInputStream(spoolFile); // from spool file
          }
          else
          {
@@ -141,7 +141,7 @@ public abstract class StreamValueData extends AbstractValueData
       }
       else
       {
-         return PrivilegedFileHelper.length(spoolFile);
+         return spoolFile.length();
       }
    }
 
@@ -182,7 +182,7 @@ public abstract class StreamValueData extends AbstractValueData
       {
          if (channel == null || !channel.isOpen())
          {
-            in = PrivilegedFileHelper.fileInputStream(file);
+            in = new FileInputStream(file);
             channel = in.getChannel();
          }
 
@@ -276,7 +276,7 @@ public abstract class StreamValueData extends AbstractValueData
                sf = SpoolFile.createTempFile("jcrvd", null, spoolConfig.tempDirectory);
                sf.acquire(this);
 
-               sfout = PrivilegedFileHelper.fileOutputStream(sf);
+               sfout = new FileOutputStream(sf);
 
                sfout.write(buffer, 0, len);
                sfout.write(tmpBuff, 0, read);
@@ -359,7 +359,7 @@ public abstract class StreamValueData extends AbstractValueData
       {
          if (channel == null || !channel.isOpen())
          {
-            in = PrivilegedFileHelper.fileInputStream(file);
+            in = new FileInputStream(file);
             channel = in.getChannel();
          }
 
@@ -405,16 +405,16 @@ public abstract class StreamValueData extends AbstractValueData
             (spoolFile).release(this);
          }
 
-         if (PrivilegedFileHelper.exists(spoolFile))
+         if (spoolFile.exists())
          {
-            if (!PrivilegedFileHelper.delete(spoolFile))
+            if (!spoolFile.delete())
             {
                spoolConfig.fileCleaner.addFile(spoolFile);
 
                if (LOG.isDebugEnabled())
                {
                   LOG.debug("Could not remove file. Add to fileCleaner "
-                     + PrivilegedFileHelper.getAbsolutePath(spoolFile));
+                     + spoolFile.getAbsolutePath());
                }
             }
          }

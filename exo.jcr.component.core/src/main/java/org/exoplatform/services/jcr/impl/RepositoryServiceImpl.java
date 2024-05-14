@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
@@ -42,9 +41,6 @@ import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 
 import java.io.InputStream;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -125,13 +121,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
     */
    public void createRepository(RepositoryEntry rEntry) throws RepositoryConfigurationException, RepositoryException
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
-
       if (repositoryContainers.containsKey(rEntry.getName()))
       {
          throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " already started");
@@ -146,14 +135,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
       {
          if (repositoryContainers.putIfAbsent(rEntry.getName(), repositoryContainer) == null)
          {
-            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-            {
-               public Void run()
-               {
-                  repositoryContainer.start();
-                  return null;
-               }
-            });
+            repositoryContainer.start();
          }
          else
          {
@@ -182,13 +164,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
 
    public RepositoryServiceConfiguration getConfig()
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
-
       return config;
    }
 
@@ -243,13 +218,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
 
    public void setCurrentRepositoryName(String repositoryName) throws RepositoryConfigurationException
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
-
       if (!repositoryContainers.containsKey(repositoryName))
       {
          throw new RepositoryConfigurationException("Repository is not configured. Name " + repositoryName);
@@ -259,13 +227,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
 
    public void start()
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
-
       try
       {
          ExoContainer container = null;
@@ -298,13 +259,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
 
    public void stop()
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
-
       for (Entry<String, RepositoryContainer> entry : repositoryContainers.entrySet())
       {
          entry.getValue().stop();
@@ -401,13 +355,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
     */
    public void removeRepository(final String name, boolean forceRemove) throws RepositoryException
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
-
       if (!forceRemove && !canRemoveRepository(name))
       {
          throw new RepositoryException("Repository " + name + " in use. If you want to "
@@ -419,35 +366,16 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
          final RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
          final RepositoryImpl repo = (RepositoryImpl)getRepository(name);
          repo.setState(ManageableRepository.OFFLINE);
-         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
+         List<WorkspaceEntry> workspaces = new ArrayList<WorkspaceEntry>(repconfig.getWorkspaceEntries());
+         for (WorkspaceEntry entry : workspaces)
          {
-            public Void run() throws RepositoryException
-            {
-               List<WorkspaceEntry> workspaces = new ArrayList<WorkspaceEntry>(repconfig.getWorkspaceEntries());
-               for (WorkspaceEntry entry : workspaces)
-               {
-                  repo.internalRemoveWorkspace(entry.getName());
-               }
-               RepositoryContainer repositoryContainer = repositoryContainers.get(name);
-               repositoryContainer.stop();
-               repositoryContainers.remove(name);
-               config.getRepositoryConfigurations().remove(repconfig);
-               parentContainer.unregisterComponent(repositoryContainer.getName());
-               return null;
-            }
-         });
-      }
-      catch (PrivilegedActionException e)
-      {
-         Throwable cause = e.getCause();
-         if (cause instanceof RepositoryException)
-         {
-            throw (RepositoryException)cause;
+            repo.internalRemoveWorkspace(entry.getName());
          }
-         else
-         {
-            throw new RepositoryException(cause);
-         }
+         RepositoryContainer repositoryContainer = repositoryContainers.get(name);
+         repositoryContainer.stop();
+         repositoryContainers.remove(name);
+         config.getRepositoryConfigurations().remove(repconfig);
+         parentContainer.unregisterComponent(repositoryContainer.getName());
       }
       catch (RepositoryConfigurationException e)
       {

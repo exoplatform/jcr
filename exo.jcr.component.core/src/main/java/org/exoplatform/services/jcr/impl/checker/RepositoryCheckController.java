@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.checker;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.annotations.ManagedName;
@@ -38,7 +37,6 @@ import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -219,13 +217,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
 
    public String checkAndRepair(final DataStorage[] storages, final boolean autoRepair, final int nThreads)
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
-      {
-         public String run()
-         {
-            return checkAndRepairAction(storages, autoRepair, nThreads);
-         }
-      });
+      return checkAndRepairAction(storages, autoRepair, nThreads);
    }
 
    /**

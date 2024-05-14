@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -106,7 +105,7 @@ public class RepositoryBackupChainImpl
          File dir =
                   FileNameProducer.generateBackupSetDir(wsBackupConfig.getRepository(), wsBackupConfig.getWorkspace(),
                            config.getBackupDir().getPath(), startTime);
-         PrivilegedFileHelper.mkdirs(dir);
+         dir.mkdirs();
          wsBackupConfig.setBackupDir(dir);
 
          BackupChain bchain =

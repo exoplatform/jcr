@@ -18,15 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.util.io;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -37,7 +34,7 @@ import java.util.WeakHashMap;
  * For use in TransienValueData (may be shared in the Workspace cache with another Sessions). Spool
  * files used in ValueData for incoming values managed by SpoolFile class. Spool file may be created
  * with constructor or be obtained from static method createTempFile(String, String, File), which
- * itself create physical file using PrivilegedFileHelper.createTempFile(prefix, suffix, directory) call. Spool file
+ * itself create physical file using File.createTempFile(prefix, suffix, directory) call. Spool file
  * may be acquired for usage by any object (SpoolFile.acquire(Object)). Till this object will call
  * release (SpoolFile.release(Object)) or will be garbage collected it's impossible to delete the
  * spool file (by File.delete() method).
@@ -71,14 +68,14 @@ public class SpoolFile extends File
    public static SpoolFile createTempFile(final String prefix, final String suffix, final File directory)
       throws IOException
    {
-      return new SpoolFile(PrivilegedFileHelper.getAbsolutePath(PrivilegedFileHelper.createTempFile(prefix, suffix,
-         directory)));
+      return new SpoolFile(File.createTempFile(prefix, suffix,
+                                               directory).getAbsolutePath());
    }
 
    public synchronized void acquire(Object holder) throws FileNotFoundException
    {
       if (users == null)
-         throw new FileNotFoundException("File was deleted " + PrivilegedFileHelper.getAbsolutePath(this));
+         throw new FileNotFoundException("File was deleted " + this.getAbsolutePath());
 
       users.put(holder, System.currentTimeMillis());
    }
@@ -86,7 +83,7 @@ public class SpoolFile extends File
    public synchronized void release(Object holder) throws FileNotFoundException
    {
       if (users == null)
-         throw new FileNotFoundException("File was deleted " + PrivilegedFileHelper.getAbsolutePath(this));
+         throw new FileNotFoundException("File was deleted " + this.getAbsolutePath());
 
       users.remove(holder);
    }
@@ -94,7 +91,7 @@ public class SpoolFile extends File
    public synchronized boolean inUse() throws FileNotFoundException
    {
       if (users == null)
-         throw new FileNotFoundException("File was deleted " + PrivilegedFileHelper.getAbsolutePath(this));
+         throw new FileNotFoundException("File was deleted " + this.getAbsolutePath());
 
       return users.size() > 0;
    }
@@ -112,14 +109,7 @@ public class SpoolFile extends File
 
          final SpoolFile sf = this;
 
-         PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
-         {
-            public Boolean run()
-            {
-               return sf.exists() ? SpoolFile.super.delete() : true;
-            }
-         };
-         return SecurityHelper.doPrivilegedAction(action);
+         return sf.exists() ? SpoolFile.super.delete() : true;
 
       }
 

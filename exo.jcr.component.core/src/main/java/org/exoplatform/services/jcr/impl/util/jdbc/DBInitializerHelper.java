@@ -17,7 +17,6 @@
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
 import org.exoplatform.commons.utils.IOUtil;
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.database.utils.DialectConstants;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -97,7 +96,7 @@ public class DBInitializerHelper
    private static String prepareScripts(String initScriptPath, String itemTableSuffix, String valueTableSuffix,
       String refTableSuffix, boolean isolatedDB) throws IOException
    {
-      String scripts = IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(initScriptPath));
+      String scripts = IOUtil.getStreamContentAsString(DBInitializerHelper.class.getResourceAsStream(initScriptPath));
 
       if (isolatedDB)
       {

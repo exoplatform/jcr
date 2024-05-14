@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.server.bean;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.ext.backup.server.bean.response.BackupJobConfig;
@@ -132,7 +131,7 @@ public class BackupConfigBean
     */
    public BackupConfigBean(BackupConfig config)
    {
-      this(config.getBackupType(), PrivilegedFileHelper.getAbsolutePath(config.getBackupDir()), config
+      this(config.getBackupType(), config.getBackupDir().getAbsolutePath(), config
          .getIncrementalJobPeriod());
       this.incrementalRepetitionNumber = config.getIncrementalJobNumber();
    }
@@ -145,7 +144,7 @@ public class BackupConfigBean
     */
    public BackupConfigBean(RepositoryBackupConfig config)
    {
-      this(config.getBackupType(), PrivilegedFileHelper.getAbsolutePath(config.getBackupDir()), config
+      this(config.getBackupType(), config.getBackupDir().getAbsolutePath(), config
          .getIncrementalJobPeriod());
       this.incrementalRepetitionNumber = config.getIncrementalJobNumber();
    }

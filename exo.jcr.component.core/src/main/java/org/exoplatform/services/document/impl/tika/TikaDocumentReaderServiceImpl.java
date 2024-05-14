@@ -18,7 +18,6 @@ package org.exoplatform.services.document.impl.tika;
 
 import java.io.InputStream;
 import java.io.Reader;
-import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -30,7 +29,6 @@ import org.apache.tika.config.TikaConfig;
 import org.apache.tika.parser.Parser;
 import org.picocontainer.Startable;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.document.DocumentReader;
@@ -76,13 +74,7 @@ public class TikaDocumentReaderServiceImpl extends DocumentReaderServiceImpl imp
       if (params != null && params.getValueParam(TIKA_CONFIG_PATH) != null)
       {
          final InputStream is = configManager.getInputStream(params.getValueParam(TIKA_CONFIG_PATH).getValue());
-         conf = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<TikaConfig>()
-         {
-            public TikaConfig run() throws Exception
-            {
-               return new TikaConfig(is);
-            }
-         });
+         conf = new TikaConfig(is);
       }
       else
       {
@@ -165,8 +157,7 @@ public class TikaDocumentReaderServiceImpl extends DocumentReaderServiceImpl imp
 
       TikaDocumentReaderThreadFactory()
       {
-         SecurityManager s = System.getSecurityManager();
-         group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+         group = Thread.currentThread().getThreadGroup();
          namePrefix = "content-extractor-" + poolNumber.getAndIncrement() + "-thread-";
       }
 

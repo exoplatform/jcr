@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.core.query.lucene.OfflinePersistentIndex;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
@@ -31,14 +30,12 @@ import org.exoplatform.services.rpc.jgv3.RPCServiceImpl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.util.file.Files;
-import org.jgroups.Address;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.security.PrivilegedExceptionAction;
 import java.util.*;
 
 import javax.jcr.RepositoryException;
@@ -171,27 +168,21 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
 
          public Serializable execute(Serializable[] args) throws Throwable
          {
-            return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<ArrayList<String>>()
-            {
-               public ArrayList<String> run() throws IOException
-               {
-                  int indexDirLen = indexDirectory.getAbsolutePath().length();
+            int indexDirLen = indexDirectory.getAbsolutePath().length();
 
-                  ArrayList<String> result = new ArrayList<String>();
-                  for (File file : DirectoryHelper.listFiles(indexDirectory))
+            ArrayList<String> result = new ArrayList<String>();
+            for (File file : DirectoryHelper.listFiles(indexDirectory))
+            {
+               if (!file.isDirectory())
+               {
+                  // if parent directory is not "offline" then add this file. Otherwise skip it.
+                  if (!file.getParent().endsWith(OfflinePersistentIndex.NAME))
                   {
-                     if (!file.isDirectory())
-                     {
-                        // if parent directory is not "offline" then add this file. Otherwise skip it.
-                        if (!file.getParent().endsWith(OfflinePersistentIndex.NAME))
-                        {
-                           result.add(file.getAbsolutePath().substring(indexDirLen));
-                        }
-                     }
+                     result.add(file.getAbsolutePath().substring(indexDirLen));
                   }
-                  return result;
                }
-            });
+            }
+            return result;
          }
       });
 
@@ -353,7 +344,7 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
          public Serializable execute(Serializable[] args) throws Throwable
          {
             // if index is currently online, then it can be retrieved 
-            return new Boolean(searchManager.isOnline());
+            return searchManager.isOnline();
          }
       });
 

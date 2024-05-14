@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Calendar;
 import java.util.Properties;
 
@@ -36,7 +34,6 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.util.XMLUtil;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.document.DCMetaData;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.log.ExoLogger;
@@ -73,85 +70,59 @@ public class PDFDocumentReader extends BaseDocumentReader
    public String getContentAsText(final InputStream is) throws IOException, DocumentReadException
    {
 
+      if (is == null)
+      {
+         throw new IllegalArgumentException("InputStream is null.");
+      }
+      PDDocument pdDocument = null;
+      StringWriter sw = new StringWriter();
       try
       {
-         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<String>()
+         if (is.available() == 0)
+            return "";
+
+         try
          {
-            public String run() throws Exception
-            {
-               if (is == null)
-               {
-                  throw new IllegalArgumentException("InputStream is null.");
-               }
-               PDDocument pdDocument = null;
-               StringWriter sw = new StringWriter();
-               try
-               {
-                  if (is.available() == 0)
-                     return "";
+            pdDocument = PDDocument.load(is);
+         }
+         catch (IOException e)
+         {
+            throw new DocumentReadException("Can not load PDF document.", e);
+         }
 
-                  try
-                  {
-                     pdDocument = PDDocument.load(is);
-                  }
-                  catch (IOException e)
-                  {
-                     throw new DocumentReadException("Can not load PDF document.", e);
-                  }
-
-                  PDFTextStripper stripper = new PDFTextStripper();
-                  stripper.setStartPage(1);
-                  stripper.setEndPage(Integer.MAX_VALUE);
-                  stripper.writeText(pdDocument, sw);
-               }
-               finally
-               {
-                  if (pdDocument != null)
-                     try
-                     {
-                        pdDocument.close();
-                     }
-                     catch (IOException e)
-                     {
-                        if (LOG.isTraceEnabled())
-                        {
-                           LOG.trace("An exception occurred: " + e.getMessage());
-                        }
-                     }
-                  if (is != null)
-                     try
-                     {
-                        is.close();
-                     }
-                     catch (IOException e)
-                     {
-                        if (LOG.isTraceEnabled())
-                        {
-                           LOG.trace("An exception occurred: " + e.getMessage());
-                        }
-                     }
-               }
-               return sw.toString();
-            }
-         });
-
+         PDFTextStripper stripper = new PDFTextStripper();
+         stripper.setStartPage(1);
+         stripper.setEndPage(Integer.MAX_VALUE);
+         stripper.writeText(pdDocument, sw);
       }
-      catch (PrivilegedActionException pae)
+      finally
       {
-         Throwable cause = pae.getCause();
-         if (cause instanceof IOException)
-         {
-            throw (IOException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
+         if (pdDocument != null)
+            try
+            {
+               pdDocument.close();
+            }
+            catch (IOException e)
+            {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
+            }
+         if (is != null)
+            try
+            {
+               is.close();
+            }
+            catch (IOException e)
+            {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
+            }
       }
+      return sw.toString();
 
    }
 
@@ -169,259 +140,233 @@ public class PDFDocumentReader extends BaseDocumentReader
     */
    public Properties getProperties(final InputStream is) throws IOException, DocumentReadException
    {
+      if (is == null)
+      {
+         throw new IllegalArgumentException("InputStream is null.");
+      }
+
+      PDDocument pdDocument = PDDocument.load(is);
+      Properties props = new Properties();
       try
       {
-         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Properties>()
-         {
-            public Properties run() throws Exception
-            {
-               if (is == null)
-               {
-                  throw new IllegalArgumentException("InputStream is null.");
-               }
 
-               PDDocument pdDocument = PDDocument.load(is);
-               Properties props = new Properties();
+         PDDocumentCatalog catalog = pdDocument.getDocumentCatalog();
+         PDMetadata meta = catalog.getMetadata();
+         if (meta != null)
+         {
+            XMPMetadata metadata = new XMPMetadata(XMLUtil.parse(meta.createInputStream()));
+            XMPSchemaDublinCore dc = metadata.getDublinCoreSchema();
+            if (dc != null)
+            {
                try
                {
-                  
-                  PDDocumentCatalog catalog = pdDocument.getDocumentCatalog();
-                  PDMetadata meta = catalog.getMetadata();
-                  if (meta != null)
-                  {
-                     XMPMetadata metadata = new XMPMetadata(XMLUtil.parse(meta.createInputStream()));
-                     XMPSchemaDublinCore dc = metadata.getDublinCoreSchema();
-                     if (dc != null)
-                     {
-                        try
-                        {
-                           if (dc.getTitle() != null)
-                              props.put(DCMetaData.TITLE, fixEncoding(dc.getTitle()));
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getTitle failed: " + e.getMessage());
-                        }
-                        try
-                        {
-                           if (dc.getDescription() != null)
-                              props.put(DCMetaData.DESCRIPTION, fixEncoding(dc.getDescription()));
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getSubject failed: " + e.getMessage());
-                        }
-
-                        try
-                        {
-                           if (dc.getCreators() != null)
-                           {
-                              for (String creator : dc.getCreators())
-                              {
-                                 props.put(DCMetaData.CREATOR, fixEncoding(creator));
-                              }
-                           }
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getCreator failed: " + e.getMessage());
-                        }
-
-                        try
-                        {
-                           if (dc.getDates() != null)
-                           {
-                              for (Calendar date : dc.getDates())
-                              {
-                                 props.put(DCMetaData.DATE, date);
-                              }
-                           }
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getDate failed: " + e.getMessage());
-                        }
-                     }
-
-                     XMPSchemaPDF pdf = metadata.getPDFSchema();
-                     if (pdf != null)
-                     {
-                        try
-                        {
-                           if (pdf.getKeywords() != null)
-                              props.put(DCMetaData.SUBJECT, fixEncoding(pdf.getKeywords()));
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getKeywords failed: " + e.getMessage());
-                        }
-
-                        try
-                        {
-                           if (pdf.getProducer() != null)
-                              props.put(DCMetaData.PUBLISHER, fixEncoding(pdf.getProducer()));
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getProducer failed: " + e.getMessage());
-                        }
-                     }
-
-                     XMPSchemaBasic basic = metadata.getBasicSchema();
-                     if (basic != null)
-                     {
-                        try
-                        {
-                           if (basic.getCreateDate() != null)
-                              props.put(DCMetaData.DATE, basic.getCreateDate());
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getCreationDate failed: " + e.getMessage());
-                        }
-                        try
-                        {
-                           if (basic.getModifyDate() != null)
-                              props.put(DCMetaData.DATE, basic.getModifyDate());
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getModificationDate failed: " + e.getMessage());
-                        }
-
-                        // DCMetaData.PUBLISHER - basic.getCreatorTool()
-                     }
-                  }
-
-                  if (props.isEmpty())
-                  {
-                     // The pdf doesn't contain any metadata, try to use the document
-                     // information instead
-                     PDDocumentInformation docInfo = pdDocument.getDocumentInformation();
-
-                     if (docInfo != null)
-                     {
-                        try
-                        {
-                           if (docInfo.getAuthor() != null)
-                              props.put(DCMetaData.CONTRIBUTOR, docInfo.getAuthor());
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getAuthor failed: " + e.getMessage());
-                        }
-                        try
-                        {
-                           if (docInfo.getCreationDate() != null)
-                              props.put(DCMetaData.DATE, docInfo.getCreationDate());
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getCreationDate failed: " + e.getMessage());
-                        }
-                        try
-                        {
-                           if (docInfo.getCreator() != null)
-                              props.put(DCMetaData.CREATOR, docInfo.getCreator());
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getCreator failed: " + e.getMessage());
-                        }
-                        try
-                        {
-
-                           if (docInfo.getKeywords() != null)
-                              props.put(DCMetaData.SUBJECT, docInfo.getKeywords());
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getKeywords failed: " + e.getMessage());
-                        }
-                        try
-                        {
-                           if (docInfo.getModificationDate() != null)
-                              props.put(DCMetaData.DATE, docInfo.getModificationDate());
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getModificationDate failed: " + e.getMessage());
-                        }
-                        try
-                        {
-                           if (docInfo.getProducer() != null)
-                              props.put(DCMetaData.PUBLISHER, docInfo.getProducer());
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getProducer failed: " + e.getMessage());
-                        }
-                        try
-                        {
-                           if (docInfo.getSubject() != null)
-                              props.put(DCMetaData.DESCRIPTION, docInfo.getSubject());
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getSubject failed: " + e.getMessage());
-                        }
-                        try
-                        {
-                           if (docInfo.getTitle() != null)
-                              props.put(DCMetaData.TITLE, docInfo.getTitle());
-                        }
-                        catch (Exception e)
-                        {
-                           LOG.warn("getTitle failed: " + e.getMessage());
-                        }
-
-                        // docInfo.getTrapped();
-                     }
-                  }
+                  if (dc.getTitle() != null)
+                     props.put(DCMetaData.TITLE, fixEncoding(dc.getTitle()));
                }
-               finally
+               catch (Exception e)
                {
-                  if (pdDocument != null)
-                  {
-                     pdDocument.close();
-                  }
+                  LOG.warn("getTitle failed: " + e.getMessage());
+               }
+               try
+               {
+                  if (dc.getDescription() != null)
+                     props.put(DCMetaData.DESCRIPTION, fixEncoding(dc.getDescription()));
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getSubject failed: " + e.getMessage());
+               }
 
-                  if (is != null)
+               try
+               {
+                  if (dc.getCreators() != null)
                   {
-                     try
+                     for (String creator : dc.getCreators())
                      {
-                        is.close();
-                     }
-                     catch (IOException e)
-                     {
-                        if (LOG.isTraceEnabled())
-                        {
-                           LOG.trace("An exception occurred: " + e.getMessage());
-                        }
+                        props.put(DCMetaData.CREATOR, fixEncoding(creator));
                      }
                   }
                }
-               return props;
-            }
-         });
+               catch (Exception e)
+               {
+                  LOG.warn("getCreator failed: " + e.getMessage());
+               }
 
+               try
+               {
+                  if (dc.getDates() != null)
+                  {
+                     for (Calendar date : dc.getDates())
+                     {
+                        props.put(DCMetaData.DATE, date);
+                     }
+                  }
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getDate failed: " + e.getMessage());
+               }
+            }
+
+            XMPSchemaPDF pdf = metadata.getPDFSchema();
+            if (pdf != null)
+            {
+               try
+               {
+                  if (pdf.getKeywords() != null)
+                     props.put(DCMetaData.SUBJECT, fixEncoding(pdf.getKeywords()));
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getKeywords failed: " + e.getMessage());
+               }
+
+               try
+               {
+                  if (pdf.getProducer() != null)
+                     props.put(DCMetaData.PUBLISHER, fixEncoding(pdf.getProducer()));
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getProducer failed: " + e.getMessage());
+               }
+            }
+
+            XMPSchemaBasic basic = metadata.getBasicSchema();
+            if (basic != null)
+            {
+               try
+               {
+                  if (basic.getCreateDate() != null)
+                     props.put(DCMetaData.DATE, basic.getCreateDate());
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getCreationDate failed: " + e.getMessage());
+               }
+               try
+               {
+                  if (basic.getModifyDate() != null)
+                     props.put(DCMetaData.DATE, basic.getModifyDate());
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getModificationDate failed: " + e.getMessage());
+               }
+
+               // DCMetaData.PUBLISHER - basic.getCreatorTool()
+            }
+         }
+
+         if (props.isEmpty())
+         {
+            // The pdf doesn't contain any metadata, try to use the document
+            // information instead
+            PDDocumentInformation docInfo = pdDocument.getDocumentInformation();
+
+            if (docInfo != null)
+            {
+               try
+               {
+                  if (docInfo.getAuthor() != null)
+                     props.put(DCMetaData.CONTRIBUTOR, docInfo.getAuthor());
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getAuthor failed: " + e.getMessage());
+               }
+               try
+               {
+                  if (docInfo.getCreationDate() != null)
+                     props.put(DCMetaData.DATE, docInfo.getCreationDate());
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getCreationDate failed: " + e.getMessage());
+               }
+               try
+               {
+                  if (docInfo.getCreator() != null)
+                     props.put(DCMetaData.CREATOR, docInfo.getCreator());
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getCreator failed: " + e.getMessage());
+               }
+               try
+               {
+
+                  if (docInfo.getKeywords() != null)
+                     props.put(DCMetaData.SUBJECT, docInfo.getKeywords());
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getKeywords failed: " + e.getMessage());
+               }
+               try
+               {
+                  if (docInfo.getModificationDate() != null)
+                     props.put(DCMetaData.DATE, docInfo.getModificationDate());
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getModificationDate failed: " + e.getMessage());
+               }
+               try
+               {
+                  if (docInfo.getProducer() != null)
+                     props.put(DCMetaData.PUBLISHER, docInfo.getProducer());
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getProducer failed: " + e.getMessage());
+               }
+               try
+               {
+                  if (docInfo.getSubject() != null)
+                     props.put(DCMetaData.DESCRIPTION, docInfo.getSubject());
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getSubject failed: " + e.getMessage());
+               }
+               try
+               {
+                  if (docInfo.getTitle() != null)
+                     props.put(DCMetaData.TITLE, docInfo.getTitle());
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("getTitle failed: " + e.getMessage());
+               }
+
+               // docInfo.getTrapped();
+            }
+         }
       }
-      catch (PrivilegedActionException pae)
+      finally
       {
-         Throwable cause = pae.getCause();
-         if (cause instanceof IOException)
+         if (pdDocument != null)
          {
-            throw (IOException)cause;
+            pdDocument.close();
          }
-         else if (cause instanceof RuntimeException)
+
+         if (is != null)
          {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
+            try
+            {
+               is.close();
+            }
+            catch (IOException e)
+            {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
+            }
          }
       }
+      return props;
    }
 
    private String fixEncoding(String str)

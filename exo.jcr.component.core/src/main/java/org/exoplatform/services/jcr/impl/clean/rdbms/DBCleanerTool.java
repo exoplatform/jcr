@@ -16,13 +16,10 @@
  */
 package org.exoplatform.services.jcr.impl.clean.rdbms;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.JDBCUtils;
-import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -158,8 +155,6 @@ public class DBCleanerTool
     */
    protected void execute(List<String> scripts) throws SQLException
    {
-      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-
       // set needed auto commit mode
       boolean autoCommit = connection.getAutoCommit();
       if (autoCommit != this.autoCommit)
@@ -213,14 +208,8 @@ public class DBCleanerTool
             start = System.currentTimeMillis();
             LOG.debug("Execute script: \n[" + sql + "]");
          }
-         SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               statement.executeUpdate(sql);
-               return null;
-            }
-         });
+         statement.executeUpdate(sql);
+
          if (LOG.isDebugEnabled())
          {
             LOG.debug("Script "+sql+" executed in " + ((System.currentTimeMillis() - start) / 1000d) + " sec");

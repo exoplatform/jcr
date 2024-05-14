@@ -16,8 +16,6 @@
  */
 package org.exoplatform.services.jcr.statistics;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.management.ManagementContext;
@@ -81,12 +79,12 @@ public class JCRStatisticsManager
     * Indicates if the persistence of the statistics has to be enabled.
     */
    public static final boolean PERSISTENCE_ENABLED =
-      Boolean.valueOf(PrivilegedSystemHelper.getProperty("JCRStatisticsManager.persistence.enabled", "true"));
+      Boolean.valueOf(System.getProperty("JCRStatisticsManager.persistence.enabled", "true"));
 
    /**
     * The length of time in milliseconds after which the snapshot of the statistics is persisted.
     */
-   public static final long PERSISTENCE_TIMEOUT = Long.valueOf(PrivilegedSystemHelper.getProperty(
+   public static final long PERSISTENCE_TIMEOUT = Long.valueOf(System.getProperty(
       "JCRStatisticsManager.persistence.timeout", "15000"));
 
    /**
@@ -149,7 +147,7 @@ public class JCRStatisticsManager
       try
       {
          file =
-            new File(PrivilegedSystemHelper.getProperty("user.dir"), "Statistics" + category + "-"
+            new File(System.getProperty("user.dir"), "Statistics" + category + "-"
                + System.currentTimeMillis() + ".csv");
          file.createNewFile();
          pw = new PrintWriter(file);
@@ -161,7 +159,7 @@ public class JCRStatisticsManager
          try
          {
             file =
-               PrivilegedFileHelper.createTempFile("Statistics" + category, "-" + System.currentTimeMillis() + ".csv");
+               File.createTempFile("Statistics" + category, "-" + System.currentTimeMillis() + ".csv");
             pw = new PrintWriter(file);
          }
          catch (IOException e1)

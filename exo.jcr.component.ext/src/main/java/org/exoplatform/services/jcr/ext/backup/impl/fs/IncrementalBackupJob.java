@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl.fs;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
@@ -102,11 +101,11 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
    {
       FileNameProducer fnp =
          new FileNameProducer(config.getRepository(), config.getWorkspace(),
-            PrivilegedFileHelper.getAbsolutePath(config.getBackupDir()), super.timeStamp, false);
+                              config.getBackupDir().getAbsolutePath(), super.timeStamp, false);
 
       File backupFileData = fnp.getNextFile();
 
-      oosFileData = new ObjectOutputStream(PrivilegedFileHelper.fileOutputStream(backupFileData));
+      oosFileData = new ObjectOutputStream(new FileOutputStream(backupFileData));
 
       return new URL("file:" + backupFileData.getAbsoluteFile());
    }
@@ -162,10 +161,10 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
             for (int i = 0; i < listInputList.size(); i++)
             {
                File tempFile = getAsFile(listInputList.get(i));
-               FileInputStream fis = PrivilegedFileHelper.fileInputStream(tempFile);
+               FileInputStream fis = new FileInputStream(tempFile);
 
                // write file size
-               out.writeLong(PrivilegedFileHelper.length(tempFile));
+               out.writeLong(tempFile.length());
 
                // write file content
                writeContent(fis, out);
@@ -188,8 +187,8 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
    {
       byte[] buf = new byte[1024 * 20];
 
-      File tempFile = PrivilegedFileHelper.createTempFile("" + System.currentTimeMillis(), "" + System.nanoTime());
-      FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
+      File tempFile = File.createTempFile("" + System.currentTimeMillis(), "" + System.nanoTime());
+      FileOutputStream fos = new FileOutputStream(tempFile);
       int len;
 
       while ((len = is.read(buf)) > 0)

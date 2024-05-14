@@ -18,14 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.security.PrivilegedAction;
 
 /**
  * Created by The eXo Platform SAS. <br>
@@ -86,14 +84,7 @@ public class SerializationSpoolFile extends SpoolFile
       {
          if (!inUse())
          {
-            PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
-            {
-               public Boolean run()
-               {
-                  return SerializationSpoolFile.super.delete();
-               }
-            };
-            boolean result = SecurityHelper.doPrivilegedAction(action);
+            boolean result = SerializationSpoolFile.super.delete();
 
             if (result)
             {

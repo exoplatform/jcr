@@ -37,9 +37,6 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.exoplatform.commons.utils.ClassLoading;
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.util.Utils;
 import org.exoplatform.container.xml.Deserializer;
@@ -77,12 +74,12 @@ import org.xml.sax.SAXException;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -753,7 +750,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       if (!index.getIndexFormatVersion().equals(getIndexFormatVersion()))
       {
          log.warn("Using Version {} for reading. Please re-index version " + "storage for optimal performance.",
-            new Integer(getIndexFormatVersion().getVersion()));
+            getIndexFormatVersion().getVersion());
       }
 
       this.errorLog = doInitErrorLog(path);
@@ -2024,8 +2021,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          InputStream fsr;
          // simple sanity check
-         String separator = PrivilegedSystemHelper.getProperty("file.separator");
-         if (synonymProviderConfigPath.endsWith(PrivilegedSystemHelper.getProperty("file.separator")))
+         String separator = System.getProperty("file.separator");
+         if (synonymProviderConfigPath.endsWith(System.getProperty("file.separator")))
          {
             throw new IOException("Invalid synonymProviderConfigPath: " + synonymProviderConfigPath);
          }
@@ -2037,12 +2034,12 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             {
                File root = new File(path, synonymProviderConfigPath.substring(0, lastSeparator));
                fsr =
-                  new BufferedInputStream(PrivilegedFileHelper.fileInputStream(new File(root, synonymProviderConfigPath
+                  new BufferedInputStream(new FileInputStream(new File(root, synonymProviderConfigPath
                      .substring(lastSeparator + 1))));
             }
             else
             {
-               fsr = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(new File(synonymProviderConfigPath)));
+               fsr = new BufferedInputStream(new FileInputStream(new File(synonymProviderConfigPath)));
 
             }
             synonymProviderConfigFs = fsr;
@@ -2112,49 +2109,40 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          if (indexingConfigPath != null)
          {
-
-            // File config = PrivilegedFileHelper.file(indexingConfigPath);
-            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
+            InputStream is = SearchIndex.class.getResourceAsStream(indexingConfigPath);
+            if (is == null)
             {
-               public Object run()
+               try
                {
-                  InputStream is = SearchIndex.class.getResourceAsStream(indexingConfigPath);
-                  if (is == null)
-                  {
-                     try
-                     {
-                        is = cfm.getInputStream(indexingConfigPath);
-                     }
-                     catch (Exception e1)
-                     {
-                        log.warn("Unable to load configuration " + indexingConfigPath);
-                     }
-                  }
-
-                  try
-                  {
-                     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                     DocumentBuilder builder = factory.newDocumentBuilder();
-                     builder.setEntityResolver(new IndexingConfigurationEntityResolver());
-                     String content = Deserializer.resolveVariables(Utils.readStream(is));
-                     InputSource source = new InputSource(new StringReader(content));
-                     indexingConfiguration = builder.parse(source).getDocumentElement();
-                  }
-                  catch (ParserConfigurationException e)
-                  {
-                     log.warn("Unable to create XML parser", e);
-                  }
-                  catch (IOException e)
-                  {
-                     log.warn("Exception parsing " + indexingConfigPath, e);
-                  }
-                  catch (SAXException e)
-                  {
-                     log.warn("Exception parsing " + indexingConfigPath, e);
-                  }
-                  return null;
+                  is = cfm.getInputStream(indexingConfigPath);
                }
-            });
+               catch (Exception e1)
+               {
+                  log.warn("Unable to load configuration " + indexingConfigPath);
+               }
+            }
+
+            try
+            {
+               DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+               DocumentBuilder builder = factory.newDocumentBuilder();
+               builder.setEntityResolver(new IndexingConfigurationEntityResolver());
+               String content = Deserializer.resolveVariables(Utils.readStream(is));
+               InputSource source = new InputSource(new StringReader(content));
+               indexingConfiguration = builder.parse(source).getDocumentElement();
+            }
+            catch (ParserConfigurationException e)
+            {
+               log.warn("Unable to create XML parser", e);
+            }
+            catch (IOException e)
+            {
+               log.warn("Exception parsing " + indexingConfigPath, e);
+            }
+            catch (SAXException e)
+            {
+               log.warn("Exception parsing " + indexingConfigPath, e);
+            }
          }
       }
       return indexingConfiguration;
@@ -2377,65 +2365,58 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          {
             time = System.currentTimeMillis();
          }
-         int found = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
+         int found = 0;
+         try
          {
-            public Integer run()
+            CachingMultiIndexReader reader = indexRegister.getDefaultIndex().getIndexReader();
+            try
             {
-               int found = 0;
+               Term aggregateUUIDs = new Term(FieldNames.AGGREGATED_NODE_UUID, "");
+               TermDocs tDocs = reader.termDocs();
                try
                {
-                  CachingMultiIndexReader reader = indexRegister.getDefaultIndex().getIndexReader();
-                  try
+                  ItemDataConsumer ism = getContext().getItemStateManager();
+                  for (Iterator<String> it = removedNodeIds.iterator(); it.hasNext();)
                   {
-                     Term aggregateUUIDs = new Term(FieldNames.AGGREGATED_NODE_UUID, "");
-                     TermDocs tDocs = reader.termDocs();
-                     try
+                     String id = it.next();
+                     aggregateUUIDs = aggregateUUIDs.createTerm(id);
+                     tDocs.seek(aggregateUUIDs);
+                     while (tDocs.next())
                      {
-                        ItemDataConsumer ism = getContext().getItemStateManager();
-                        for (Iterator<String> it = removedNodeIds.iterator(); it.hasNext();)
+                        Document doc = reader.document(tDocs.doc(), FieldSelectors.UUID);
+                        String uuid = doc.get(FieldNames.UUID);
+                        ItemData itd = ism.getItemData(uuid);
+                        if (itd == null)
                         {
-                           String id = it.next();
-                           aggregateUUIDs = aggregateUUIDs.createTerm(id);
-                           tDocs.seek(aggregateUUIDs);
-                           while (tDocs.next())
-                           {
-                              Document doc = reader.document(tDocs.doc(), FieldSelectors.UUID);
-                              String uuid = doc.get(FieldNames.UUID);
-                              ItemData itd = ism.getItemData(uuid);
-                              if (itd == null)
-                              {
-                                 continue;
-                              }
-                              if (!itd.isNode())
-                              {
-                                 throw new RepositoryException("Item with id:" + uuid + " is not a node");
-                              }
-                              map.put(uuid, (NodeData)itd);
-                              found++;
-                           }
+                           continue;
                         }
+                        if (!itd.isNode())
+                        {
+                           throw new RepositoryException("Item with id:" + uuid + " is not a node");
+                        }
+                        map.put(uuid, (NodeData)itd);
+                        found++;
                      }
-                     finally
-                     {
-                        tDocs.close();
-                     }
-                  }
-                  finally
-                  {
-                     reader.release();
                   }
                }
-               catch (Exception e)
+               finally
                {
-                  log.warn("Exception while retrieving aggregate roots", e);
+                  tDocs.close();
                }
-               return found;
             }
-         });
+            finally
+            {
+               reader.release();
+            }
+         }
+         catch (Exception e)
+         {
+            log.warn("Exception while retrieving aggregate roots", e);
+         }
          if (log.isDebugEnabled())
          {
             time = System.currentTimeMillis() - time;
-            log.debug("Retrieved {} aggregate roots in {} ms.", new Integer(found), new Long(time));
+            log.debug("Retrieved {} aggregate roots in {} ms.", found, time);
          }
       }
    }
@@ -2633,7 +2614,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void setPath(String path)
    {
 
-      this.path = path.replace("${java.io.tmpdir}", PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+      this.path = path.replace("${java.io.tmpdir}", System.getProperty("java.io.tmpdir"));
 
    }
 

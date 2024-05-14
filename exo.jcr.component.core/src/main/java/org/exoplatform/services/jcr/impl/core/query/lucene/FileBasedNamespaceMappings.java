@@ -16,12 +16,13 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -147,9 +148,9 @@ public class FileBasedNamespaceMappings extends AbstractNamespaceMappings
     */
    private void load() throws IOException
    {
-      if (PrivilegedFileHelper.exists(storage))
+      if (storage.exists())
       {
-         InputStream in = PrivilegedFileHelper.fileInputStream(storage);
+         InputStream in = new FileInputStream(storage);
          try
          {
             Properties props = new Properties();
@@ -194,7 +195,7 @@ public class FileBasedNamespaceMappings extends AbstractNamespaceMappings
          props.setProperty(prefix, uri);
       }
 
-      OutputStream out = PrivilegedFileHelper.fileOutputStream(storage);
+      OutputStream out = new FileOutputStream(storage);
       try
       {
          out = new BufferedOutputStream(out);

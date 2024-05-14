@@ -20,9 +20,6 @@ package org.exoplatform.services.jcr.ext.backup.impl;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.exoplatform.commons.utils.ClassLoading;
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -74,7 +71,6 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -508,7 +504,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       this.repoService = repoService;
       this.registryService = registryService;
       this.initParams = initParams;
-      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
 
       currentBackups = Collections.synchronizedSet(new HashSet<BackupChain>());
 
@@ -545,7 +541,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public BackupChainLog[] getBackupsLogs()
    {
-      File[] cfs = PrivilegedFileHelper.listFiles(logsDirectory, new BackupLogsFilter());
+      File[] cfs = logsDirectory.listFiles(new BackupLogsFilter());
       List<BackupChainLog> logs = new ArrayList<BackupChainLog>();
       for (int i = 0; i < cfs.length; i++)
       {
@@ -560,7 +556,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
          catch (BackupOperationException e)
          {
-            LOG.warn("Log file " + PrivilegedFileHelper.getAbsolutePath(cf) + " is bussy or corrupted. Skipped. " + e,
+            LOG.warn("Log file " + cf.getAbsolutePath() + " is bussy or corrupted. Skipped. " + e,
                e);
          }
       }
@@ -574,7 +570,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public RepositoryBackupChainLog[] getRepositoryBackupsLogs()
    {
-      File[] cfs = PrivilegedFileHelper.listFiles(logsDirectory, new RepositoryBackupLogsFilter());
+      File[] cfs = logsDirectory.listFiles(new RepositoryBackupLogsFilter());
       List<RepositoryBackupChainLog> logs = new ArrayList<RepositoryBackupChainLog>();
       for (int i = 0; i < cfs.length; i++)
       {
@@ -589,7 +585,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
          catch (BackupOperationException e)
          {
-            LOG.warn("Log file " + PrivilegedFileHelper.getAbsolutePath(cf) + " is bussy or corrupted. Skipped. " + e,
+            LOG.warn("Log file " + cf.getAbsolutePath() + " is bussy or corrupted. Skipped. " + e,
                e);
          }
       }
@@ -770,7 +766,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       File dir =
          FileNameProducer.generateBackupSetDir(config.getRepository(), config.getWorkspace(), config.getBackupDir()
             .getPath(), startTime);
-      PrivilegedFileHelper.mkdirs(dir);
+      dir.mkdirs();
       config.setBackupDir(dir);
 
       BackupChain bchain =
@@ -831,16 +827,16 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       this.workspaceBackupStopper.start();
       this.repositoryBackupStopper.start();
 
-      if (!PrivilegedFileHelper.exists(tempDir))
+      if (!tempDir.exists())
       {
          throw new IllegalStateException("Directory " + tempDir.getAbsolutePath() + " not found. Please create it.");
       }
 
       //remove if exists all old jcrrestorewi*.tmp files.
-      File[] files = PrivilegedFileHelper.listFiles(tempDir, new JcrRestoreWiFilter());
+      File[] files = tempDir.listFiles(new JcrRestoreWiFilter());
       for (int i = 0; i < files.length; i++)
       {
-         PrivilegedFileHelper.delete(files[i]);
+         files[i].delete();
       }
 
       // start all scheduled before tasks
@@ -964,13 +960,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    private void writeParamsToRegistryService(SessionProvider sessionProvider) throws IOException, SAXException,
       ParserConfigurationException, RepositoryException
    {
-      Document doc = SecurityHelper.doPrivilegedParserConfigurationAction(new PrivilegedExceptionAction<Document>()
-      {
-         public Document run() throws Exception
-         {
-            return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-         }
-      });
+      Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 
       Element root = doc.createElement(SERVICE_NAME);
       doc.appendChild(root);
@@ -1091,9 +1081,9 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
       logsDirectory = new File(backupDir);
-      if (!PrivilegedFileHelper.exists(logsDirectory))
+      if (!logsDirectory.exists())
       {
-         if (!PrivilegedFileHelper.mkdirs(logsDirectory))
+         if (!logsDirectory.mkdirs())
          {
             throw new IllegalStateException("Could not create the backup directory at "
                + logsDirectory.getAbsolutePath());
@@ -1488,7 +1478,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       File dir =
          new File(config.getBackupDir() + File.separator + "repository_" + config.getRepository() + "_backup_"
             + System.currentTimeMillis());
-      PrivilegedFileHelper.mkdirs(dir);
+      dir.mkdirs();
       config.setBackupDir(dir);
 
       RepositoryBackupChain repositoryBackupChain =
@@ -1956,7 +1946,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    public void restoreExistingRepository(File repositoryBackupSetDir, boolean asynchronous)
       throws BackupOperationException, BackupConfigurationException
    {
-      File[] cfs = PrivilegedFileHelper.listFiles(repositoryBackupSetDir, new RepositoryBackupLogsFilter());
+      File[] cfs = repositoryBackupSetDir.listFiles(new RepositoryBackupLogsFilter());
 
       if (cfs.length == 0)
       {
@@ -1981,7 +1971,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    public void restoreExistingWorkspace(File workspaceBackupSetDir, boolean asynchronous)
       throws BackupOperationException, BackupConfigurationException
    {
-      File[] cfs = PrivilegedFileHelper.listFiles(workspaceBackupSetDir, new BackupLogsFilter());
+      File[] cfs = workspaceBackupSetDir.listFiles(new BackupLogsFilter());
 
       if (cfs.length == 0)
       {
@@ -2007,7 +1997,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    public void restoreRepository(File repositoryBackupSetDir, boolean asynchronous) throws BackupOperationException,
       BackupConfigurationException
    {
-      File[] cfs = PrivilegedFileHelper.listFiles(repositoryBackupSetDir, new RepositoryBackupLogsFilter());
+      File[] cfs = repositoryBackupSetDir.listFiles(new RepositoryBackupLogsFilter());
 
       if (cfs.length == 0)
       {
@@ -2045,7 +2035,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    public void restoreWorkspace(File workspaceBackupSetDir, boolean asynchronous) throws BackupOperationException,
       BackupConfigurationException
    {
-      File[] cfs = PrivilegedFileHelper.listFiles(workspaceBackupSetDir, new BackupLogsFilter());
+      File[] cfs = workspaceBackupSetDir.listFiles(new BackupLogsFilter());
 
       if (cfs.length == 0)
       {

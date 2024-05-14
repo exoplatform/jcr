@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.repository.creation;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationException;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -279,7 +278,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
             {
                String repositoryName = (String)args[0];
                
-               return new Boolean(repositoryService.canRemoveRepository(repositoryName));
+               return repositoryService.canRemoveRepository(repositoryName);
             }
          });
       }
@@ -600,7 +599,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       }
 
       File backLog = new File(backupChain.getLogFilePath());
-      if (backLog != null && PrivilegedFileHelper.exists(backLog))
+      if (backLog != null && backLog.exists())
       {
          try
          {
@@ -622,7 +621,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       else
       {
          throw new RepositoryCreationException("Backup log file by id " + backupId
-            + (backLog != null ? (" and file path=" + PrivilegedFileHelper.getAbsolutePath(backLog)) : "")
+            + (backLog != null ? (" and file path=" + backLog.getAbsolutePath()) : "")
             + " do not exists.");
       }
    }
@@ -824,7 +823,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
                }
             }
 
-            List<Object> results = rpcService.executeCommandOnAllNodes(removeRepository, true, repositoryName, new Boolean(forceRemove));
+            List<Object> results = rpcService.executeCommandOnAllNodes(removeRepository, true, repositoryName, forceRemove);
             for (Object result : results)
             {
                if (result != null)

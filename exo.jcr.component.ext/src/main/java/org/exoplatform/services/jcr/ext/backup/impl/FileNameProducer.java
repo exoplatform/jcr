@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -91,9 +90,9 @@ public class FileNameProducer
 
       this.backupSetDir = new File(backupDir);
 
-      if (!PrivilegedFileHelper.exists(backupSetDir))
+      if (!backupSetDir.exists())
       {
-         PrivilegedFileHelper.mkdirs(backupSetDir);
+         backupSetDir.mkdirs();
       }
    }
 
@@ -104,9 +103,9 @@ public class FileNameProducer
       String sTime = "-" + fileNameProducer.getStrDate(timeStamp) + "_" + fileNameProducer.getStrTime(timeStamp);
       File fBackupSetDir = new File(backupDir + File.separator + repositoryName + "_" + workspaceName + sTime);
 
-      if (!PrivilegedFileHelper.exists(fBackupSetDir))
+      if (!fBackupSetDir.exists())
       {
-         PrivilegedFileHelper.mkdirs(fBackupSetDir);
+         fBackupSetDir.mkdirs();
       }
       else
       {
@@ -116,7 +115,7 @@ public class FileNameProducer
             fBackupSetDir =
                new File(backupDir + File.separator + repositoryName + "_" + workspaceName + sTime + "_" + i++);
          }
-         while (PrivilegedFileHelper.exists(fBackupSetDir));
+         while (fBackupSetDir.exists());
       }
 
       return fBackupSetDir;
@@ -188,14 +187,14 @@ public class FileNameProducer
          nextFile = new File(backupSetDir.getAbsoluteFile() + File.separator + sNextName);
          if (isFullBackup && isDirectoryForFullBackup)
          {
-            if (!PrivilegedFileHelper.exists(nextFile))
+            if (!nextFile.exists())
             {
-               PrivilegedFileHelper.mkdirs(nextFile);
+               nextFile.mkdirs();
             }
          }
          else
          {
-            PrivilegedFileHelper.createNewFile(nextFile);
+            nextFile.createNewFile();
          }
       }
       catch (IOException e)
@@ -234,7 +233,7 @@ public class FileNameProducer
    private String getNextSufix()
    {
 
-      String[] fileList = PrivilegedFileHelper.list(backupSetDir, new SkipBackupLogFilter());
+      String[] fileList = backupSetDir.list(new SkipBackupLogFilter());
 
       int sufix = 0;
 

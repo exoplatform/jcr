@@ -18,13 +18,11 @@ package org.exoplatform.services.document.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.PrivilegedExceptionAction;
 import java.util.Properties;
 
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.usermodel.Range;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -74,13 +72,7 @@ public class MSWordDocumentReader extends BaseDocumentReader
          HWPFDocument doc;
          try
          {
-            doc = SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<HWPFDocument>()
-            {
-               public HWPFDocument run() throws Exception
-               {
-                  return new HWPFDocument(is);
-               }
-            });
+            doc = new HWPFDocument(is);
          }
          catch (IOException e)
          {

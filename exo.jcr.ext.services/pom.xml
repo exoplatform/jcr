@@ -88,7 +88,7 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>@{argLine} ${env.MAVEN_OPTS} --add-opens=java.base/java.util=ALL-UNNAMED -Djava.net.preferIPv4Stack=true -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy ${debug.opts}</argLine>
+          <argLine>@{argLine} ${env.MAVEN_OPTS} --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED -Djava.net.preferIPv4Stack=true ${debug.opts}</argLine>
         </configuration>
       </plugin>
       <plugin>

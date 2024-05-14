@@ -18,13 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.util.io;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.security.PrivilegedAction;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -134,7 +131,7 @@ public class SwapFile extends SpoolFile
    public static SwapFile get(final File parent, final String child, FileCleaner cleaner) throws IOException
    {
       SwapFile newsf = new SwapFile(parent, child,cleaner);
-      String absPath = PrivilegedFileHelper.getAbsolutePath(newsf);
+      String absPath = newsf.getAbsolutePath();
 
       WeakReference<SwapFile> swappedRef = CURRENT_SWAP_FILES.get(absPath);
       SwapFile swapped;
@@ -154,7 +151,7 @@ public class SwapFile extends SpoolFile
                catch (final InterruptedException e)
                {
                   // thinking that is ok, i.e. this thread is interrupted
-                  throw new IOException("Swap file read error " + PrivilegedFileHelper.getAbsolutePath(swapped) + ". "
+                  throw new IOException("Swap file read error " + swapped.getAbsolutePath() + ". "
                      + e)
                   {
                      @Override
@@ -238,7 +235,7 @@ public class SwapFile extends SpoolFile
    @Override
    public boolean delete()
    {
-      String path = PrivilegedFileHelper.getAbsolutePath(this);
+      String path = this.getAbsolutePath();
       WeakReference<SwapFile> currentValue = CURRENT_SWAP_FILES.get(path);
       if (currentValue == null || (currentValue.get() == this || currentValue.get() == null))
       {
@@ -248,31 +245,24 @@ public class SwapFile extends SpoolFile
             users.clear();
             final SpoolFile sf = this;
 
-            PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
+            if (sf.exists())
             {
-               public Boolean run()
+               if (SwapFile.super.delete())
                {
-                  if (sf.exists())
-                  {
-                     if (SwapFile.super.delete())
-                     {
-                        return true;
-                     }
-                     else if (swapCleaner != null)
-                     {
-                        swapCleaner.addFile(SwapFile.super.getAbsoluteFile());
-                     }
-                     if (LOG.isDebugEnabled())
-                     {
-                        LOG.debug("Could not remove swap file on finalize : "
-                           + PrivilegedFileHelper.getAbsolutePath(SwapFile.super.getAbsoluteFile()));
-                     }
-                     return false;
-                  }
                   return true;
                }
-            };
-            return SecurityHelper.doPrivilegedAction(action);
+               else if (swapCleaner != null)
+               {
+                  swapCleaner.addFile(SwapFile.super.getAbsoluteFile());
+               }
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("Could not remove swap file on finalize : "
+                                + SwapFile.super.getAbsoluteFile().getAbsolutePath());
+               }
+               return false;
+            }
+            return true;
          }
       }
       return false;

@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -51,7 +50,7 @@ public class IndexCleanHelper
       String indexDirName = wsConfig.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR);
       
       File indexDir = new File(indexDirName);
-      if (PrivilegedFileHelper.exists(indexDir))
+      if (indexDir.exists())
       {
          removeFolder(indexDir);
       }
@@ -59,7 +58,7 @@ public class IndexCleanHelper
       if (isSystem)
       {
          File systemIndexDir = new File(indexDirName + "_" + SystemSearchManager.INDEX_DIR_SUFFIX);
-         if (PrivilegedFileHelper.exists(systemIndexDir))
+         if (systemIndexDir.exists())
          {
             removeFolder(systemIndexDir);
          }
@@ -71,23 +70,23 @@ public class IndexCleanHelper
     */
    private void removeFolder(File dir) throws IOException 
    {
-      if (PrivilegedFileHelper.isDirectory(dir))
+      if (dir.isDirectory())
       {  
-         for (File subFile : PrivilegedFileHelper.listFiles(dir))
+         for (File subFile : dir.listFiles())
          {
             removeFolder(subFile);
          }
          
-         if (!PrivilegedFileHelper.delete(dir))
+         if (!dir.delete())
          {
-            throw new IOException("Index folder was not deleted : " + PrivilegedFileHelper.getCanonicalPath(dir));
+            throw new IOException("Index folder was not deleted : " + dir.getCanonicalPath());
          }
       }
       else
       {
-         if (!PrivilegedFileHelper.delete(dir))
+         if (!dir.delete())
          {
-            throw new IOException("Index file was not deleted : " + PrivilegedFileHelper.getCanonicalPath(dir));
+            throw new IOException("Index file was not deleted : " + dir.getCanonicalPath());
          }
       }
    }

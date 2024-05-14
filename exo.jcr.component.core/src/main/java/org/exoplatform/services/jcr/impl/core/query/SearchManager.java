@@ -22,9 +22,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.util.ReaderUtil;
 import org.exoplatform.commons.utils.ClassLoading;
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PropertyManager;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
@@ -77,8 +75,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -416,61 +412,35 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          try
          {
-            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Object>()
+            if (isSystem && parentSearchManager != null && parentSearchManager.isSuspended.get())
             {
-               public Object run() throws RepositoryException, IOException
-               {
-                  // try resuming the workspace
-                  try
-                  {
-                     if (isSystem && parentSearchManager != null && parentSearchManager.isSuspended.get())
-                     {
-                        parentSearchManager.resume();
-                     }
-                     resume();
+               parentSearchManager.resume();
+            }
+            resume();
 
-                     handler.checkIndex(itemMgr, isSystem, report);
-                     return null;
-                  }
-                  catch (ResumeException e)
-                  {
-                     throw new RepositoryException("Can not resume SearchManager for inspection purposes.", e);
-                  }
-                  finally
-                  {
-                     // safely return the state of the workspace
-                     try
-                     {
-                        suspend();
-                        if (isSystem && parentSearchManager != null && !parentSearchManager.isSuspended.get())
-                        {
-                           parentSearchManager.suspend();
-                        }
-                     }
-                     catch (SuspendException e)
-                     {
-                        LOG.error(e.getMessage(), e);
-                     }
-                  }
-               }
-            });
+            handler.checkIndex(itemMgr, isSystem, report);
          }
-         catch (PrivilegedActionException e)
+         catch (ResumeException e)
          {
-            Throwable ex = e.getCause();
-            if (ex instanceof RepositoryException)
+            throw new RepositoryException("Can not resume SearchManager for inspection purposes.", e);
+         }
+         finally
+         {
+            // safely return the state of the workspace
+            try
             {
-               throw (RepositoryException)ex;
+               suspend();
+               if (isSystem && parentSearchManager != null && !parentSearchManager.isSuspended.get())
+               {
+                  parentSearchManager.suspend();
+               }
             }
-            else if (ex instanceof IOException)
+            catch (SuspendException e)
             {
-               throw (IOException)ex;
-            }
-            else
-            {
-               throw new RepositoryException(ex.getMessage(), ex);
+               LOG.error(e.getMessage(), e);
             }
          }
+
       }
       else
       {
@@ -818,7 +788,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
 
       return new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
-            PrivilegedFileHelper.getAbsolutePath(getIndexDirectory()), extractor, true, recoveryFilterUsed, enableRemoteCalls,
+             getIndexDirectory().getAbsolutePath(), extractor, true, recoveryFilterUsed, enableRemoteCalls,
             virtualTableResolver, indexRecovery, rpcService, repositoryName, wsId, cleanerHolder);
    }
 
@@ -1461,12 +1431,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
           //try rename new index folder .new
           LOG.info("try to rename new lucene indexes of the workspace '" + workspaceName + "'");
-          SecurityHelper.doPrivilegedIOExceptionAction((PrivilegedExceptionAction<Void>) () -> {
-            DirectoryHelper.renameFile(newIndexDir, indexDir);
-            return null;
-          });
+          DirectoryHelper.renameFile(newIndexDir, indexDir);
 
-          // Resume all the working threads that have been previously suspended.
+
+           // Resume all the working threads that have been previously suspended.
           resume();
         }
 
@@ -1726,15 +1694,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          final File indexDir = getIndexDirectory();
 
-         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
-         {
-            public Void run() throws IOException
-            {
-               DirectoryHelper.removeDirectory(indexDir);
+         DirectoryHelper.removeDirectory(indexDir);
 
-               return null;
-            }
-         });
       }
       catch (IOException e)
       {
@@ -1755,25 +1716,16 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       try
       {
          final File indexDir = getIndexDirectory();
-
-         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+         if (!indexDir.exists())
          {
-            public Void run() throws IOException
-            {
-               if (!indexDir.exists())
-               {
-                  throw new IOException("Can't backup index. Directory " + indexDir.getCanonicalPath()
-                     + " doesn't exists");
-               }
-               else
-               {
-                  File destZip = new File(storageDir, getStorageName() + ".zip");
-                  DirectoryHelper.compressDirectory(indexDir, destZip);
-               }
-
-               return null;
-            }
-         });
+            throw new IOException("Can't backup index. Directory " + indexDir.getCanonicalPath()
+                                      + " doesn't exists");
+         }
+         else
+         {
+            File destZip = new File(storageDir, getStorageName() + ".zip");
+            DirectoryHelper.compressDirectory(indexDir, destZip);
+         }
       }
       catch (RepositoryConfigurationException e)
       {
@@ -1819,7 +1771,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          File zipFile = new File((File)context.getObject(DataRestoreContext.STORAGE_DIR), getStorageName() + ".zip");
 
-         if (PrivilegedFileHelper.exists(zipFile))
+         if (zipFile.exists())
          {
             return new DirectoryRestore(getIndexDirectory(), zipFile);
          }
@@ -1827,7 +1779,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          {
             // try to check if we have deal with old backup format
             zipFile = new File((File)context.getObject(DataRestoreContext.STORAGE_DIR), getStorageName());
-            if (PrivilegedFileHelper.exists(zipFile))
+            if (zipFile.exists())
             {
                return new DirectoryRestore(getIndexDirectory(), zipFile);
             }
@@ -1858,13 +1810,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    private void cleanIndexDirectory(String path) throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction((PrivilegedExceptionAction<Void>) () -> {
-         File newIndexFolder = new File(path);
-         if(newIndexFolder.exists())
-         {
-            DirectoryHelper.removeDirectory(newIndexFolder);
-         }
-         return null;
-      });
+      File newIndexFolder = new File(path);
+      if(newIndexFolder.exists())
+      {
+         DirectoryHelper.removeDirectory(newIndexFolder);
+      }
    }
 }

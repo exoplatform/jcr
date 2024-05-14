@@ -18,7 +18,6 @@
  */
 package org.exoplatform.connectors.jcr.impl.adapter;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
@@ -31,7 +30,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.PrintWriter;
-import java.security.PrivilegedAction;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -154,26 +152,20 @@ public class ManagedSessionFactory implements ManagedConnectionFactory
       CredentialsImpl credentials = null;
       if (subject != null)
       {
-         credentials = SecurityHelper.doPrivilegedAction(new PrivilegedAction<CredentialsImpl>()
+         Iterator<Object> i = subject.getPrivateCredentials().iterator();
+         while (i.hasNext())
          {
-            public CredentialsImpl run()
+            Object o = i.next();
+            if (o instanceof PasswordCredential)
             {
-               Iterator<Object> i = subject.getPrivateCredentials().iterator();
-               while (i.hasNext())
+               PasswordCredential cred = (PasswordCredential)o;
+               if (cred.getManagedConnectionFactory().equals(ManagedSessionFactory.this))
                {
-                  Object o = i.next();
-                  if (o instanceof PasswordCredential)
-                  {
-                     PasswordCredential cred = (PasswordCredential)o;
-                     if (cred.getManagedConnectionFactory().equals(ManagedSessionFactory.this))
-                     {
-                        return new CredentialsImpl(cred.getUserName(), cred.getPassword());
-                     }
-                  }
+                  credentials = new CredentialsImpl(cred.getUserName(), cred.getPassword());
+                  break;
                }
-               return null;
             }
-         });
+         }
       }
       if (credentials == null && sri.getUserName() != null)
       {

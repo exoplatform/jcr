@@ -18,14 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.core.value.EditableBinaryValue;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -43,7 +44,7 @@ public class StreamNewEditableValueData extends StreamNewValueData implements Ed
       super(orderNumber, null, null, spoolConfig);
 
       SpoolFile sf = SpoolFile.createTempFile("jcrvdedit", null, spoolConfig.tempDirectory);
-      OutputStream sfout = PrivilegedFileHelper.fileOutputStream(sf);
+      OutputStream sfout = new FileOutputStream(sf);
       try
       {
          DirectoryHelper.transfer(stream, sfout);
@@ -53,7 +54,7 @@ public class StreamNewEditableValueData extends StreamNewValueData implements Ed
          try
          {
             sfout.close();
-            PrivilegedFileHelper.delete(sf);
+            sf.delete();
          }
          catch (Exception e1)
          {
@@ -71,7 +72,7 @@ public class StreamNewEditableValueData extends StreamNewValueData implements Ed
       }
 
       this.spoolFile = sf;
-      this.channel = PrivilegedFileHelper.randomAccessFile(sf, "rw").getChannel();
+      this.channel = new RandomAccessFile(sf, "rw").getChannel();
    }
 
    /**

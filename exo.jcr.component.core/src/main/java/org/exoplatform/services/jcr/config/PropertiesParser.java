@@ -18,9 +18,6 @@
  */
 package org.exoplatform.services.jcr.config;
 
-import org.exoplatform.commons.utils.SecurityHelper;
-
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -219,13 +216,7 @@ public class PropertiesParser
 
    static public Properties getSystemProperties()
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Properties>()
-      {
-         public Properties run()
-         {
-            return System.getProperties();
-         }
-      });
+      return System.getProperties();
    }
 
    private String generateRepositoryName()
