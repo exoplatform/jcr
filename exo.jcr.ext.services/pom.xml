@@ -41,7 +41,6 @@
      <wikbook.version>0.9.26</wikbook.version>
 
      <version.buildnumber.plugin>1.0</version.buildnumber.plugin>
-     <debug.opts />
   </properties>
 
   <dependencies>
@@ -88,7 +87,7 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>@{argLine} ${env.MAVEN_OPTS} --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED -Djava.net.preferIPv4Stack=true ${debug.opts}</argLine>
+          <argLine>@{argLine} @{surefire.argLine} -Djava.net.preferIPv4Stack=true</argLine>
         </configuration>
       </plugin>
       <plugin>
