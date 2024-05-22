@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -54,7 +53,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
 
       restoreDir = restorePath;
 
-      String fullBackupPath = PrivilegedFileHelper.getAbsolutePath(JCRRestore.getFullBackupFile(new File(restoreDir)));
+      String fullBackupPath = JCRRestore.getFullBackupFile(new File(restoreDir)).getAbsolutePath();
 
       if (fullBackupPath == null)
       {

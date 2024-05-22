@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl.fs;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.impl.AbstractFullBackupJob;
@@ -52,9 +51,9 @@ public class FullBackupJob extends AbstractFullBackupJob
 
       FileNameProducer fnp =
          new FileNameProducer(config.getRepository(), config.getWorkspace(),
-            PrivilegedFileHelper.getAbsolutePath(config.getBackupDir()), super.timeStamp, true);
+                              config.getBackupDir().getAbsolutePath(), super.timeStamp, true);
 
-      return new URL("file:" + PrivilegedFileHelper.getAbsolutePath(fnp.getNextFile()));
+      return new URL("file:" + fnp.getNextFile().getAbsolutePath());
    }
 
    public void init(ManageableRepository repository, String workspaceName, BackupConfig config, Calendar timeStamp)
@@ -92,7 +91,7 @@ public class FullBackupJob extends AbstractFullBackupJob
          try
          {
             notifyListeners();
-            FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(pathBackupFile);
+            FileOutputStream fos = new FileOutputStream(pathBackupFile);
             session.exportWorkspaceSystemView(fos, false, false);
          }
          finally

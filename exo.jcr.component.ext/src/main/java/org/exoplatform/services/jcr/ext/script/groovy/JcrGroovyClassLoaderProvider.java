@@ -30,7 +30,6 @@ import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.io.ReaderSource;
 import org.codehaus.groovy.control.io.URLReaderSource;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.rest.ext.groovy.ExtendedGroovyClassLoader;
 import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
 import org.exoplatform.services.rest.ext.groovy.SourceFile;
@@ -41,7 +40,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.CodeSource;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -231,12 +229,7 @@ public class JcrGroovyClassLoaderProvider extends GroovyClassLoaderProvider
    
    public JcrGroovyClassLoaderProvider()
    {
-      super(SecurityHelper.doPrivilegedAction(new PrivilegedAction<JcrGroovyClassLoader>() {
-         public JcrGroovyClassLoader run()
-         {
-            return new JcrGroovyClassLoader(JcrGroovyClassLoaderProvider.class.getClassLoader());
-         }
-      }));
+      super(new JcrGroovyClassLoader(JcrGroovyClassLoaderProvider.class.getClassLoader()));
    }
 
    /**
@@ -252,12 +245,7 @@ public class JcrGroovyClassLoaderProvider extends GroovyClassLoaderProvider
          roots[i] = sources[i].getPath();
 
       final GroovyClassLoader parent = getGroovyClassLoader();
-      JcrGroovyClassLoader classLoader = SecurityHelper.doPrivilegedAction(new PrivilegedAction<JcrGroovyClassLoader>() {
-         public JcrGroovyClassLoader run()
-         {
-            return new JcrGroovyClassLoader(parent);
-         }
-      });
+      JcrGroovyClassLoader classLoader = new JcrGroovyClassLoader(parent);
       classLoader.setResourceLoader(new JcrGroovyResourceLoader(roots));
       return classLoader;
    }

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.backup.rdbms;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
@@ -30,6 +29,7 @@ import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -41,6 +41,7 @@ import java.sql.Types;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
@@ -123,10 +124,10 @@ public class DBBackup
       try
       {
          contentWriter =
-            new ZipObjectWriter(PrivilegedFileHelper.zipOutputStream(new File(storageDir, CONTENT_ZIP_FILE)));
+            new ZipObjectWriter(new ZipOutputStream(new FileOutputStream(new File(storageDir, CONTENT_ZIP_FILE))));
 
          contentLenWriter =
-            new ZipObjectWriter(PrivilegedFileHelper.zipOutputStream(new File(storageDir, CONTENT_LEN_ZIP_FILE)));
+            new ZipObjectWriter(new ZipOutputStream(new FileOutputStream(new File(storageDir, CONTENT_LEN_ZIP_FILE))));
 
          for (Entry<String, String> entry : scripts.entrySet())
          {
@@ -201,12 +202,6 @@ public class DBBackup
    private static void dumpTable(Connection jdbcConn, String tableName, String script, File storageDir,
       ZipObjectWriter contentWriter, ZipObjectWriter contentLenWriter) throws IOException, SQLException
    {
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
-
       Statement stmt = null;
       ResultSet rs = null;
       try

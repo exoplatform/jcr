@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.config;
 
 import org.exoplatform.commons.utils.PropertyManager;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.container.xml.ValuesParam;
@@ -30,8 +29,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -116,37 +113,31 @@ public class SystemParametersPersistenceConfigurator
    {
       try
       {
-         return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Map<String, String>>()
-         {
-            public Map<String, String> run() throws IOException
-            {
-               Map<String, String> parameters = new HashMap<String, String>();
-               File file = new File(filePath);
+         Map<String, String> parameters = new HashMap<String, String>();
+         File file = new File(filePath);
 
-               if (file.exists() && file.length() > 0)
+         if (file.exists() && file.length() > 0)
+         {
+            BufferedReader reader = null;
+            String st = "";
+            try
+            {
+               reader = new BufferedReader(new FileReader(file));
+               while ((st = reader.readLine()) != null)
                {
-                  BufferedReader reader = null;
-                  String st = "";
-                  try
-                  {
-                     reader = new BufferedReader(new FileReader(file));
-                     while ((st = reader.readLine()) != null)
-                     {
-                        String sa[] = st.split(SEPARATOR);
-                        parameters.put(sa[0], sa[1]);
-                     }
-                  }
-                  finally
-                  {
-                     if (reader != null)
-                     {
-                        reader.close();
-                     }
-                  }
+                  String sa[] = st.split(SEPARATOR);
+                  parameters.put(sa[0], sa[1]);
                }
-               return parameters;
             }
-         });
+            finally
+            {
+               if (reader != null)
+               {
+                  reader.close();
+               }
+            }
+         }
+         return parameters;
       }
       catch (IOException e)
       {
@@ -198,46 +189,37 @@ public class SystemParametersPersistenceConfigurator
    {
       try
       {
-         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+         BufferedWriter bufferedWriter = null;
+
+         try
          {
-            public Void run() throws IOException
+            File file = new File(filePath);
+
+            if (!file.getParentFile().exists())
             {
-               BufferedWriter bufferedWriter = null;
-
-               try
-               {
-                  File file = new File(filePath);
-
-                  if (!file.getParentFile().exists())
-                  {
-                     file.getParentFile().mkdirs();
-                  }
-
-                  if (properties.isEmpty())
-                  {
-                     file.delete();
-                     return null;
-                  }
-
-                  bufferedWriter = new BufferedWriter(new FileWriter(file));
-
-                  for (Map.Entry<String, String> entry : properties.entrySet())
-                  {
-                     bufferedWriter.write(entry.getKey() + SEPARATOR + entry.getValue());
-                     bufferedWriter.newLine();
-                  }
-               }
-               finally
-               {
-                  if (bufferedWriter != null)
-                  {
-                     bufferedWriter.close();
-                  }
-               }
-
-               return null;
+               file.getParentFile().mkdirs();
             }
-         });
+
+            if (properties.isEmpty())
+            {
+               file.delete();
+            }
+
+            bufferedWriter = new BufferedWriter(new FileWriter(file));
+
+            for (Map.Entry<String, String> entry : properties.entrySet())
+            {
+               bufferedWriter.write(entry.getKey() + SEPARATOR + entry.getValue());
+               bufferedWriter.newLine();
+            }
+         }
+         finally
+         {
+            if (bufferedWriter != null)
+            {
+               bufferedWriter.close();
+            }
+         }
       }
       catch (IOException e)
       {
@@ -266,12 +248,6 @@ public class SystemParametersPersistenceConfigurator
 
    private Set<String> getSystemPropertiesNames()
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Set<String>>()
-      {
-         public Set<String> run()
-         {
-            return System.getProperties().stringPropertyNames();
-         }
-      });
+      return System.getProperties().stringPropertyNames();
    }
 }

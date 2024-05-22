@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.registry;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.Registry.RegistryNode;
@@ -33,7 +32,6 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.security.PrivilegedExceptionAction;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -124,13 +122,7 @@ public class RESTRegistryService implements ResourceContainer
          {
             Node registryNode = registryEntry.getNode();
             NodeIterator registryIterator = registryNode.getNodes();
-            Document entry = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Document>()
-            {
-               public Document run() throws Exception
-               {
-                  return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-               }
-            });
+            Document entry = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 
             String fullURI = uriInfo.getRequestUri().toString();
             XlinkHref xlinkHref = new XlinkHref(fullURI);

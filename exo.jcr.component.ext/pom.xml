@@ -93,7 +93,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
-            <argLine>@{argLine} ${env.MAVEN_OPTS}  --add-opens=java.base/java.util=ALL-UNNAMED -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy ${debug.opts}</argLine>
             <systemProperties>
                <property>
                   <name>jcr.test.configuration.file</name>
@@ -624,12 +623,6 @@
          <id>use-sequence-disabled</id>
          <properties>
             <use.sequence>false</use.sequence>
-         </properties>
-      </profile>
-      <profile>
-         <id>debug</id>
-         <properties>
-            <debug.opts>-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y</debug.opts>
          </properties>
       </profile>
   </profiles>

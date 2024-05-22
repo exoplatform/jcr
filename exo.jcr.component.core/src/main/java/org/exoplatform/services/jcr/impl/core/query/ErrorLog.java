@@ -17,13 +17,12 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -99,29 +98,21 @@ public class ErrorLog
     */
    private void openFile(final File log) throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+      // set file size;
+      if (!log.exists())
       {
-         @SuppressWarnings("resource")
-         public Void run() throws Exception
-         {
-            // set file size;
-            if (!log.exists())
-            {
-               log.getParentFile().mkdirs();
-               log.createNewFile();
-               out = new FileOutputStream(log).getChannel();
-               out.position(1024 * fileSize - 1);
-               out.write(ByteBuffer.wrap(new byte[]{0}));
-               out.position(0);
-               out.force(false);
-            }
-            else
-            {
-               out = new FileOutputStream(log, true).getChannel();
-            }
-            return null;
-         }
-      });
+         log.getParentFile().mkdirs();
+         log.createNewFile();
+         out = new FileOutputStream(log).getChannel();
+         out.position(1024 * fileSize - 1);
+         out.write(ByteBuffer.wrap(new byte[]{0}));
+         out.position(0);
+         out.force(false);
+      }
+      else
+      {
+         out = new FileOutputStream(log, true).getChannel();
+      }
    }
 
    /**
@@ -164,7 +155,7 @@ public class ErrorLog
       {
          out.truncate(0);
          out.close();
-         out = PrivilegedFileHelper.fileOutputStream(logFile).getChannel();
+         out = new FileOutputStream(logFile).getChannel();
          out.position(1024 * fileSize - 1);
          out.write(ByteBuffer.wrap(new byte[]{0}));
          out.position(0);
@@ -182,7 +173,7 @@ public class ErrorLog
    {
       if (out == null)
       {
-         FileOutputStream os = PrivilegedFileHelper.fileOutputStream(logFile, false);
+         FileOutputStream os = new FileOutputStream(logFile, false);
          out = os.getChannel();
       }
    }
@@ -195,7 +186,7 @@ public class ErrorLog
     */
    public List<String> readList() throws IOException
    {
-      InputStream in = PrivilegedFileHelper.fileInputStream(logFile);
+      InputStream in = new FileInputStream(logFile);
       try
       {
          List<String> list = new ArrayList<String>();

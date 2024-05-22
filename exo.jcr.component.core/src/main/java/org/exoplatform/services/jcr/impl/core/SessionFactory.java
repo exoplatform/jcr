@@ -18,17 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
-import org.exoplatform.services.jcr.access.DynamicIdentity;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
-import org.exoplatform.services.security.IdentityConstants;
 
 import javax.jcr.LoginException;
 import javax.jcr.RepositoryException;
@@ -61,13 +57,13 @@ public class SessionFactory
       this.workspaceName = config.getName();
 
       boolean tracking =
-         "true".equalsIgnoreCase(PrivilegedSystemHelper.getProperty("exo.jcr.session.tracking.active", "false"));
+         "true".equalsIgnoreCase(System.getProperty("exo.jcr.session.tracking.active", "false"));
 
       if (tracking)
       {
          long maxAgeMillis = 0;
 
-         String maxagevalue = PrivilegedSystemHelper.getProperty("exo.jcr.session.tracking.maxage");
+         String maxagevalue = System.getProperty("exo.jcr.session.tracking.maxage");
          if (maxagevalue != null)
          {
             try
@@ -118,24 +114,6 @@ public class SessionFactory
     */
    SessionImpl createSession(ConversationState user) throws RepositoryException, LoginException
    {
-      if (IdentityConstants.SYSTEM.equals(user.getIdentity().getUserId()))
-      {
-         // Need privileges to get system session.
-         SecurityManager security = System.getSecurityManager();
-         if (security != null)
-         {
-            security.checkPermission(JCRRuntimePermissions.CREATE_SYSTEM_SESSION_PERMISSION);
-         }
-      }
-      else if (DynamicIdentity.DYNAMIC.equals(user.getIdentity().getUserId()))
-      {
-         // Need privileges to get Dynamic session.
-         SecurityManager security = System.getSecurityManager();
-         if (security != null)
-         {
-            security.checkPermission(JCRRuntimePermissions.CREATE_DYNAMIC_SESSION_PERMISSION);
-         }
-      }
       if (SessionReference.isStarted())
       {
          return new TrackedSession(workspaceName, user, container);

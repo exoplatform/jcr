@@ -18,12 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,13 +48,7 @@ public class SybaseDBInitializer extends StorageDBInitializer
    @Override
    protected boolean isProcedureExists(final Connection conn, final String procedureName) throws SQLException
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
-      {
-         public Boolean run()
-         {
-            return procedureExists(procedureName, conn);
-         }
-      });
+      return procedureExists(procedureName, conn);
    }
 
    private boolean procedureExists(String procedureName, Connection con)

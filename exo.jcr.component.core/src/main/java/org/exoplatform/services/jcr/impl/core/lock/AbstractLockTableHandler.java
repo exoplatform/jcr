@@ -18,13 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
 
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -121,13 +119,7 @@ public abstract class AbstractLockTableHandler implements LockTableHandler
     */
    protected Connection openConnection() throws SQLException
    {
-      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-      {
-         public Connection run() throws SQLException
-         {
-            return ds.getConnection();
-         }
-      });
+      return ds.getConnection();
    }
 
    /**

@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.quota;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.annotations.ManagedName;
@@ -46,9 +44,8 @@ import org.exoplatform.services.rpc.RPCService;
 import org.picocontainer.Startable;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -312,28 +309,22 @@ public class WorkspaceQuotaManager implements Startable, Backupable, Suspendable
    {
       try
       {
-         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Long>()
+         Method getIndexDirMethod = SearchManager.class.getDeclaredMethod("getIndexDirectory");
+         getIndexDirMethod.setAccessible(true);
+
+         // get all instances, since for system workspace we have 2 SearchManager
+         List<SearchManager> searchers = wsContainer.getComponentInstancesOfType(SearchManager.class);
+
+         long size = 0;
+         for (SearchManager searchManager : searchers)
          {
-            public Long run() throws Exception
-            {
-               Method getIndexDirMethod = SearchManager.class.getDeclaredMethod("getIndexDirectory");
-               getIndexDirMethod.setAccessible(true);
+            File indexDir = (File)getIndexDirMethod.invoke(searchManager);
+            size += DirectoryHelper.getSize(indexDir);
+         }
 
-               // get all instances, since for system workspace we have 2 SearchManager
-               List<SearchManager> searchers = wsContainer.getComponentInstancesOfType(SearchManager.class);
-
-               long size = 0;
-               for (SearchManager searchManager : searchers)
-               {
-                  File indexDir = (File)getIndexDirMethod.invoke(searchManager);
-                  size += DirectoryHelper.getSize(indexDir);
-               }
-
-               return size;
-            }
-         });
+         return size;
       }
-      catch (PrivilegedActionException e)
+      catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
       {
          throw new QuotaManagerException(e.getMessage(), e);
       }
@@ -344,25 +335,12 @@ public class WorkspaceQuotaManager implements Startable, Backupable, Suspendable
     */
    public long getNodeDataSizeDirectly(final String nodePath) throws QuotaManagerException
    {
-      try
+      if (nodePath.equals(JCRPath.ROOT_PATH))
       {
-         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Long>()
-         {
-            public Long run() throws Exception
-            {
-               if (nodePath.equals(JCRPath.ROOT_PATH))
-               {
-                  return getWorkspaceDataSizeDirectly();
-               }
+         return getWorkspaceDataSizeDirectly();
+      }
 
-               return calculateNodeDataSizeTool.getNodeDataSizeDirectly(nodePath);
-            }
-         });
-      }
-      catch (PrivilegedActionException e)
-      {
-         throw new QuotaManagerException(e.getMessage(), e);
-      }
+      return calculateNodeDataSizeTool.getNodeDataSizeDirectly(nodePath);
    }
 
    /**
@@ -445,7 +423,7 @@ public class WorkspaceQuotaManager implements Startable, Backupable, Suspendable
     */
    public void clean() throws BackupException
    {
-      File storageDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+      File storageDir = new File(System.getProperty("java.io.tmpdir"));
 
       WorkspaceQuotaRestore wqr = new WorkspaceQuotaRestore(this, storageDir);
       wqr.clean();

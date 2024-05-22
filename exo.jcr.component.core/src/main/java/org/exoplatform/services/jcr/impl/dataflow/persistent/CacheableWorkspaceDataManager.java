@@ -18,9 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
@@ -623,19 +620,12 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                return childCount;
             }
          }
-
-         return executeAction(new PrivilegedExceptionAction<Integer>()
+         int childCount = CacheableWorkspaceDataManager.super.getChildNodesCount(parent);
+         if (cache.isEnabled())
          {
-            public Integer run() throws RepositoryException
-            {
-               int childCount = CacheableWorkspaceDataManager.super.getChildNodesCount(parent);
-               if (cache.isEnabled())
-               {
-                  cache.addChildNodesCount(parent, childCount);
-               }
-               return childCount;
-            }
-         });
+            cache.addChildNodesCount(parent, childCount);
+         }
+         return childCount;
       }
       finally
       {
@@ -711,22 +701,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             }
          }
 
-         return executeAction(new PrivilegedExceptionAction<Boolean>()
+         boolean hasNext =
+             CacheableWorkspaceDataManager.super.getChildNodesDataByPage(nodeData, fromOrderNum, offset, pageSize,
+                                                                         childs);
+
+         if (cache.isEnabled())
          {
-            public Boolean run() throws RepositoryException
-            {
-               boolean hasNext =
-                  CacheableWorkspaceDataManager.super.getChildNodesDataByPage(nodeData, fromOrderNum, offset, pageSize,
-                     childs);
+            cache.addChildNodesByPage(nodeData, childs, fromOrderNum);
+         }
 
-               if (cache.isEnabled())
-               {
-                  cache.addChildNodesByPage(nodeData, childs, fromOrderNum);
-               }
-
-               return hasNext;
-            }
-         });
+         return hasNext;
       }
       finally
       {
@@ -809,13 +793,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                data = getCachedCleanItemData(parentData, name, itemType);
                if (data == null)
                {
-                  data = executeAction(new PrivilegedExceptionAction<ItemData>()
-                  {
-                     public ItemData run() throws RepositoryException
-                     {
-                        return getPersistedItemData(parentData, name, itemType, createNullItemData);
-                     }
-                  });
+                  data = getPersistedItemData(parentData, name, itemType, createNullItemData);
                }
             }
             finally
@@ -838,14 +816,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
       else
       {
-         return executeAction(new PrivilegedExceptionAction<ItemData>()
-         {
-            public ItemData run() throws RepositoryException
-            {
-               ItemData item = CacheableWorkspaceDataManager.super.getItemData(parentData, name, itemType);
-               return item != null && item.isNode() ? initACL(parentData, (NodeData)item) : item;
-            }
-         });
+         ItemData item = CacheableWorkspaceDataManager.super.getItemData(parentData, name, itemType);
+         return item != null && item.isNode() ? initACL(parentData, (NodeData)item) : item;
       }
    }
 
@@ -873,13 +845,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                data = getCachedItemData(parentData, name, itemType);
                if (data == null)
                {
-                  return executeAction(new PrivilegedExceptionAction<Boolean>()
-                  {
-                     public Boolean run() throws RepositoryException
-                     {
-                        return CacheableWorkspaceDataManager.super.hasItemData(parentData, name, itemType);
-                     }
-                  });
+                  return CacheableWorkspaceDataManager.super.hasItemData(parentData, name, itemType);
                }
             }
             finally
@@ -897,13 +863,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
       else
       {
-         return executeAction(new PrivilegedExceptionAction<Boolean>()
-         {
-            public Boolean run() throws RepositoryException
-            {
-               return CacheableWorkspaceDataManager.super.hasItemData(parentData, name, itemType);
-            }
-         });
+         return CacheableWorkspaceDataManager.super.hasItemData(parentData, name, itemType);
       }
    }
 
@@ -945,13 +905,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                data = getCachedCleanItemData(identifier);
                if (data == null)
                {
-                  data = executeAction(new PrivilegedExceptionAction<ItemData>()
-                  {
-                     public ItemData run() throws RepositoryException
-                     {
-                        return getPersistedItemData(identifier);
-                     }
-                  });
+                  data = getPersistedItemData(identifier);
                }
             }
             finally
@@ -974,21 +928,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
       else
       {
-         return executeAction(new PrivilegedExceptionAction<ItemData>()
+         ItemData item = CacheableWorkspaceDataManager.super.getItemData(identifier);
+         if (item != null && item.isNode() && doInitACL)
          {
-            public ItemData run() throws RepositoryException
-            {
-               ItemData item = CacheableWorkspaceDataManager.super.getItemData(identifier);
-               if (item != null && item.isNode() && doInitACL)
-               {
-                  return initACL(null, (NodeData)item);
-               }
-               else
-               {
-                  return item;
-               }
-            }
-         });
+            return initACL(null, (NodeData)item);
+         }
+         else
+         {
+            return item;
+         }
       }
    }
 
@@ -1024,13 +972,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public int getLastOrderNumber(final NodeData nodeData) throws RepositoryException
    {
-      return executeAction(new PrivilegedExceptionAction<Integer>()
-      {
-         public Integer run() throws RepositoryException
-         {
-            return CacheableWorkspaceDataManager.super.getLastOrderNumber(nodeData);
-         }
-      });
+      return CacheableWorkspaceDataManager.super.getLastOrderNumber(nodeData);
    }
 
    /**
@@ -1081,32 +1023,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
 
       workingThreads.incrementAndGet();
-      try
-      {
-         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
-         {
-            public Void run() throws Exception
-            {
-               doSave(changesLog, txResourceManager);
-               return null;
-            }
-         });
-      }
-      catch (PrivilegedActionException e)
-      {
-         Throwable cause = e.getCause();
-         if (cause instanceof RepositoryException)
-         {
-            throw (RepositoryException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
+      try {
+         doSave(changesLog, txResourceManager);
       }
       finally
       {
@@ -1261,14 +1179,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   // the current tx we can face enlistment issues on product like ISPN
                   transactionManager.suspend();
 
-                  SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-                  {
-                     public Void run()
-                     {
-                        notifySaveItems(logWrapper.getChangesLog(), false);
-                        return null;
-                     }
-                  });
+                  notifySaveItems(logWrapper.getChangesLog(), false);
                   // Since the resume method could cause issue with some TM at this stage, we don't resume the tx
                }
             }
@@ -1418,19 +1329,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                return childNodes;
             }
          }
-         return executeAction(new PrivilegedExceptionAction<List<NodeData>>()
-         {
-            public List<NodeData> run() throws RepositoryException
-            {
-               List<NodeData> childNodes = CacheableWorkspaceDataManager.super.getChildNodesData(nodeData);
-               if (cache.isEnabled())
-               {
-                  cache.addChildNodes(nodeData, childNodes);
-               }
 
-               return childNodes;
-            }
-         });
+         childNodes = CacheableWorkspaceDataManager.super.getChildNodesData(nodeData);
+         if (cache.isEnabled())
+         {
+            cache.addChildNodes(nodeData, childNodes);
+         }
+
+         return childNodes;
       }
       finally
       {
@@ -1443,22 +1349,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    {
       if (!cache.isEnabled())
       {
-         return executeAction(new PrivilegedExceptionAction<List<NodeData>>()
+         List<NodeData> childNodes =
+             CacheableWorkspaceDataManager.super.getChildNodesData(parentData, patternFilters);
+
+         // ini ACL
+         for (int i = 0; i < childNodes.size(); i++)
          {
-            public List<NodeData> run() throws RepositoryException
-            {
-               List<NodeData> childNodes =
-                  CacheableWorkspaceDataManager.super.getChildNodesData(parentData, patternFilters);
+            childNodes.set(i, (NodeData)initACL(parentData, childNodes.get(i)));
+         }
 
-               // ini ACL
-               for (int i = 0; i < childNodes.size(); i++)
-               {
-                  childNodes.set(i, (NodeData)initACL(parentData, childNodes.get(i)));
-               }
-
-               return childNodes;
-            }
-         });
+         return childNodes;
       }
 
       if (!cache.isPatternSupported())
@@ -1565,56 +1465,48 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   }
                }
             }
-            patternIterator = null;
 
             // execute all patterns and put result in cache
             if (!uncachedPatterns.isEmpty())
             {
-               executeAction(new PrivilegedExceptionAction<Void>()
-               {
-                  public Void run() throws RepositoryException
-                  {
-                     List<NodeData> persistedItemList =
-                        CacheableWorkspaceDataManager.super.getChildNodesData(parentData,
-                           new ArrayList<QPathEntryFilter>(uncachedPatterns));
+               List<NodeData> persistedItemList =
+                   CacheableWorkspaceDataManager.super.getChildNodesData(parentData,
+                                                                         new ArrayList<QPathEntryFilter>(uncachedPatterns));
 
-                     if (persistedItemList.size() > 0)
+               if (persistedItemList.size() > 0)
+               {
+                  NodeData parent = (NodeData)getItemData(parentData.getIdentifier());
+                  if (parent != null)
+                  {
+                     // filter nodes list for each exact name
+                     patternIterator = uncachedPatterns.iterator();
+                     while (patternIterator.hasNext())
                      {
-                        NodeData parent = (NodeData)getItemData(parentData.getIdentifier());
-                        if (parent != null)
+                        QPathEntryFilter pattern = patternIterator.next();
+                        @SuppressWarnings("unchecked")
+                        List<NodeData> persistedNodeData = (List<NodeData>)pattern.accept(persistedItemList);
+                        if (pattern.isExactName())
                         {
-                           // filter nodes list for each exact name
-                           Iterator<QPathEntryFilter> patternIterator = uncachedPatterns.iterator();
-                           while (patternIterator.hasNext())
+                           if (persistedNodeData.isEmpty())
                            {
-                              QPathEntryFilter pattern = patternIterator.next();
-                              @SuppressWarnings("unchecked")
-                              List<NodeData> persistedNodeData = (List<NodeData>)pattern.accept(persistedItemList);
-                              if (pattern.isExactName())
-                              {
-                                 if (persistedNodeData.isEmpty())
-                                 {
-                                    cache.put(new NullNodeData(parentData, pattern.getQPathEntry()));
-                                 }
-                                 else
-                                 {
-                                    cache.put(persistedNodeData.get(0));
-                                 }
-                              }
-                              else
-                              {
-                                 cache.addChildNodes(parent, pattern, persistedNodeData);
-                              }
-                              for (NodeData node : persistedItemList)
-                              {
-                                 childNodesMap.put(node.getIdentifier(), node);
-                              }
+                              cache.put(new NullNodeData(parentData, pattern.getQPathEntry()));
+                           }
+                           else
+                           {
+                              cache.put(persistedNodeData.get(0));
                            }
                         }
+                        else
+                        {
+                           cache.addChildNodes(parent, pattern, persistedNodeData);
+                        }
+                        for (NodeData node : persistedItemList)
+                        {
+                           childNodesMap.put(node.getIdentifier(), node);
+                        }
                      }
-                     return null;
                   }
-               });
+               }
             }
          }
          finally
@@ -1665,18 +1557,12 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                return refProps;
             }
          }
-         return executeAction(new PrivilegedExceptionAction<List<PropertyData>>()
+         refProps = CacheableWorkspaceDataManager.super.getReferencesData(identifier, false);
+         if (cache.isEnabled())
          {
-            public List<PropertyData> run() throws RepositoryException
-            {
-               List<PropertyData> refProps = CacheableWorkspaceDataManager.super.getReferencesData(identifier, false);
-               if (cache.isEnabled())
-               {
-                  cache.addReferencedProperties(identifier, refProps);
-               }
-               return refProps;
-            }
-         });
+            cache.addReferencedProperties(identifier, refProps);
+         }
+         return refProps;
       }
       finally
       {
@@ -1753,20 +1639,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                return childProperties;
             }
          }
-         return executeAction(new PrivilegedExceptionAction<List<PropertyData>>()
-         {
-            public List<PropertyData> run() throws RepositoryException
-            {
-               List<PropertyData> childProperties =
-                  CacheableWorkspaceDataManager.super.getChildPropertiesData(nodeData);
+         childProperties =
+             CacheableWorkspaceDataManager.super.getChildPropertiesData(nodeData);
 
-               if (childProperties.size() > 0 && cache.isEnabled())
-               {
-                  cache.addChildProperties(nodeData, childProperties);
-               }
-               return childProperties;
-            }
-         });
+         if (childProperties.size() > 0 && cache.isEnabled())
+         {
+            cache.addChildProperties(nodeData, childProperties);
+         }
+         return childProperties;
       }
       finally
       {
@@ -1779,13 +1659,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    {
       if (!cache.isEnabled())
       {
-         return executeAction(new PrivilegedExceptionAction<List<PropertyData>>()
-         {
-            public List<PropertyData> run() throws RepositoryException
-            {
-               return CacheableWorkspaceDataManager.super.getChildPropertiesData(nodeData, patternFilters);
-            }
-         });
+         return CacheableWorkspaceDataManager.super.getChildPropertiesData(nodeData, patternFilters);
       }
 
       if (!cache.isPatternSupported())
@@ -1908,58 +1782,50 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   }
                }
             }
-            patternIterator = null;
 
             // execute all patterns and put result in cache
             if (!uncachedPatterns.isEmpty())
             {
-               executeAction(new PrivilegedExceptionAction<Void>()
+               List<PropertyData> persistedItemList =
+                   CacheableWorkspaceDataManager.super.getChildPropertiesData(nodeData,
+                                                                              new ArrayList<QPathEntryFilter>(uncachedPatterns));
+
+               if (persistedItemList.size() > 0)
                {
-                  public Void run() throws RepositoryException
+                  NodeData parent = (NodeData)getItemData(nodeData.getIdentifier());
+                  if (parent != null)
                   {
-                     List<PropertyData> persistedItemList =
-                        CacheableWorkspaceDataManager.super.getChildPropertiesData(nodeData,
-                           new ArrayList<QPathEntryFilter>(uncachedPatterns));
-
-                     if (persistedItemList.size() > 0)
+                     // filter properties list for each exact name
+                     patternIterator = uncachedPatterns.iterator();
+                     while (patternIterator.hasNext())
                      {
-                        NodeData parent = (NodeData)getItemData(nodeData.getIdentifier());
-                        if (parent != null)
+                        QPathEntryFilter pattern = patternIterator.next();
+                        @SuppressWarnings("unchecked")
+                        List<PropertyData> persistedPropData =
+                            (List<PropertyData>)pattern.accept(persistedItemList);
+                        if (pattern.isExactName())
                         {
-                           // filter properties list for each exact name
-                           Iterator<QPathEntryFilter> patternIterator = uncachedPatterns.iterator();
-                           while (patternIterator.hasNext())
+                           if (persistedPropData.isEmpty())
                            {
-                              QPathEntryFilter pattern = patternIterator.next();
-                              @SuppressWarnings("unchecked")
-                              List<PropertyData> persistedPropData =
-                                 (List<PropertyData>)pattern.accept(persistedItemList);
-                              if (pattern.isExactName())
-                              {
-                                 if (persistedPropData.isEmpty())
-                                 {
-                                    cache.put(new NullPropertyData(parent, pattern.getQPathEntry()));
-                                 }
-                                 else
-                                 {
-                                    cache.put(persistedPropData.get(0));
-                                 }
-                              }
-                              else
-                              {
-                                 cache.addChildProperties(parent, pattern, persistedPropData);
-                              }
-
-                              for (PropertyData node : persistedItemList)
-                              {
-                                 childPropsMap.put(node.getIdentifier(), node);
-                              }
+                              cache.put(new NullPropertyData(parent, pattern.getQPathEntry()));
+                           }
+                           else
+                           {
+                              cache.put(persistedPropData.get(0));
                            }
                         }
+                        else
+                        {
+                           cache.addChildProperties(parent, pattern, persistedPropData);
+                        }
+
+                        for (PropertyData node : persistedItemList)
+                        {
+                           childPropsMap.put(node.getIdentifier(), node);
+                        }
                      }
-                     return null;
                   }
-               });
+               }
             }
          }
          finally
@@ -2125,20 +1991,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                return propertiesList;
             }
          }
-         return executeAction(new PrivilegedExceptionAction<List<PropertyData>>()
-         {
-            public List<PropertyData> run() throws RepositoryException
-            {
-               List<PropertyData> propertiesList =
-                  CacheableWorkspaceDataManager.super.listChildPropertiesData(nodeData);
+         propertiesList =
+             CacheableWorkspaceDataManager.super.listChildPropertiesData(nodeData);
 
-               if (propertiesList.size() > 0 && cache.isEnabled())
-               {
-                  cache.addChildPropertiesList(nodeData, propertiesList);
-               }
-               return propertiesList;
-            }
-         });
+         if (propertiesList.size() > 0 && cache.isEnabled())
+         {
+            cache.addChildPropertiesList(nodeData, propertiesList);
+         }
+         return propertiesList;
       }
       finally
       {
@@ -2356,30 +2216,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
      if (requestForResponsibleForResuming != null) {
        rpcService.unregisterCommand(requestForResponsibleForResuming);
      }
-   }
-
-   private <T> T executeAction(PrivilegedExceptionAction<T> action) throws RepositoryException
-   {
-      try
-      {
-         return SecurityHelper.doPrivilegedExceptionAction(action);
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof RepositoryException)
-         {
-            throw (RepositoryException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
    }
 
    /**
@@ -2603,25 +2439,18 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       initRemoteCommands();
       // Remove all locks records directly from the cache by cleaning the entire cache to prevent inconsistencies
       boolean deleteLocks =
-         "true".equalsIgnoreCase(PrivilegedSystemHelper.getProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE,
+         "true".equalsIgnoreCase(System.getProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE,
             "false"));
       if (deleteLocks && this.cache instanceof Backupable)
       {
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         try
          {
-            public Void run()
-            {
-               try
-               {
-                  ((Backupable)CacheableWorkspaceDataManager.this.cache).clean();
-               }
-               catch (BackupException e)
-               {
-                  LOG.warn("Could not clean the cache to remove all the locks", e);
-               }
-               return null;
-            }
-         });
+            ((Backupable)CacheableWorkspaceDataManager.this.cache).clean();
+         }
+         catch (BackupException e)
+         {
+            LOG.warn("Could not clean the cache to remove all the locks", e);
+         }
       }
 
       isStopped.set(false);
@@ -2825,7 +2654,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   continue;
                return true;
             }
-            else if (!PrivilegedFileHelper.exists(fpvd.getFile()))// check if file exist
+            else if (!fpvd.getFile().exists())// check if file exist
             {
                return true;
             }

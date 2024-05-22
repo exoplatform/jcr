@@ -16,9 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.cacheable;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -62,7 +59,9 @@ import org.picocontainer.Startable;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -551,7 +550,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       lockRemover.start();
 
       // Remove all locks records directly from DB. 
-      boolean deleteLocks = "true".equalsIgnoreCase(PrivilegedSystemHelper.getProperty(LOCKS_FORCE_REMOVE, "false"));
+      boolean deleteLocks = "true".equalsIgnoreCase(System.getProperty(LOCKS_FORCE_REMOVE, "false"));
 
       if (deleteLocks)
       {
@@ -839,7 +838,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       try
       {
          File contentFile = new File(storageDir, "CacheLocks" + DBBackup.CONTENT_FILE_SUFFIX);
-         out = new ObjectOutputStream(new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(contentFile)));
+         out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(contentFile)));
          
          List<LockData> locks = getLockList();
 
@@ -888,12 +887,12 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
                   "CacheLocks" + DBBackup.CONTENT_FILE_SUFFIX);
 
          // it is possible that backup was created on configuration without Backupable WorkspaceLockManager class
-         if (!PrivilegedFileHelper.exists(contentFile))
+         if (!contentFile.exists())
          {
             return new DummyDataRestore();
          }
 
-         in = new ObjectInputStream(PrivilegedFileHelper.fileInputStream(contentFile));
+         in = new ObjectInputStream(new FileInputStream(contentFile));
 
          int count = in.readInt();
          for (int i = 0; i < count; i++)
@@ -955,15 +954,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       public void clean() throws BackupException
       {
          LOG.info("Start to clean lock Data");
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-         {
-            public Void run()
-            {
-               actualLocks.addAll(getLockList());
-               return null;
-            }
-         });
-
+         actualLocks.addAll(getLockList());
          doClean();
       }
 

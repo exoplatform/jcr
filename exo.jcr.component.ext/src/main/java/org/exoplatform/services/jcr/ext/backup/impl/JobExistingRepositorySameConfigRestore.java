@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -40,7 +39,6 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.io.File;
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,14 +112,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
                throw new NameNotFoundException("Data source " + dsName + " not found");
             }
 
-            jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-            {
-               public Connection run() throws Exception
-               {
-                  return ds.getConnection();
-
-               }
-            });
+            jdbcConn = ds.getConnection();
             jdbcConn.setAutoCommit(false);
 
             if (dbType == DatabaseStructureType.SINGLE)

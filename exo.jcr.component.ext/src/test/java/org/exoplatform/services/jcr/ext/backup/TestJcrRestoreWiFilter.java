@@ -18,8 +18,6 @@ package org.exoplatform.services.jcr.ext.backup;
 
 import junit.framework.TestCase;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.ext.backup.impl.JcrRestoreWiFilter;
 
 import java.io.File;
@@ -38,17 +36,17 @@ public class TestJcrRestoreWiFilter
 
    public void testListFiles() throws Exception
    {
-      File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir") + File.separator + Math.random());
-      PrivilegedFileHelper.mkdirs(tempDir);
-      PrivilegedFileHelper.deleteOnExit(tempDir);
+      File tempDir = new File(System.getProperty("java.io.tmpdir") + File.separator + Math.random());
+      tempDir.mkdirs();
+      tempDir.deleteOnExit();
 
       for (int i = 0; i < 7; i++)
       {
-         File f = PrivilegedFileHelper.createTempFile("jcrrestorewi", ".tmp", tempDir);
-         PrivilegedFileHelper.deleteOnExit(f);
+         File f = File.createTempFile("jcrrestorewi", ".tmp", tempDir);
+         f.deleteOnExit();
       }
 
-      File[] files = PrivilegedFileHelper.listFiles(tempDir, new JcrRestoreWiFilter());
+      File[] files = tempDir.listFiles(new JcrRestoreWiFilter());
 
       assertEquals(7, files.length);
    }

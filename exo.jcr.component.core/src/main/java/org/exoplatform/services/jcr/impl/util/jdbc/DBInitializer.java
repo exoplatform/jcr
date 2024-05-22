@@ -18,9 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
-import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.database.utils.DialectConstants;
-import org.exoplatform.services.database.utils.DialectDetecter;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
@@ -28,10 +25,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashSet;
@@ -116,13 +110,7 @@ public class DBInitializer
 
    protected boolean isTableExists(final Connection conn, final String tableName) throws SQLException
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
-      {
-         public Boolean run()
-         {
-            return JDBCUtils.tableExists(tableName, conn);
-         }
-      });
+      return JDBCUtils.tableExists(tableName, conn);
    }
 
    protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
@@ -333,14 +321,7 @@ public class DBInitializer
                {
                   continue;
                }
-               SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
-               {
-                  public Object run() throws Exception
-                  {
-                     finalSt.executeUpdate(finalSql);
-                     return null;
-                  }
-               });
+               finalSt.executeUpdate(finalSql);
             }
          }
 

@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.backup.rdbms;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.database.utils.DialectConstants;
 import org.exoplatform.services.database.utils.DialectDetecter;
 import org.exoplatform.services.database.utils.JDBCUtils;
@@ -43,6 +41,8 @@ import org.exoplatform.services.log.Log;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.zip.ZipInputStream;
 
 import javax.naming.NamingException;
 
@@ -82,7 +83,7 @@ public class DBRestore implements DataRestore
    /**
     * Temporary directory.
     */
-   private final File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+   private final File tempDir = new File(System.getProperty("java.io.tmpdir"));
 
    /**
     * Maximum buffer size.
@@ -267,11 +268,6 @@ public class DBRestore implements DataRestore
       throws IOException, SQLException
    {
       // Need privileges
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
 
       ZipObjectReader contentReader = null;
       ZipObjectReader contentLenReader = null;
@@ -291,26 +287,26 @@ public class DBRestore implements DataRestore
          File contentFile = new File(storageDir, restoreRule.getSrcTableName() + DBBackup.CONTENT_FILE_SUFFIX);
 
          // check old style backup format, when for every table was dedicated zip file 
-         if (PrivilegedFileHelper.exists(contentFile))
+         if (contentFile.exists())
          {
-            contentReader = new ZipObjectReader(PrivilegedFileHelper.zipInputStream(contentFile));
+            contentReader = new ZipObjectReader(new ZipInputStream(new FileInputStream(contentFile)));
             contentReader.getNextEntry();
 
             File contentLenFile =
                new File(storageDir, restoreRule.getSrcTableName() + DBBackup.CONTENT_LEN_FILE_SUFFIX);
 
-            contentLenReader = new ZipObjectReader(PrivilegedFileHelper.zipInputStream(contentLenFile));
+            contentLenReader = new ZipObjectReader(new ZipInputStream(new FileInputStream(contentLenFile)));
             contentLenReader.getNextEntry();
          }
          else
          {
             contentFile = new File(storageDir, DBBackup.CONTENT_ZIP_FILE);
-            contentReader = new ZipObjectReader(PrivilegedFileHelper.zipInputStream(contentFile));
+            contentReader = new ZipObjectReader(new ZipInputStream(new FileInputStream(contentFile)));
 
             while (!contentReader.getNextEntry().getName().equals(restoreRule.getSrcTableName()));
 
             File contentLenFile = new File(storageDir, DBBackup.CONTENT_LEN_ZIP_FILE);
-            contentLenReader = new ZipObjectReader(PrivilegedFileHelper.zipInputStream(contentLenFile));
+            contentLenReader = new ZipObjectReader(new ZipInputStream(new FileInputStream(contentLenFile)));
 
             while (!contentLenReader.getNextEntry().getName().equals(restoreRule.getSrcTableName()));
          }
@@ -608,7 +604,7 @@ public class DBRestore implements DataRestore
          // delete all temporary files
          for (File file : spoolFileList)
          {
-            if (!PrivilegedFileHelper.delete(file))
+            if (!file.delete())
             {
                fileCleaner.addFile(file);
             }
@@ -664,8 +660,8 @@ public class DBRestore implements DataRestore
             }
             else if (readLen + needToRead > maxBufferSize && fileCleaner != null)
             {
-               sf = PrivilegedFileHelper.createTempFile("jcrvd", null, tempDir);
-               sfout = PrivilegedFileHelper.fileOutputStream(sf);
+               sf = File.createTempFile("jcrvd", null, tempDir);
+               sfout = new FileOutputStream(sf);
 
                sfout.write(buffer);
                sfout.write(tmpBuff);
@@ -689,7 +685,7 @@ public class DBRestore implements DataRestore
          }
          else
          {
-            return PrivilegedFileHelper.fileInputStream(sf);
+            return new FileInputStream(sf);
          }
       }
       finally

@@ -16,8 +16,6 @@
 */
 package org.exoplatform.services.document.diff;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-
 /**
  * Implements a differencing engine that works on arrays of {@link Object
  * Object}.
@@ -41,7 +39,7 @@ public interface DiffService extends ToString
 {
 
    /** The standard line separator. */
-   public static final String NL = PrivilegedSystemHelper.getProperty("line.separator");
+   public static final String NL = System.getProperty("line.separator");
 
    /** The line separator to use in RCS format output. */
    public static final String RCS_EOL = "\n";

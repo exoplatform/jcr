@@ -23,8 +23,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -66,7 +64,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
@@ -617,20 +614,8 @@ public class GroovyScript2RestLoader implements Startable
       }
 
       Document doc;
-      try
-      {
-         doc = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Document>()
-         {
-            public Document run() throws ParserConfigurationException
-            {
-               return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-            }
-         });
-      }
-      catch (PrivilegedActionException e)
-      {
-         throw (ParserConfigurationException)e.getCause();
-      }
+
+      doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 
       Element root = doc.createElement(SERVICE_NAME);
       doc.appendChild(root);

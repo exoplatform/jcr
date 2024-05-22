@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
@@ -77,7 +76,7 @@ public class PersistedValueDataReader
    public PersistedValueData read(ObjectReader in, int type) throws UnknownClassIdException, IOException
    {
       File tempDirectory = new File(SerializationConstants.TEMP_DIR);
-      PrivilegedFileHelper.mkdirs(tempDirectory);
+      tempDirectory.mkdirs();
 
       // read id
       int key;
@@ -143,7 +142,7 @@ public class PersistedValueDataReader
    private void writeToFile(ObjectReader src, SpoolFile dest, long length) throws IOException
    {
       // write data to file
-      FileOutputStream sfout = PrivilegedFileHelper.fileOutputStream(dest);
+      FileOutputStream sfout = new FileOutputStream(dest);
       int bSize = SerializationConstants.INTERNAL_BUFFER_SIZE;
       try
       {

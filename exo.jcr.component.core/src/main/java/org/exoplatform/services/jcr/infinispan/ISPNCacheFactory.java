@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.infinispan;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -161,44 +160,28 @@ public class ISPNCacheFactory<K, V>
       final EmbeddedCacheManager manager;
       try
       {
-         // creating new CacheManager using SecurityHelper
+         // creating new CacheManager
 
-         manager = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<EmbeddedCacheManager>()
-         {
-            public EmbeddedCacheManager run() throws Exception
-            {
-               ParserRegistry parser = new ParserRegistry(Thread.currentThread().getContextClassLoader());
-               // Loads the configuration from the input stream
-               ConfigurationBuilderHolder holder = parser.parse(configStream);
-               GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();
-               Utils.loadJGroupsConfig(configurationManager, configBuilder.build(), configBuilder);
-               return getUniqueInstance(regionIdEscaped, holder, transactionManager, jndiUrl);
-            }
-         });
+         ParserRegistry parser = new ParserRegistry(Thread.currentThread().getContextClassLoader());
+         // Loads the configuration from the input stream
+         ConfigurationBuilderHolder holder = parser.parse(configStream);
+         GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();
+         Utils.loadJGroupsConfig(configurationManager, configBuilder.build(), configBuilder);
+         manager = getUniqueInstance(regionIdEscaped, holder, transactionManager, jndiUrl);
 
       }
-      catch (PrivilegedActionException pae)
+      catch (Exception e)
       {
-         Throwable cause = pae.getCause();
-         throw new RepositoryConfigurationException(cause);
+         throw new RepositoryConfigurationException(e);
       }
 
-      PrivilegedAction<Cache<K, V>> action = new PrivilegedAction<Cache<K, V>>()
+      Cache<K, V> cache = manager.getCache(regionIdEscaped);
+      if (cache.getStatus() == ComponentStatus.TERMINATED)
       {
-         public Cache<K, V> run()
-         {
-            Cache<K, V> cache = manager.getCache(regionIdEscaped);
-            if (cache.getStatus() == ComponentStatus.TERMINATED)
-            {
-               cache.start();
-               LOG.info("The cache corresponding to the region {} was in state Terminated, so it has been restarted",
+         cache.start();
+         LOG.info("The cache corresponding to the region {} was in state Terminated, so it has been restarted",
                   regionIdEscaped);
-            }
-            return cache;
-         }
-      };
-      Cache<K, V> cache = SecurityHelper.doPrivilegedAction(action);
-
+      }
       return cache;
    }
 

@@ -19,7 +19,6 @@ package org.exoplatform.services.document.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.security.PrivilegedExceptionAction;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -37,7 +36,6 @@ import org.apache.poi.poifs.eventfilesystem.POIFSReader;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderEvent;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.document.DCMetaData;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.log.ExoLogger;
@@ -162,14 +160,7 @@ public class POIPropertiesReader
       {
          final POIFSReader poiFSReader = new POIFSReader();
          poiFSReader.registerListener(readerListener, SummaryInformation.DEFAULT_STREAM_NAME);
-         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
-         {
-            public Void run() throws Exception
-            {
-               poiFSReader.read(is);
-               return null;
-            }
-         });
+         poiFSReader.read(is);
       }
       catch (POIRuntimeException e)
       {

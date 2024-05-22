@@ -17,12 +17,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
@@ -41,9 +39,7 @@ import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
-import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
-import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -129,7 +125,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
 
          //force clean lock cache entry store
          boolean deleteLocks =
-                 "true".equalsIgnoreCase(PrivilegedSystemHelper.getProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE,
+                 "true".equalsIgnoreCase(System.getProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE,
                          "false"));
          if(deleteLocks){
             ISPNLockTableHandler lockTableHandler = (ISPNLockTableHandler) getLockTableHandler();

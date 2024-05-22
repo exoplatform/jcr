@@ -18,11 +18,7 @@ z * Copyright (C) 2009 eXo Platform SAS.
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.DialectDetecter;
-import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
@@ -83,6 +79,7 @@ import org.exoplatform.services.naming.InitialContextInitializer;
 import org.picocontainer.Startable;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -119,8 +116,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * Indicates if the statistics has to be enabled.
     */
-   public static final boolean STATISTICS_ENABLED = Boolean.valueOf(PrivilegedSystemHelper
-      .getProperty("JDBCWorkspaceDataContainer.statistics.enabled"));
+   public static final boolean STATISTICS_ENABLED = Boolean.valueOf(System.getProperty("JDBCWorkspaceDataContainer.statistics.enabled"));
 
    static
    {
@@ -229,13 +225,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          Connection jdbcConn = null;
          try
          {
-            jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-            {
-               public Connection run() throws Exception
-               {
-                  return ds.getConnection();
-               }
-            });
+            jdbcConn = ds.getConnection();
 
             this.containerConfig.dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
          }
@@ -314,9 +304,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          this.containerConfig.spoolConfig.tempDirectory = new File(DEF_SWAPDIR);
       }
-      if (!PrivilegedFileHelper.exists(this.containerConfig.spoolConfig.tempDirectory))
+      if (!this.containerConfig.spoolConfig.tempDirectory.exists())
       {
-         PrivilegedFileHelper.mkdirs(this.containerConfig.spoolConfig.tempDirectory);
+         this.containerConfig.spoolConfig.tempDirectory.mkdirs();
       }
       else
       {
@@ -337,26 +327,18 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    private void cleanupSwapDirectory()
    {
-      PrivilegedAction<Void> action = new PrivilegedAction<Void>()
+      File[] files = containerConfig.spoolConfig.tempDirectory.listFiles();
+      if (files != null && files.length > 0)
       {
-         public Void run()
+         LOG.info("Some files have been found in the swap directory and will be deleted");
+         for (int i = 0; i < files.length; i++)
          {
-            File[] files = containerConfig.spoolConfig.tempDirectory.listFiles();
-            if (files != null && files.length > 0)
-            {
-               LOG.info("Some files have been found in the swap directory and will be deleted");
-               for (int i = 0; i < files.length; i++)
-               {
-                  File file = files[i];
-                  // We don't use the file cleaner in case the deletion failed to ensure
-                  // that the file won't be deleted while it is currently re-used
-                  file.delete();
-               }
-            }
-            return null;
+            File file = files[i];
+            // We don't use the file cleaner in case the deletion failed to ensure
+            // that the file won't be deleted while it is currently re-used
+            file.delete();
          }
-      };
-      SecurityHelper.doPrivilegedAction(action);
+      }
    }
    
    /**
@@ -739,7 +721,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
       // Remove lock properties from DB. The lock tables will be new but still remaining lock properties in JCR tables.
       boolean deleteLocks =
-         "true".equalsIgnoreCase(PrivilegedSystemHelper.getProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE,
+         "true".equalsIgnoreCase(System.getProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE,
             "false"));
 
       if (deleteLocks)
@@ -848,39 +830,20 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
-   public void clean() throws BackupException
-   {
-      LOG.info("Start to clean value storage of the workspace '"+containerConfig.containerName+"'");
-      try
-      {
+   public void clean() throws BackupException {
+      LOG.info("Start to clean value storage of the workspace '" + containerConfig.containerName + "'");
+      try {
          DBCleanService.cleanWorkspaceData(wsConfig);
 
-         if (wsConfig.getContainer().getValueStorages() != null)
-         {
-            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
-            {
-               public Void run() throws IOException, RepositoryConfigurationException
-               {
-                  for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
-                  {
-                     File valueStorageDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
-                     if (valueStorageDir.exists())
-                     {
-                        DirectoryHelper.removeDirectory(valueStorageDir);
-                     }
-                  }
-
-                  return null;
+         if (wsConfig.getContainer().getValueStorages() != null) {
+            for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages()) {
+               File valueStorageDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+               if (valueStorageDir.exists()) {
+                  DirectoryHelper.removeDirectory(valueStorageDir);
                }
-            });
+            }
          }
-      }
-      catch (DBCleanException e)
-      {
-         throw new BackupException(e);
-      }
-      catch (PrivilegedActionException e)
-      {
+      } catch (DBCleanException | IOException | RepositoryConfigurationException e) {
          throw new BackupException(e);
       }
    }
@@ -896,8 +859,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       try
       {
          backupInfo =
-            new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(new File(storageDir,
-               "JDBCWorkspaceDataContainer.info")));
+            new ObjectWriterImpl(new FileOutputStream(new File(storageDir,
+                                                               "JDBCWorkspaceDataContainer.info")));
 
          backupInfo.writeString(containerConfig.containerName);
          backupInfo.writeString(containerConfig.dbStructureType.toString());
@@ -937,43 +900,28 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          // backup value storage
          if (wsConfig.getContainer().getValueStorages() != null)
          {
-            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
+            for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
             {
-               public Void run() throws RepositoryConfigurationException, IOException
+               Boolean enable = valueStorage.getParameterBoolean(StandaloneStoragePluginProvider.VALUE_STORAGE_ENABLED_PARAM, true);
+               if (enable)
                {
-                  for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
-                  {
-                     Boolean enable = valueStorage.getParameterBoolean(StandaloneStoragePluginProvider.VALUE_STORAGE_ENABLED_PARAM, true);
-                     if (enable)
-                     {
-                        File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+                  File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
 
-                        if (!srcDir.exists())
-                        {
-                           throw new IOException("Can't backup value storage. Directory " + srcDir.getName()
-                              + " doesn't exist");
-                        }
-                        else
-                        {
-                           File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
-                           DirectoryHelper.compressDirectory(srcDir, zipFile);
-                        }
-                     }
+                  if (!srcDir.exists())
+                  {
+                     throw new IOException("Can't backup value storage. Directory " + srcDir.getName()
+                                               + " doesn't exist");
                   }
-                  return null;
+                  else
+                  {
+                     File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
+                     DirectoryHelper.compressDirectory(srcDir, zipFile);
+                  }
                }
-            });
+            }
          }
       }
-      catch (IOException e)
-      {
-         throw new BackupException(e);
-      }
-      catch (RepositoryException e)
-      {
-         throw new BackupException(e);
-      }
-      catch (PrivilegedActionException e)
+      catch (IOException | RepositoryException | RepositoryConfigurationException e)
       {
          throw new BackupException(e);
       }
@@ -1061,7 +1009,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          if (enable)
          {
             File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
-            if (PrivilegedFileHelper.exists(zipFile))
+            if (zipFile.exists())
             {
                backupDirsList.add(zipFile);
             }
@@ -1069,7 +1017,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             {
                // try to check if we have deal with old backup format
                zipFile = new File(storageDir, "values/" + valueStorage.getId());
-               if (PrivilegedFileHelper.exists(zipFile))
+               if (zipFile.exists())
                {
                   backupDirsList.add(zipFile);
                }

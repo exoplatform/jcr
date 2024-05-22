@@ -16,13 +16,11 @@
  */
 package org.exoplatform.services.jcr.impl.clean.rdbms;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.DialectConstants;
 import org.exoplatform.services.database.utils.DialectDetecter;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.clean.rdbms.scripts.DBCleaningScripts;
 import org.exoplatform.services.jcr.impl.clean.rdbms.scripts.DBCleaningScriptsFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
@@ -31,7 +29,6 @@ import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -63,8 +60,6 @@ public class DBCleanService
     */
    public static void cleanWorkspaceData(WorkspaceEntry wsEntry) throws DBCleanException
    {
-      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-
       Connection jdbcConn = getConnection(wsEntry);
       String dialect = resolveDialect(jdbcConn, wsEntry);
       boolean autoCommit = dialect.startsWith(DialectConstants.DB_DIALECT_SYBASE);
@@ -102,8 +97,6 @@ public class DBCleanService
     */
    public static void cleanRepositoryData(RepositoryEntry rEntry) throws DBCleanException
    {
-      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-
       WorkspaceEntry wsEntry = rEntry.getWorkspaceEntries().get(0);
 
       boolean multiDB = getMultiDbParameter(wsEntry);
@@ -158,8 +151,6 @@ public class DBCleanService
    public static DBCleanerTool getRepositoryDBCleaner(Connection jdbcConn, RepositoryEntry rEntry)
       throws DBCleanException
    {
-      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-
       WorkspaceEntry wsEntry = rEntry.getWorkspaceEntries().get(0);
 
       boolean multiDb = getMultiDbParameter(wsEntry);
@@ -190,8 +181,6 @@ public class DBCleanService
     */
    public static DBCleanerTool getWorkspaceDBCleaner(Connection jdbcConn, WorkspaceEntry wsEntry) throws DBCleanException
    {
-      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-
       String dialect = resolveDialect(jdbcConn, wsEntry);
       boolean autoCommit = dialect.startsWith(DialectConstants.DB_DIALECT_SYBASE);
       
@@ -253,13 +242,7 @@ public class DBCleanService
       Connection jdbcConn;
       try
       {
-         jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-         {
-            public Connection run() throws Exception
-            {
-               return dsF.getConnection();
-            }
-         });
+         jdbcConn = dsF.getConnection();
       }
       catch (SQLException e)
       {

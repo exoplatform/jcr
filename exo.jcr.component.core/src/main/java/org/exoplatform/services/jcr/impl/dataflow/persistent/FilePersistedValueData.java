@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.StreamValueData;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
@@ -75,7 +75,7 @@ public class FilePersistedValueData extends StreamValueData implements Persisted
    @Override
    public InputStream getAsStream() throws IOException
    {
-      return PrivilegedFileHelper.fileInputStream(file);
+      return new FileInputStream(file);
    }
 
    /**
@@ -93,7 +93,7 @@ public class FilePersistedValueData extends StreamValueData implements Persisted
    @Override
    public long getLength()
    {
-      return PrivilegedFileHelper.length(file);
+      return file.length();
    }
 
    /**
@@ -129,7 +129,7 @@ public class FilePersistedValueData extends StreamValueData implements Persisted
 
          File f = new File(new String(buf, "UTF-8"));
          // validate if exists
-         if (PrivilegedFileHelper.exists(f))
+         if (f.exists())
          {
             file = f;
          }
@@ -156,7 +156,7 @@ public class FilePersistedValueData extends StreamValueData implements Persisted
       // write canonical file path
       if (file != null)
       {
-         byte[] buf = PrivilegedFileHelper.getCanonicalPath(file).getBytes("UTF-8");
+         byte[] buf = file.getCanonicalPath().getBytes("UTF-8");
          out.writeInt(buf.length);
          out.write(buf);
       }

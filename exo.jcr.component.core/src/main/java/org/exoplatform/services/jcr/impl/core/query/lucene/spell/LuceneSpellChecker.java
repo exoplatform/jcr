@@ -30,7 +30,6 @@ import org.apache.lucene.search.spell.SuggestMode;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
@@ -43,7 +42,6 @@ import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -257,19 +255,12 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
       {
          this.handler = handler;
          spellIndexDirectory = null;
-         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               spellIndexDirectory = handler.getDirectoryManager().getDirectory("spellchecker");
+         spellIndexDirectory = handler.getDirectoryManager().getDirectory("spellchecker");
 
-               if (IndexReader.indexExists(spellIndexDirectory))
-               {
-                  lastRefresh = System.currentTimeMillis();
-               }
-               return null;
-            }
-         });
+         if (IndexReader.indexExists(spellIndexDirectory))
+         {
+            lastRefresh = System.currentTimeMillis();
+         }
          this.spellChecker = new SpellChecker(spellIndexDirectory);
          this.spellChecker.setAccuracy(minDistance);
          this.morePopular = morePopular;
@@ -328,14 +319,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
       {
          try
          {
-            SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-            {
-               public Object run() throws Exception
-               {
-                  spellIndexDirectory.close();
-                  return null;
-               }
-            });
+            spellIndexDirectory.close();
          }
          catch (IOException e)
          {
@@ -457,16 +441,9 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   for (int i = 0; i < words.length; i++)
                   {
                      final int currentIndex = i;
-                     String[] similar =
-                        SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<String[]>()
-                        {
-                           public String[] run() throws Exception
-                           {
-                              return spellChecker
-                                 .suggestSimilar(words[currentIndex], 5, reader, FieldNames.FULLTEXT, morePopular
-                                    ? SuggestMode.SUGGEST_MORE_POPULAR : SuggestMode.SUGGEST_WHEN_NOT_IN_INDEX);
-                           }
-                        });
+                     String[] similar = spellChecker
+                         .suggestSimilar(words[currentIndex], 5, reader, FieldNames.FULLTEXT, morePopular
+                                                                                           ? SuggestMode.SUGGEST_MORE_POPULAR : SuggestMode.SUGGEST_WHEN_NOT_IN_INDEX);
 
                      if (similar.length > 0)
                      {
@@ -480,7 +457,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   }
                   if (hasSuggestion)
                   {
-                     LOG.debug("Successful after " + new Integer(retries) + " retries");
+                     LOG.debug("Successful after " + retries + " retries");
                      return suggestion;
                   }
                   else
@@ -505,14 +482,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
          }
          finally
          {
-            SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-            {
-               public Object run() throws Exception
-               {
-                  Util.closeOrRelease(reader);
-                  return null;
-               }
-            });
+            Util.closeOrRelease(reader);
          }
       }
 
@@ -528,11 +498,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
          {
             synchronized (this)
             {
-               if (refreshing)
-               {
-                  return;
-               }
-               else
+               if (!refreshing)
                {
                   refreshing = true;
                   Runnable refresh = new Runnable()
@@ -542,33 +508,26 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
 
                         try
                         {
-                           SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+                           IndexReader reader = handler.getIndexReader();
+                           try
                            {
-                              public Object run() throws Exception
+                              long time = System.currentTimeMillis();
+                              Dictionary dict = new LuceneDictionary(reader, FieldNames.FULLTEXT);
+                              LOG.debug("Starting spell checker index refresh");
+                              spellChecker.indexDictionary(dict, new IndexWriterConfig(Version.LUCENE_36,
+                                                                                       new StandardAnalyzer(Version.LUCENE_36)), true);
+                              time = System.currentTimeMillis() - time;
+                              time = time / 1000;
+                              LOG.info("Spell checker index refreshed in: " + time + " s.");
+                           }
+                           finally
+                           {
+                              Util.closeOrRelease(reader);
+                              synchronized (InternalSpellChecker.this)
                               {
-                                 IndexReader reader = handler.getIndexReader();
-                                 try
-                                 {
-                                    long time = System.currentTimeMillis();
-                                    Dictionary dict = new LuceneDictionary(reader, FieldNames.FULLTEXT);
-                                    LOG.debug("Starting spell checker index refresh");
-                                    spellChecker.indexDictionary(dict, new IndexWriterConfig(Version.LUCENE_36,
-                                       new StandardAnalyzer(Version.LUCENE_36)), true);
-                                    time = System.currentTimeMillis() - time;
-                                    time = time / 1000;
-                                    LOG.info("Spell checker index refreshed in: " + new Long(time) + " s.");
-                                 }
-                                 finally
-                                 {
-                                    Util.closeOrRelease(reader);
-                                    synchronized (InternalSpellChecker.this)
-                                    {
-                                       refreshing = false;
-                                    }
-                                 }
-                                 return null;
+                                 refreshing = false;
                               }
-                           });
+                           }
                         }
                         catch (IOException e)
                         {

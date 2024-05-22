@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.config;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.database.utils.DialectDetecter;
 import org.exoplatform.services.database.utils.JDBCUtils;
@@ -32,8 +31,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -207,13 +204,7 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
    protected Connection openConnection() throws NamingException, SQLException
    {
       final DataSource ds = (DataSource)new InitialContext().lookup(sourceName);
-      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-      {
-         public Connection run() throws Exception
-         {
-            return ds.getConnection();
-         }
-      });
+      return ds.getConnection();
    }
 
    /**
@@ -223,14 +214,7 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
     */
    protected boolean isDbInitialized(final Connection con)
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
-      {
-
-         public Boolean run()
-         {
-            return JDBCUtils.tableExists(configTableName, con);
-         }
-      });
+      return JDBCUtils.tableExists(configTableName, con);
    }
 
    public boolean hasConfig() throws RepositoryConfigurationException

@@ -20,14 +20,12 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.constraint.EvaluationContext;
 
 import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
 
 /**
  * <code>JackrabbitIndexSearcher</code> implements an index searcher with
@@ -93,30 +91,24 @@ public class JcrIndexSearcher extends IndexSearcher implements EvaluationContext
     */
    public QueryHits evaluate(final Query query, final Sort sort, final long resultFetchHint) throws IOException
    {
-      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<QueryHits>()
+      Query localQuery = query.rewrite(reader);
+      QueryHits hits = null;
+      if (localQuery instanceof JcrQuery)
       {
-         public QueryHits run() throws Exception
+         hits = ((JcrQuery)localQuery).execute(JcrIndexSearcher.this, session, sort);
+      }
+      if (hits == null)
+      {
+         if (sort == null || sort.getSort().length == 0)
          {
-            Query localQuery = query.rewrite(reader);
-            QueryHits hits = null;
-            if (localQuery instanceof JcrQuery)
-            {
-               hits = ((JcrQuery)localQuery).execute(JcrIndexSearcher.this, session, sort);
-            }
-            if (hits == null)
-            {
-               if (sort == null || sort.getSort().length == 0)
-               {
-                  hits = new LuceneQueryHits(reader, JcrIndexSearcher.this, query);
-               }
-               else
-               {
-                  hits = new SortedLuceneQueryHits(reader, JcrIndexSearcher.this, localQuery, sort, resultFetchHint);
-               }
-            }
-            return hits;
+            hits = new LuceneQueryHits(reader, JcrIndexSearcher.this, query);
          }
-      });
+         else
+         {
+            hits = new SortedLuceneQueryHits(reader, JcrIndexSearcher.this, localQuery, sort, resultFetchHint);
+         }
+      }
+      return hits;
    }
 
    //------------------------< EvaluationContext >-----------------------------

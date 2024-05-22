@@ -19,7 +19,6 @@
 
 package org.exoplatform.services.jcr.impl.backup.rdbms;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
@@ -28,6 +27,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Types;
 import java.util.HashSet;
@@ -69,8 +69,8 @@ public class TableTransformationRuleGenerator
          this.dstContainerName = containerConfig.containerName;
 
          backupInfoReader =
-            new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(new File(storageDir,
-               "JDBCWorkspaceDataContainer.info")));;
+            new ObjectReaderImpl(new FileInputStream(new File(storageDir,
+                                                              "JDBCWorkspaceDataContainer.info")));;
 
          this.srcContainerName = backupInfoReader.readString();
          this.srcDbType = DatabaseStructureType.valueOf(backupInfoReader.readString());

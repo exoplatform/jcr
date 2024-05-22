@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.ext.registry;
 
 import static javax.jcr.ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -43,9 +42,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -374,13 +370,7 @@ public class RegistryService extends Registry implements Startable
                   wsName = repConfiguration.getDefaultWorkspaceName();
                }
                addRegistryLocation(repName, wsName);
-               InputStream xml = SecurityHelper.doPrivilegedAction(new PrivilegedAction<InputStream>()
-               {
-                  public InputStream run()
-                  {
-                     return getClass().getResourceAsStream(NT_FILE);
-                  }
-               });
+               InputStream xml = getClass().getResourceAsStream(NT_FILE);
 
                try
                {
@@ -467,46 +457,14 @@ public class RegistryService extends Registry implements Startable
                   final String xml = appConfigurations.get(appName);
                   try
                   {
-                     SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
-                     {
-                        public Void run() throws Exception
-                        {
-                           DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                           ByteArrayInputStream stream = new ByteArrayInputStream(xml.getBytes());
-                           Document document = builder.parse(stream);
-                           RegistryEntry entry = new RegistryEntry(document);
-                           sysSession.importXML(fullPath, entry.getAsInputStream(), IMPORT_UUID_CREATE_NEW);
-                           return null;
-                        }
-                     });
-                  }
-                  catch (PrivilegedActionException pae)
-                  {
-                     Throwable cause = pae.getCause();
-                     if (cause instanceof ParserConfigurationException)
-                     {
-                        LOG.error(cause.getLocalizedMessage(), cause);
-                     }
-                     else if (cause instanceof IOException)
-                     {
-                        LOG.error(cause.getLocalizedMessage(), cause);
-                     }
-                     else if (cause instanceof SAXException)
-                     {
-                        LOG.error(cause.getLocalizedMessage(), cause);
-                     }
-                     else if (cause instanceof TransformerException)
-                     {
-                        LOG.error(cause.getLocalizedMessage(), cause);
-                     }
-                     else if (cause instanceof RuntimeException)
-                     {
-                        throw (RuntimeException)cause;
-                     }
-                     else
-                     {
-                        throw new RuntimeException(cause);
-                     }
+                     DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                     ByteArrayInputStream stream = new ByteArrayInputStream(xml.getBytes());
+                     Document document = builder.parse(stream);
+                     RegistryEntry entry = new RegistryEntry(document);
+                     sysSession.importXML(fullPath, entry.getAsInputStream(), IMPORT_UUID_CREATE_NEW);
+
+                  } catch (SAXException | TransformerException | IOException | ParserConfigurationException e) {
+                     LOG.error(e.getLocalizedMessage(), e);
                   }
                }
                sysSession.save();

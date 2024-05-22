@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -82,7 +81,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -2095,17 +2093,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       @Override
       protected int getCacheSize()
       {
-         Map<String, Integer> map = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Map<String, Integer>>()
-         {
-            public Map<String, Integer> run()
-            {
-               MapReduceTask<CacheKey, Object, String, Integer> task =
-                  new MapReduceTask<CacheKey, Object, String, Integer>(cache);
-               task.mappedWith(new GetSizeMapper(getOwnerId())).reducedWith(new GetSizeReducer<String>());
-               return task.execute();
-            }
-
-         });
+         MapReduceTask<CacheKey, Object, String, Integer> task =
+             new MapReduceTask<CacheKey, Object, String, Integer>(cache);
+         task.mappedWith(new GetSizeMapper(getOwnerId())).reducedWith(new GetSizeReducer<String>());
+         Map<String, Integer> map = task.execute();
          int sum = 0;
          for (Integer i : map.values())
          {
@@ -2120,17 +2111,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       @Override
       protected void clearCache()
       {
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-         {
-            public Void run()
-            {
-               MapReduceTask<CacheKey, Object, Void, Void> task =
-                  new MapReduceTask<CacheKey, Object, Void, Void>(cache);
-               task.mappedWith(new ClearCacheMapper(getOwnerId())).reducedWith(new IdentityReducer());
-               task.execute();
-               return null;
-            }
-         });
+         MapReduceTask<CacheKey, Object, Void, Void> task =
+             new MapReduceTask<CacheKey, Object, Void, Void>(cache);
+         task.mappedWith(new ClearCacheMapper(getOwnerId())).reducedWith(new IdentityReducer());
+         task.execute();
       }
 
       /**
@@ -2190,18 +2174,11 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
       private void _updateTreePath(final QPath prevRootPath, final QPath newRootPath)
       {
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-         {
-            public Void run()
-            {
-               MapReduceTask<CacheKey, Object, Void, Void> task =
-                  new MapReduceTask<CacheKey, Object, Void, Void>(cache);
-               task.mappedWith(new UpdateTreePathMapper(getOwnerId(), prevRootPath, newRootPath)).reducedWith(
-                  new IdentityReducer());
-               task.execute();
-               return null;
-            }
-         });
+         MapReduceTask<CacheKey, Object, Void, Void> task =
+             new MapReduceTask<CacheKey, Object, Void, Void>(cache);
+         task.mappedWith(new UpdateTreePathMapper(getOwnerId(), prevRootPath, newRootPath)).reducedWith(
+             new IdentityReducer());
+         task.execute();
       }
 
       /**
@@ -2216,18 +2193,11 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             return;
          }
          final QPath parentPath = ((NodeData)parentItem).getQPath();
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-         {
-            public Void run()
-            {
-               MapReduceTask<CacheKey, Object, Void, Void> task =
-                  new MapReduceTask<CacheKey, Object, Void, Void>(cache);
-               task.mappedWith(new UpdateChildsACLMapper(getOwnerId(), parentPath, acl)).reducedWith(
-                  new IdentityReducer());
-               task.execute();
-               return null;
-            }
-         });
+         MapReduceTask<CacheKey, Object, Void, Void> task =
+             new MapReduceTask<CacheKey, Object, Void, Void>(cache);
+         task.mappedWith(new UpdateChildsACLMapper(getOwnerId(), parentPath, acl)).reducedWith(
+             new IdentityReducer());
+         task.execute();
       }
    }
 

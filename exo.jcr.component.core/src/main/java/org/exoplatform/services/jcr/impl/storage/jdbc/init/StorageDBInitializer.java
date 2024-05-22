@@ -21,10 +21,8 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -92,13 +90,7 @@ public class StorageDBInitializer extends DBInitializer
 
    protected int getSequenceStartValue(final Connection conn) throws SQLException
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
-      {
-         public Integer run()
-         {
-            return getStartValue(conn);
-         }
-      });
+      return getStartValue(conn);
    }
 
    /**

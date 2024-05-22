@@ -21,7 +21,6 @@ import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.document.diff.ToString;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -99,7 +98,7 @@ public class ToStringImpl implements ToString
     */
    public String arrayToString(Object[] o)
    {
-      return arrayToString(o, PrivilegedSystemHelper.getProperty("line.separator"));
+      return arrayToString(o, System.getProperty("line.separator"));
    }
 
    /**

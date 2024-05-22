@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
@@ -36,6 +34,7 @@ import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -44,8 +43,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -137,9 +134,9 @@ public class BackupChainLog
          this.finalized = false;
          this.versionLog = VERSION_LOG_1_1;
          this.log =
-                  new File(PrivilegedFileHelper.getCanonicalPath(logDir) + File.separator
+                  new File(logDir.getCanonicalPath() + File.separator
                            + (PREFIX + backupId + SUFFIX));
-         PrivilegedFileHelper.createNewFile(this.log);
+         this.log.createNewFile();
          this.rootDir = rootDir;
          this.backupId = backupId;
          this.fullBackupType = fullBackupType;
@@ -354,14 +351,14 @@ public class BackupChainLog
       //copy backup chain log file in into Backupset files itself for portability (e.g. on another server)
       try
       {
-         InputStream in = PrivilegedFileHelper.fileInputStream(log);
+         InputStream in = new FileInputStream(log);
 
          File dest = new File(config.getBackupDir() + File.separator + log.getName());
-         if (!PrivilegedFileHelper.exists(dest))
+         if (!dest.exists())
          {
-            OutputStream out = PrivilegedFileHelper.fileOutputStream(dest);
+            OutputStream out = new FileOutputStream(dest);
 
-            byte[] buf = new byte[(int) (PrivilegedFileHelper.length(log))];
+            byte[] buf = new byte[(int) (log.length())];
             in.read(buf);
 
             String sConfig = new String(buf, Constants.DEFAULT_ENCODING);
@@ -423,7 +420,7 @@ public class BackupChainLog
     */
    public String getLogFilePath()
    {
-      return PrivilegedFileHelper.getAbsolutePath(log);
+      return log.getAbsolutePath();
    }
 
    /**
@@ -488,7 +485,7 @@ public class BackupChainLog
 
          reader =
                   XMLInputFactory.newInstance().createXMLStreamReader(
-                           PrivilegedFileHelper.fileInputStream(this.logFile), Constants.DEFAULT_ENCODING);
+                           new FileInputStream(this.logFile), Constants.DEFAULT_ENCODING);
       }
 
       public String getIncrementalBackupType()
@@ -577,47 +574,21 @@ public class BackupChainLog
          String configName = readContent();
 
          File configFile =
-                  new File(PrivilegedFileHelper.getCanonicalPath(getBackupConfig().getBackupDir()) + File.separator
+                  new File(getBackupConfig().getBackupDir().getCanonicalPath() + File.separator
                            + configName);
 
-         if (!PrivilegedFileHelper.exists(configFile))
+         if (!configFile.exists())
          {
             throw new WorkspaceRestoreExeption("The backup set is not contains original workspace configuration : "
-                     + PrivilegedFileHelper.getCanonicalPath(getBackupConfig().getBackupDir()));
+                     + getBackupConfig().getBackupDir().getCanonicalPath());
          }
 
          IBindingFactory factory;
-         try
-         {
-            factory = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
-            {
-               public IBindingFactory run() throws Exception
-               {
-                  return BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
-               }
-            });
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof JiBXException)
-            {
-               throw (JiBXException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
 
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
          RepositoryServiceConfiguration conf =
-                  (RepositoryServiceConfiguration) uctx.unmarshalDocument(PrivilegedFileHelper
-                           .fileInputStream(configFile), null);
+                  (RepositoryServiceConfiguration) uctx.unmarshalDocument(new FileInputStream(configFile), null);
 
          RepositoryEntry repositoryEntry = conf.getRepositoryConfiguration(getBackupConfig().getRepository());
 
@@ -625,7 +596,7 @@ public class BackupChainLog
          {
             throw new WorkspaceRestoreExeption(
                      "The oririginal configuration should be contains only one workspace entry :"
-                     + PrivilegedFileHelper.getCanonicalPath(configFile));
+                     + configFile.getCanonicalPath());
          }
 
          if (!repositoryEntry.getWorkspaceEntries().get(0).getName().equals(getBackupConfig().getWorkspace()))
@@ -633,7 +604,7 @@ public class BackupChainLog
             throw new WorkspaceRestoreExeption(
                      "The oririginal configuration should be contains only one workspace entry with name \""
                               + getBackupConfig().getWorkspace() + "\" :"
-                              + PrivilegedFileHelper.getCanonicalPath(configFile));
+                              + configFile.getCanonicalPath());
          }
 
          return repositoryEntry.getWorkspaceEntries().get(0);
@@ -667,7 +638,7 @@ public class BackupChainLog
                         String path =
                                  readContent().replace(
                                           "file:",
-                                          "file:" + PrivilegedFileHelper.getCanonicalPath(config.getBackupDir())
+                                          "file:" + config.getBackupDir().getCanonicalPath()
                                                    + File.separator);
 
                         info.setURL(new URL(path));
@@ -749,7 +720,7 @@ public class BackupChainLog
                         String dir = readContent();
                         if (dir.equals("."))
                         {
-                           String path = PrivilegedFileHelper.getCanonicalPath(logFile.getParentFile());
+                           String path = logFile.getParentFile().getCanonicalPath();
                            conf.setBackupDir(new File(path));
                         }
                         else
@@ -839,42 +810,8 @@ public class BackupChainLog
       public LogWriter(File file) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
       {
          this.logFile = file;
-
-         try
-         {
-            writer = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<XMLStreamWriter>()
-            {
-               public XMLStreamWriter run() throws Exception
-               {
-                  return XMLOutputFactory.newInstance().createXMLStreamWriter(new FileOutputStream(logFile),
-                           Constants.DEFAULT_ENCODING);
-               }
-            });
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof FileNotFoundException)
-            {
-               throw (FileNotFoundException) cause;
-            }
-            else if (cause instanceof XMLStreamException)
-            {
-               throw (XMLStreamException) cause;
-            }
-            else if (cause instanceof FactoryConfigurationError)
-            {
-               throw (FactoryConfigurationError) cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException) cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         };
+         writer = XMLOutputFactory.newInstance().createXMLStreamWriter(new FileOutputStream(logFile),
+                                                                       Constants.DEFAULT_ENCODING);
 
          writer.writeStartDocument();
          writer.writeStartElement("backup-chain-log");
@@ -891,10 +828,10 @@ public class BackupChainLog
                JiBXException, RepositoryException, RepositoryConfigurationException
       {
          File config =
-                  new File(PrivilegedFileHelper.getCanonicalPath(BackupChainLog.this.config.getBackupDir())
+                  new File(BackupChainLog.this.config.getBackupDir().getCanonicalPath()
                            + File.separator + "original-workspace-config.xml");
-         PrivilegedFileHelper.createNewFile(config);
-         OutputStream saveStream = PrivilegedFileHelper.fileOutputStream(config);
+         config.createNewFile();
+         OutputStream saveStream = new FileOutputStream(config);
 
          RepositoryEntry baseRepositoryEntry =
                   serviceConfiguration.getRepositoryConfiguration(BackupChainLog.this.config.getRepository());
@@ -916,32 +853,8 @@ public class BackupChainLog
                   new RepositoryServiceConfiguration(serviceConfiguration.getDefaultRepositoryName(), repositoryEntries);
 
          IBindingFactory bfact;
-         try
-         {
-            bfact = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
-            {
-               public IBindingFactory run() throws Exception
-               {
-                  return BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
-               }
-            });
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof JiBXException)
-            {
-               throw (JiBXException) cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException) cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         bfact = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+
          IMarshallingContext mctx = bfact.createMarshallingContext();
 
          mctx.marshalDocument(newRepositoryServiceConfiguration, "ISO-8859-1", null, saveStream);
@@ -969,7 +882,7 @@ public class BackupChainLog
          {
             writer.writeStartElement("backup-dir");
             String path =
-                     (isRootBackupManagerDir(logFile) ? PrivilegedFileHelper.getCanonicalPath(config.getBackupDir())
+                     (isRootBackupManagerDir(logFile) ? config.getBackupDir().getCanonicalPath()
                               : ".");
 
             writer.writeCharacters(path);
@@ -1030,16 +943,16 @@ public class BackupChainLog
 
       private String getRelativeUrl(URL url, File backupDir) throws IOException
       {
-         String str = PrivilegedFileHelper.getCanonicalPath(new File(url.getFile()));
+         String str = new File(url.getFile()).getCanonicalPath();
 
          return url.getProtocol() + ":"
-                  + str.replace(PrivilegedFileHelper.getCanonicalPath(config.getBackupDir()) + File.separator, "");
+                  + str.replace(config.getBackupDir().getCanonicalPath() + File.separator, "");
       }
 
       private boolean isRootBackupManagerDir(File log) throws IOException
       {
-         return (PrivilegedFileHelper.getCanonicalPath(log.getParentFile()).equals(PrivilegedFileHelper
-                  .getCanonicalPath(rootDir)));
+         return (log.getParentFile().getCanonicalPath().equals(rootDir
+                  .getCanonicalPath()));
       }
 
       public synchronized void writeEndLog()

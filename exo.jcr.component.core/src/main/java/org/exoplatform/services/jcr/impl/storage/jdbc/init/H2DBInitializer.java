@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import java.io.IOException;

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.registry;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -27,8 +26,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -73,14 +70,7 @@ public final class RegistryEntry
     */
    public RegistryEntry(String rootName) throws IOException, SAXException, ParserConfigurationException
    {
-      DocumentBuilder db =
-         SecurityHelper.doPrivilegedParserConfigurationAction(new PrivilegedExceptionAction<DocumentBuilder>()
-         {
-            public DocumentBuilder run() throws Exception
-            {
-               return DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            }
-         });
+      DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       this.document = db.newDocument();
       Element nodeElement = document.createElement(rootName);
       document.appendChild(nodeElement);
@@ -97,41 +87,9 @@ public final class RegistryEntry
     */
    public static RegistryEntry parse(final byte[] bytes) throws IOException, SAXException, ParserConfigurationException
    {
-      try
-      {
-         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<RegistryEntry>()
-         {
-            public RegistryEntry run() throws Exception
-            {
-               return new RegistryEntry(DocumentBuilderFactory.newInstance().newDocumentBuilder()
-                  .parse(new ByteArrayInputStream(bytes)));
-            }
-         });
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof ParserConfigurationException)
-         {
-            throw (ParserConfigurationException)cause;
-         }
-         else if (cause instanceof IOException)
-         {
-            throw (IOException)cause;
-         }
-         else if (cause instanceof SAXException)
-         {
-            throw (SAXException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      return new RegistryEntry(DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                                                     .parse(new ByteArrayInputStream(bytes)));
+
    }
 
    /**
@@ -145,40 +103,7 @@ public final class RegistryEntry
    public static RegistryEntry parse(final InputStream in) throws IOException, SAXException,
       ParserConfigurationException
    {
-      try
-      {
-         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<RegistryEntry>()
-         {
-            public RegistryEntry run() throws Exception
-            {
-               return new RegistryEntry(DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(in));
-            }
-         });
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof ParserConfigurationException)
-         {
-            throw (ParserConfigurationException)cause;
-         }
-         else if (cause instanceof IOException)
-         {
-            throw (IOException)cause;
-         }
-         else if (cause instanceof SAXException)
-         {
-            throw (SAXException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      return new RegistryEntry(DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(in));
    }
 
    /**

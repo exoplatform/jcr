@@ -19,13 +19,14 @@
 package org.exoplatform.services.jcr.impl.xml;
 
 import org.apache.ws.commons.util.Base64;
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -100,7 +101,7 @@ public class BufferedDecoder extends Base64.Decoder
       {
 
          out.close();
-         return new BufferedInputStream(PrivilegedFileHelper.fileInputStream(fileBuffer));
+         return new BufferedInputStream(new FileInputStream(fileBuffer));
       }
       else
       {
@@ -116,11 +117,11 @@ public class BufferedDecoder extends Base64.Decoder
     */
    public void remove() throws IOException
    {
-      if ((fileBuffer != null) && PrivilegedFileHelper.exists(fileBuffer))
+      if ((fileBuffer != null) && fileBuffer.exists())
       {
-         if (!PrivilegedFileHelper.delete(fileBuffer))
+         if (!fileBuffer.delete())
          {
-            throw new IOException("Cannot remove file " + PrivilegedFileHelper.getAbsolutePath(fileBuffer)
+            throw new IOException("Cannot remove file " + fileBuffer.getAbsolutePath()
                + " Close all streams.");
          }
       }
@@ -141,7 +142,7 @@ public class BufferedDecoder extends Base64.Decoder
          try
          {
             out.close();
-            BufferedInputStream is = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(fileBuffer));
+            BufferedInputStream is = new BufferedInputStream(new FileInputStream(fileBuffer));
 
             StringBuilder fileData = new StringBuilder(DEFAULT_READ_BUFFER_SIZE);
 
@@ -177,9 +178,9 @@ public class BufferedDecoder extends Base64.Decoder
    private void swapBuffers() throws IOException
    {
       byte[] data = ((ByteArrayOutputStream)out).toByteArray();
-      fileBuffer = PrivilegedFileHelper.createTempFile("decoderBuffer", ".tmp");
-      PrivilegedFileHelper.deleteOnExit(fileBuffer);
-      out = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(fileBuffer), bufferSize);
+      fileBuffer = File.createTempFile("decoderBuffer", ".tmp");
+      fileBuffer.deleteOnExit();
+      out = new BufferedOutputStream(new FileOutputStream(fileBuffer), bufferSize);
       out.write(data);
    }
 

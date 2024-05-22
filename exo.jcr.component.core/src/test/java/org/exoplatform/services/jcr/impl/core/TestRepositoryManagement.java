@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -48,6 +47,7 @@ import org.jibx.runtime.IUnmarshallingContext;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.OutputStream;
@@ -145,8 +145,8 @@ public class TestRepositoryManagement extends JcrImplBaseTest
             repository.getConfiguration().getWorkspaceEntries().get(0).getLockManager().getParameterLong("time-out");
 
          // 1st marshal configuration
-         File tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
-         PrivilegedFileHelper.deleteOnExit(tempFile);
+         File tempFile = File.createTempFile("test-config", "xml");
+         tempFile.deleteOnExit();
 
          IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
          IMarshallingContext mctx = factory.createMarshallingContext();
@@ -166,7 +166,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
          RepositoryServiceConfiguration conf =
             (RepositoryServiceConfiguration)uctx
-               .unmarshalDocument(PrivilegedFileHelper.fileInputStream(tempFile), null);
+               .unmarshalDocument(new FileInputStream(tempFile), null);
 
          // 1st check
          RepositoryEntry unmarshledRepositoryEntry =
@@ -175,8 +175,8 @@ public class TestRepositoryManagement extends JcrImplBaseTest
             .getParameterLong("time-out").longValue());
 
          // 2nd marshal configuration
-         tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
-         PrivilegedFileHelper.deleteOnExit(tempFile);
+         tempFile = File.createTempFile("test-config", "xml");
+         tempFile.deleteOnExit();
 
          factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
          mctx = factory.createMarshallingContext();
@@ -195,7 +195,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
          uctx = factory.createUnmarshallingContext();
          conf =
             (RepositoryServiceConfiguration)uctx
-               .unmarshalDocument(PrivilegedFileHelper.fileInputStream(tempFile), null);
+               .unmarshalDocument(new FileInputStream(tempFile), null);
 
          // 2nd check
          unmarshledRepositoryEntry = conf.getRepositoryConfiguration(repository.getConfiguration().getName());

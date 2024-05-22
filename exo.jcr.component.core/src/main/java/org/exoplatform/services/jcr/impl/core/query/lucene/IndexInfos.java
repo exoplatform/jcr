@@ -17,7 +17,6 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.store.Directory;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexInputStream;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexOutputStream;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
@@ -29,7 +28,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -117,41 +115,33 @@ public class IndexInfos
     */
    public void read() throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            // Known issue for NFS bases on ext3. Need to refresh directory to read actual data.
-            dir.listAll();
+      dir.listAll();
 
-            names.clear();
-            indexes.clear();
-            if (dir.fileExists(name))
+      names.clear();
+      indexes.clear();
+      if (dir.fileExists(name))
+      {
+         // clear current lists
+         InputStream in = new IndexInputStream(dir.openInput(name));
+         DataInputStream di = null;
+         try
+         {
+            di = new DataInputStream(in);
+            counter = di.readInt();
+            for (int i = di.readInt(); i > 0; i--)
             {
-               // clear current lists
-               InputStream in = new IndexInputStream(dir.openInput(name));
-               DataInputStream di = null;
-               try
-               {
-                  di = new DataInputStream(in);
-                  counter = di.readInt();
-                  for (int i = di.readInt(); i > 0; i--)
-                  {
-                     String indexName = di.readUTF();
-                     indexes.add(indexName);
-                     names.add(indexName);
-                  }
-               }
-               finally
-               {
-                  if (di != null)
-                     di.close();
-                  in.close();
-               }
+               String indexName = di.readUTF();
+               indexes.add(indexName);
+               names.add(indexName);
             }
-            return null;
          }
-      });
+         finally
+         {
+            if (di != null)
+               di.close();
+            in.close();
+         }
+      }
    }
 
    /**
@@ -161,44 +151,37 @@ public class IndexInfos
     */
    public void write() throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      // do not write if not dirty
+      if (!dirty)
       {
-         public Object run() throws Exception
-         {
-            // do not write if not dirty
-            if (!dirty)
-            {
-               return null;
-            }
+         return;
+      }
 
-            OutputStream out = new IndexOutputStream(dir.createOutput(name + ".new"));
-            DataOutputStream dataOut = null;
-            try
-            {
-               dataOut = new DataOutputStream(out);
-               dataOut.writeInt(counter);
-               dataOut.writeInt(indexes.size());
-               for (int i = 0; i < indexes.size(); i++)
-               {
-                  dataOut.writeUTF(getName(i));
-               }
-            }
-            finally
-            {
-               if (dataOut != null)
-                  dataOut.close();
-               out.close();
-            }
-            // delete old
-            if (dir.fileExists(name))
-            {
-               dir.deleteFile(name);
-            }
-            rename(name + ".new", name);
-            dirty = false;
-            return null;
+      OutputStream out = new IndexOutputStream(dir.createOutput(name + ".new"));
+      DataOutputStream dataOut = null;
+      try
+      {
+         dataOut = new DataOutputStream(out);
+         dataOut.writeInt(counter);
+         dataOut.writeInt(indexes.size());
+         for (int i = 0; i < indexes.size(); i++)
+         {
+            dataOut.writeUTF(getName(i));
          }
-      });
+      }
+      finally
+      {
+         if (dataOut != null)
+            dataOut.close();
+         out.close();
+      }
+      // delete old
+      if (dir.fileExists(name))
+      {
+         dir.deleteFile(name);
+      }
+      rename(name + ".new", name);
+      dirty = false;
    }
 
    /**

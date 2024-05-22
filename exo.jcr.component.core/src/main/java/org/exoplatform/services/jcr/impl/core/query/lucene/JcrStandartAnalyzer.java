@@ -20,7 +20,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.util.Version;
-import org.exoplatform.commons.utils.SecurityHelper;
 
 import java.io.Reader;
 import java.security.PrivilegedAction;
@@ -43,13 +42,7 @@ public final class JcrStandartAnalyzer extends Analyzer
     * The default Jackrabbit analyzer if none is configured in <code><SearchIndex></code>
     * configuration.
     */
-   private Analyzer defaultAnalyzer = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Analyzer>()
-   {
-      public Analyzer run()
-      {
-         return new StandardAnalyzer(Version.LUCENE_30, (Set<?>)null);
-      }
-   });
+   private Analyzer defaultAnalyzer = new StandardAnalyzer(Version.LUCENE_30, (Set<?>)null);
 
    /**
     * The indexing configuration.

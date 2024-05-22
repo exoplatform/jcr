@@ -18,12 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -60,13 +58,7 @@ public class PgSQLDBInitializer extends StorageDBInitializer
    @Override
    protected boolean isSequenceExists(final Connection conn, final String sequenceName) throws SQLException
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
-      {
-         public Boolean run()
-         {
-            return sequenceExists(sequenceName, conn);
-         }
-      });
+      return sequenceExists(sequenceName, conn);
    }
 
    private boolean sequenceExists(String sequenceName, Connection con)

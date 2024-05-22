@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.storage;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-
 import java.util.Calendar;
 
 import javax.jcr.RepositoryException;
@@ -72,7 +70,7 @@ public interface WorkspaceDataContainer extends DataContainer
 
    public final static int DEF_MAXBUFFERSIZE = 1024 * 200; // 200k
 
-   public final static String DEF_SWAPDIR = PrivilegedSystemHelper.getProperty("java.io.tmpdir");
+   public final static String DEF_SWAPDIR = System.getProperty("java.io.tmpdir");
 
    public final static String CHECK_SNS_NEW_CONNECTION = "check-sns-new-connection";
 

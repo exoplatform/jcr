@@ -18,9 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.quota;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
@@ -32,9 +29,13 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * {@link DataRestore} implementation for quota.
@@ -101,7 +102,7 @@ public class WorkspaceQuotaRestore implements DataRestore
       this.wqm = wqm;
       this.backupFile = new File(storageDir, BACKUP_FILE_NAME + DBBackup.CONTENT_FILE_SUFFIX);
 
-      File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+      File tempDir = new File(System.getProperty("java.io.tmpdir"));
       this.tempFile = new File(tempDir, "temp.dump");
 
       this.wsName = wqm.getContext().wsName;
@@ -114,30 +115,8 @@ public class WorkspaceQuotaRestore implements DataRestore
     */
    public void clean() throws BackupException
    {
-      try
-      {
-         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
-         {
-            public Void run() throws BackupException
-            {
-               doBackup(tempFile);
-               doClean();
-               return null;
-            }
-         });
-      }
-      catch (PrivilegedActionException e)
-      {
-         Throwable cause = e.getCause();
-         if (cause instanceof BackupException)
-         {
-            throw (BackupException)cause;
-         }
-         else
-         {
-            throw new BackupException(cause);
-         }
-      }
+      doBackup(tempFile);
+      doClean();
    }
 
    /**
@@ -169,7 +148,7 @@ public class WorkspaceQuotaRestore implements DataRestore
     */
    public void close() throws BackupException
    {
-      PrivilegedFileHelper.delete(tempFile);
+      tempFile.delete();
    }
 
    /**
@@ -185,7 +164,7 @@ public class WorkspaceQuotaRestore implements DataRestore
     */
    protected void doRestore(File backupFile) throws BackupException
    {
-      if (!PrivilegedFileHelper.exists(backupFile))
+      if (!backupFile.exists())
       {
          LOG.warn("Nothing to restore for quotas");
          return;
@@ -194,7 +173,7 @@ public class WorkspaceQuotaRestore implements DataRestore
       ZipObjectReader in = null;
       try
       {
-         in = new ZipObjectReader(PrivilegedFileHelper.zipInputStream(backupFile));
+         in = new ZipObjectReader(new ZipInputStream(new FileInputStream(backupFile)));
          quotaPersister.restoreWorkspaceData(rName, wsName, in);
       }
       catch (IOException e)
@@ -254,7 +233,7 @@ public class WorkspaceQuotaRestore implements DataRestore
       ZipObjectWriter out = null;
       try
       {
-         out = new ZipObjectWriter(PrivilegedFileHelper.zipOutputStream(backupFile));
+         out = new ZipObjectWriter(new ZipOutputStream(new FileOutputStream(backupFile)));
          quotaPersister.backupWorkspaceData(rName, wsName, out);
       }
       catch (IOException e)

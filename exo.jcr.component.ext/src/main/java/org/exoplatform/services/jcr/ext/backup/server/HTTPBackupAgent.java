@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.server;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -360,9 +359,9 @@ public class HTTPBackupAgent implements ResourceContainer
          else
          {
             backupDir = new File(bConfigBean.getBackupDir());
-            if (!PrivilegedFileHelper.exists(backupDir))
+            if (!backupDir.exists())
                throw new BackupDirNotFoundException("The backup folder not exists :  "
-                        + PrivilegedFileHelper.getAbsolutePath(backupDir));
+                        + backupDir.getAbsolutePath());
          }
 
          BackupConfig config = new BackupConfig();
@@ -491,9 +490,9 @@ public class HTTPBackupAgent implements ResourceContainer
          else
          {
             backupDir = new File(bConfigBean.getBackupDir());
-            if (!PrivilegedFileHelper.exists(backupDir))
+            if (!backupDir.exists())
                throw new BackupDirNotFoundException("The backup folder not exists :  "
-                        + PrivilegedFileHelper.getAbsolutePath(backupDir));
+                        + backupDir.getAbsolutePath());
          }
 
          RepositoryBackupConfig config = new RepositoryBackupConfig();
@@ -965,7 +964,7 @@ public class HTTPBackupAgent implements ResourceContainer
             throw new RestoreConfigurationException("Backup set directory is not directory :" + backupSetPath);
          }
 
-         File[] cfs = PrivilegedFileHelper.listFiles(backupSetDir, new BackupLogsFilter());
+         File[] cfs = backupSetDir.listFiles(new BackupLogsFilter());
 
          if (cfs.length == 0)
          {
@@ -1301,8 +1300,8 @@ public class HTTPBackupAgent implements ResourceContainer
             throw new RestoreConfigurationException("Backup set directory is not directory :" + backupSetPath);
          }
 
-         File[] cfsw = PrivilegedFileHelper.listFiles(backupSetDir, new BackupLogsFilter());
-         File[] cfsr = PrivilegedFileHelper.listFiles(backupSetDir, new RepositoryBackupLogsFilter());
+         File[] cfsw = backupSetDir.listFiles(new BackupLogsFilter());
+         File[] cfsr = backupSetDir.listFiles(new RepositoryBackupLogsFilter());
 
          if (cfsw.length == 0 && cfsr.length == 0)
          {
@@ -1842,7 +1841,7 @@ public class HTTPBackupAgent implements ResourceContainer
             throw new RestoreConfigurationException("Backup set directory is not directory :" + backupSetPath);
          }
 
-         File[] cfs = PrivilegedFileHelper.listFiles(backupSetDir, new RepositoryBackupLogsFilter());
+         File[] cfs = backupSetDir.listFiles(new RepositoryBackupLogsFilter());
 
          if (cfs.length == 0)
          {
@@ -2208,7 +2207,7 @@ public class HTTPBackupAgent implements ResourceContainer
       {
          BackupServiceInfoBean infoBeen =
             new BackupServiceInfoBean(backupManager.getFullBackupType(), backupManager.getIncrementalBackupType(),
-               PrivilegedFileHelper.getAbsolutePath(backupManager.getBackupDirectory()),
+               backupManager.getBackupDirectory().getAbsolutePath(),
                backupManager.getDefaultIncrementalJobPeriod());
 
          return Response.ok(infoBeen).cacheControl(noCache).build();
@@ -3323,7 +3322,7 @@ public class HTTPBackupAgent implements ResourceContainer
          }
       };
 
-      File[] files = PrivilegedFileHelper.listFiles(backupManager.getBackupDirectory(), backupLogsFilter);
+      File[] files = backupManager.getBackupDirectory().listFiles(backupLogsFilter);
 
       if (files.length != 0)
          for (File f : files)
@@ -3351,7 +3350,7 @@ public class HTTPBackupAgent implements ResourceContainer
          }
       };
 
-      File[] files = PrivilegedFileHelper.listFiles(backupManager.getBackupDirectory(), backupLogsFilter);
+      File[] files = backupManager.getBackupDirectory().listFiles(backupLogsFilter);
 
       if (files.length != 0)
          for (File f : files)

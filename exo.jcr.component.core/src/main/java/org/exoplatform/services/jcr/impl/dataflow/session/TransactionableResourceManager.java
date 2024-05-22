@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.session;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
@@ -30,8 +29,6 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
 
 import java.lang.ref.SoftReference;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -219,27 +216,16 @@ public class TransactionableResourceManager implements XAResource
                   + "to an invalidate state, the current status is " + status
                   + " and only ACTIVE and PREPARING are allowed");
             }
-            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
-            {
-               public Void run() throws Exception
-               {
-                  add(session, changes);
-                  return null;
-               }
-            });
+            add(session, changes);
             return true;
          }
       }
-      catch (PrivilegedActionException e)
+      catch (RollbackException | SystemException e)
       {
          log.warn("Could not check if a global Tx has been started or register the session into the resource manager",
             e);
       }
-      catch (SystemException e)
-      {
-         log.warn("Could not check if a global Tx has been started or register the session into the resource manager",
-            e);
-      }
+
       return false;
    }
 

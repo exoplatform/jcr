@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.ftp.data;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.ftp.client.FtpClientSession;
 import org.exoplatform.services.ftp.config.FtpConfig;
 import org.exoplatform.services.log.ExoLogger;
@@ -31,7 +30,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.security.PrivilegedExceptionAction;
 
 /**
  * Created by The eXo Platform SAS Author : Vitaly Guly gavrik-vetal@ukr.net/mail.ru
@@ -222,13 +220,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
       {
          try
          {
-            dataSocket = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Socket>()
-            {
-               public Socket run() throws Exception
-               {
-                  return serverSocket.accept();
-               }
-            });
+            dataSocket = serverSocket.accept();
 
             serverSocket.close();
          }

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.config;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
@@ -34,8 +33,6 @@ import org.jibx.runtime.JiBXException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,33 +102,8 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
    {
       try
       {
-         IBindingFactory factory;
-         try
-         {
-            factory = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
-            {
-               public IBindingFactory run() throws Exception
-               {
-                  return BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
-               }
-            });
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof JiBXException)
-            {
-               throw (JiBXException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         IBindingFactory             factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+
 
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
          RepositoryServiceConfiguration conf = (RepositoryServiceConfiguration)uctx.unmarshalDocument(is, null);

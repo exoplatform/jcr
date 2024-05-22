@@ -18,9 +18,6 @@ package org.exoplatform.services.document.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Properties;
 
 import org.apache.poi.ooxml.POIXMLProperties;
@@ -31,7 +28,6 @@ import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.xmlbeans.XmlException;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -83,38 +79,17 @@ public class MSXWordDocumentReader extends BaseDocumentReader
          XWPFDocument doc;
          try
          {
-            doc = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<XWPFDocument>()
-            {
-               public XWPFDocument run() throws Exception
-               {
-                  return new XWPFDocument(is);
-               }
-            });
+            doc = new XWPFDocument(is);
          }
          catch (RuntimeException cause)
          {
-            throw new DocumentReadException("Can not get the content: " + cause.getMessage(), cause);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof IOException)
-            {
-               throw (IOException)cause;
-            }
             throw new DocumentReadException("Can not get the content: " + cause.getMessage(), cause);
          }
 
          final XWPFWordExtractor extractor = new XWPFWordExtractor(doc);
          try
          {
-            text = SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
-            {
-               public String run()
-               {
-                  return extractor.getText();
-               }
-            });
+            text = extractor.getText();
          }
          catch (Exception cause)
          {
@@ -161,14 +136,7 @@ public class MSXWordDocumentReader extends BaseDocumentReader
    {
       try
       {
-         OPCPackage container =
-            SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<OPCPackage>()
-            {
-               public OPCPackage run() throws Exception
-               {
-                  return OPCPackage.open(is);
-               }
-            });
+         OPCPackage container = OPCPackage.open(is);
          POIXMLProperties xmlProperties = new POIXMLProperties(container);
          POIPropertiesReader reader = new POIPropertiesReader();
          reader.readDCProperties(xmlProperties);
