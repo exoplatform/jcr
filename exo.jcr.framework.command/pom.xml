@@ -40,13 +40,13 @@
       </dependency>
 
       <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
+         <groupId>io.meeds.kernel</groupId>
          <artifactId>exo.kernel.commons.test</artifactId>
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.exoplatform.gatein.portal</groupId>
-         <artifactId>exo.portal.component.identity</artifactId>
+         <groupId>io.meeds.portal</groupId>
+         <artifactId>portal.component.identity</artifactId>
          <scope>test</scope>
       </dependency>
    </dependencies>
