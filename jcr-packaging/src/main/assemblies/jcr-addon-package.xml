@@ -33,10 +33,9 @@
         <include>*:*:jar</include>
       </includes>
       <excludes>
-        <!-- These old versions of eXo portal are in conflict with new ones under org.exoplatform.gatein.portal -->
-        <exclude>org.exoplatform.ws:*:*</exclude>
-        <exclude>org.exoplatform.kernel:*:*</exclude>
-        <exclude>org.exoplatform.core:*:*</exclude>
+        <exclude>io.meeds.ws:*:*</exclude>
+        <exclude>io.meeds.kernel:*:*</exclude>
+        <exclude>io.meeds.core:*:*</exclude>
         <exclude>org.apache.cxf:*</exclude>
         <!-- No Apache Tomcat artifacts have to be added in the packaging -->
         <exclude>org.apache.tomcat:*</exclude>

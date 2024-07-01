@@ -862,6 +862,6 @@
   </external-component-plugins>
 
   <import>jar:/conf/configuration.xml</import>
-  <import>jar:/conf/exo.portal.component.identity-configuration.xml</import>
+  <import>jar:/conf/portal.component.identity-configuration.xml</import>
 
 </configuration>
