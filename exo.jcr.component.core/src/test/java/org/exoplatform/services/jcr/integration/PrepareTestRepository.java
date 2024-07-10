@@ -68,12 +68,12 @@ public class PrepareTestRepository extends TestCase
 
    private void shutdownHsqldb()
    {
-      for (Object uri : DatabaseManager.getDatabaseURIs())
+      for (String uri : DatabaseManager.getDatabaseURIs().getArray())
       {
-         System.out.print("Shutdown\t" + uri.toString());
+         System.out.print("Shutdown\t" + uri);
          try
          {
-            Connection c = DriverManager.getConnection("jdbc:hsqldb:" + uri.toString(), "sa", "");
+            Connection c = DriverManager.getConnection("jdbc:hsqldb:" + uri, "sa", "");
             c.createStatement().execute("SHUTDOWN");
             System.out.println("\t\t\t[ok]");
          }
