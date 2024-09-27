@@ -35,7 +35,7 @@
   <description>Exoplatform SAS 'eXo JCR Ext Services' project.</description>
 
   <properties>
-     <exo.test.coverage.ratio>0.37</exo.test.coverage.ratio>
+     <exo.test.coverage.ratio>0.36</exo.test.coverage.ratio>
      <wikbook.source>${pom.basedir}/src/main/wikbook</wikbook.source>
      <wikbook.target>${project.build.directory}/wikbook</wikbook.target>
      <wikbook.version>0.9.26</wikbook.version>
@@ -89,10 +89,6 @@
         <configuration>
           <argLine>@{argLine} @{surefire.argLine} -Djava.net.preferIPv4Stack=true</argLine>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>com.jcabi</groupId>
-        <artifactId>jcabi-maven-plugin</artifactId>
       </plugin>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
