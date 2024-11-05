@@ -27,6 +27,76 @@
       <type>org.exoplatform.services.jcr.webdav.lnkproducer.LnkProducer</type>
    </component>
 
+   <component>
+      <type>org.exoplatform.services.xml.transform.impl.trax.TRAXTemplatesServiceImpl</type>
+   </component>
+
+   <component>
+      <type>org.exoplatform.services.xml.resolving.impl.XMLResolvingServiceImpl</type>
+      <component-plugins>
+         <component-plugin>
+            <name>add.resolving.table</name>
+            <set-method>addPlugin</set-method>
+            <type>org.exoplatform.services.xml.resolving.impl.AddXMLResolvingContextPlugin</type>
+            <init-params>
+               <properties-param>
+                  <name>xhtml1-transitional.dtd</name>
+                  <property name="uri" value="dtd/xhtml1-transitional.dtd" />
+                  <property name="publicId" value="-//W3C//DTD XHTML 1.0 Transitional//EN" />
+                  <property name="systemId" value="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" />
+               </properties-param>
+               <properties-param>
+                  <name>web-app_2_3.dtd</name>
+                  <property name="uri" value="dtd/web-app_2_3.dtd" />
+                  <property name="publicId" value="-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" />
+                  <property name="systemId" value="http://java.sun.com/dtd/web-app_2_3.dtd" />
+               </properties-param>
+               <properties-param>
+                  <name>datatypes.dtd</name>
+                  <property name="uri" value="dtd/datatypes.dtd" />
+                  <property name="systemId" value="http://www.w3.org/2001/datatypes.dtd" />
+               </properties-param>
+               <properties-param>
+                  <name>XMLSchema.dtd</name>
+                  <property name="uri" value="dtd/XMLSchema.dtd" />
+                  <property name="publicId" value="-//W3C//DTD XMLSCHEMA 200102//EN" />
+                  <property name="systemId" value="http://www.w3.org/2001/XMLSchema.dtd" />
+               </properties-param>
+               <properties-param>
+                  <name>xhtml1-frameset.dtd</name>
+                  <property name="uri" value="dtd/xhtml1-frameset.dtd" />
+                  <property name="publicId" value="-//W3C//DTD XHTML 1.0 Frameset//EN" />
+                  <property name="systemId" value="http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd" />
+               </properties-param>
+               <properties-param>
+                  <name>xhtml1-strict.dtd</name>
+                  <property name="uri" value="dtd/xhtml1-strict.dtd" />
+                  <property name="publicId" value="-//W3C//DTD XHTML 1.0 Strict//EN" />
+                  <property name="systemId" value="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" />
+               </properties-param>
+               <properties-param>
+                  <name>xhtml-lat1.ent</name>
+                  <property name="uri" value="dtd/xhtml-lat1.ent" />
+                  <property name="publicId" value="-//W3C//ENTITIES Latin 1 for XHTML//EN" />
+                  <property name="systemId" value="http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent" />
+               </properties-param>
+               <properties-param>
+                  <name>xhtml-special.ent</name>
+                  <property name="uri" value="dtd/xhtml-special.ent" />
+                  <property name="publicId" value="-//W3C//ENTITIES Special for XHTML//EN" />
+                  <property name="systemId" value="http://www.w3.org/TR/xhtml1/DTD/xhtml-special.ent" />
+               </properties-param>
+               <properties-param>
+                  <name>xhtml-symbol.ent</name>
+                  <property name="uri" value="dtd/xhtml-symbol.ent" />
+                  <property name="publicId" value="-//W3C//ENTITIES Symbols for XHTML//EN" />
+                  <property name="systemId" value="http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent" />
+               </properties-param>
+            </init-params>
+         </component-plugin>
+      </component-plugins>
+   </component>
+
    <external-component-plugins>
       <target-component>org.exoplatform.services.xml.transform.impl.trax.TRAXTemplatesServiceImpl</target-component>
       <component-plugin>

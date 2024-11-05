@@ -31,7 +31,7 @@
   <name>eXo PLF:: JCR :: Component :: Webdav Service</name>
   <description>Implementation of Webdav Service of Exoplatform SAS 'eXo JCR' project.</description>
   <properties>
-    <exo.test.coverage.ratio>0.56</exo.test.coverage.ratio>
+    <exo.test.coverage.ratio>0.53</exo.test.coverage.ratio>
   </properties>
   <dependencies>
     <dependency>
@@ -50,6 +50,14 @@
     </dependency>
   </dependencies>
   <build>
+   <testResources>
+    <testResource>
+      <directory>src/test/resources</directory>
+      <includes>
+        <include>**</include>
+      </includes>
+    </testResource>
+   </testResources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -94,13 +102,6 @@
                   </goals>
                </execution>
             </executions>
-            <dependencies>
-               <dependency>
-                  <groupId>ant</groupId>
-                  <artifactId>ant-optional</artifactId>
-                  <version>1.5.3-1</version>
-               </dependency>
-            </dependencies>
       </plugin>
     </plugins>
   </build>

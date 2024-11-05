@@ -38,6 +38,224 @@
    </component>
 
    <component>
+      <key>org.exoplatform.services.naming.InitialContextInitializer</key>
+      <type>org.exoplatform.services.naming.InitialContextInitializer</type>
+      <component-plugins>
+         <component-plugin>
+            <name>bind.datasource</name>
+            <set-method>addPlugin</set-method>
+            <type>org.exoplatform.services.naming.BindReferencePlugin</type>
+            <init-params>
+               <value-param>
+                  <name>bind-name</name>
+                  <value>jdbcjcr</value>
+               </value-param>
+               <value-param>
+                  <name>class-name</name>
+                  <value>javax.sql.DataSource</value>
+               </value-param>
+               <value-param>
+                  <name>factory</name>
+                  <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+               </value-param>
+               <properties-param>
+                  <name>ref-addresses</name>
+                  <description>ref-addresses</description>
+                  <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+                  <property name="url" value="jdbc:hsqldb:file:target/temp/data/portal" />
+                  <property name="username" value="sa" />
+                  <property name="password" value="" />
+               </properties-param>
+            </init-params>
+         </component-plugin>
+      </component-plugins>
+      <init-params>
+         <properties-param>
+            <name>default-properties</name>
+            <description>Default initial context properties</description>
+            <property name="java.naming.factory.initial" value="org.exoplatform.services.naming.SimpleContextFactory" />
+         </properties-param>
+      </init-params>
+   </component>
+
+   <component>
+      <type>org.exoplatform.services.xml.resolving.impl.XMLResolvingServiceImpl</type>
+      <component-plugins>
+         <component-plugin>
+            <name>add.resolving.table</name>
+            <set-method>addPlugin</set-method>
+            <type>org.exoplatform.services.xml.resolving.impl.AddXMLResolvingContextPlugin</type>
+            <init-params>
+               <properties-param>
+                  <name>dtd1</name>
+                  <property name="uri" value="dtd/xhtml1-transitional.dtd" />
+                  <property name="publicId" value="-//W3C//DTD XHTML 1.0 Transitional//EN" />
+                  <property name="systemId" value="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" />
+               </properties-param>
+               <properties-param>
+                  <name>dtd2</name>
+                  <property name="uri" value="dtd/web-app_2_3.dtd" />
+                  <property name="publicId" value="-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" />
+                  <property name="systemId" value="http://java.sun.com/dtd/web-app_2_3.dtd" />
+               </properties-param>
+            </init-params>
+         </component-plugin>
+      </component-plugins>
+   </component>
+  
+    <component>
+      <type>org.exoplatform.services.xml.transform.impl.trax.TRAXTransformerServiceImpl</type>
+    </component>
+  
+    <component>
+      <type>org.exoplatform.services.xml.transform.impl.trax.TRAXTemplatesServiceImpl</type>
+      <component-plugins>
+        <component-plugin>
+          <name>add.xslschema</name>
+          <set-method>addPlugin</set-method>
+          <type>org.exoplatform.services.xml.transform.impl.trax.TRAXTemplatesLoaderPlugin</type>
+          <init-params>
+            <properties-param>
+              <name>xsl-source-urls</name>
+              <property
+                name="xslt1"
+                value="xslt/html-url-rewite.xsl" />
+            </properties-param>
+          </init-params>
+        </component-plugin>
+      </component-plugins>
+    </component>
+    <component>
+      <type>org.exoplatform.services.xml.transform.impl.EncodingMapImpl</type>
+    </component>
+
+  <component>
+    <key>org.exoplatform.services.idgenerator.IDGeneratorService</key>
+    <type>org.exoplatform.services.idgenerator.impl.IDGeneratorServiceImpl</type>
+  </component>
+
+  <component>
+    <key>org.exoplatform.services.jdbc.DataSourceProvider</key>
+    <type>org.exoplatform.services.jdbc.impl.DataSourceProviderImpl</type>
+  </component>
+
+  <component>
+    <type>org.exoplatform.services.jcr.impl.RepositoryCreationSynchronizer</type>
+    <init-params>
+       <value-param>
+          <name>disabled</name>
+          <value>false</value>
+       </value-param>
+    </init-params>
+  </component>
+
+
+  <component>
+    <key>org.exoplatform.services.document.DocumentReaderService</key>
+    <type>org.exoplatform.services.document.impl.tika.TikaDocumentReaderServiceImpl</type>
+
+    <component-plugins>
+      <component-plugin>
+        <name>pdf.document.reader</name>
+        <set-method>addDocumentReader</set-method>
+        <type>org.exoplatform.services.document.impl.PDFDocumentReader</type>
+        <description>to read the pdf inputstream</description>
+      </component-plugin>
+
+      <component-plugin>
+        <name>document.readerMSWord</name>
+        <set-method>addDocumentReader</set-method>
+        <type>org.exoplatform.services.document.impl.MSWordDocumentReader</type>
+        <description>to read the ms word inputstream</description>
+      </component-plugin>
+
+      <component-plugin>
+        <name>document.readerMSXWord</name>
+        <set-method>addDocumentReader</set-method>
+        <type>org.exoplatform.services.document.impl.MSXWordDocumentReader</type>
+        <description>to read the ms word inputstream</description>
+      </component-plugin>
+
+      <component-plugin>
+        <name>document.readerMSExcel</name>
+        <set-method>addDocumentReader</set-method>
+        <type>org.exoplatform.services.document.impl.MSExcelDocumentReader</type>
+        <description>to read the ms excel inputstream</description>
+      </component-plugin>
+
+      <component-plugin>
+        <name>document.readerMSXExcel</name>
+        <set-method>addDocumentReader</set-method>
+        <type>org.exoplatform.services.document.impl.MSXExcelDocumentReader</type>
+        <description>to read the ms excel inputstream</description>
+      </component-plugin>
+
+      <component-plugin>
+        <name>document.readerMSOutlook</name>
+        <set-method>addDocumentReader</set-method>
+        <type>org.exoplatform.services.document.impl.MSOutlookDocumentReader</type>
+        <description>to read the ms outlook inputstream</description>
+      </component-plugin>
+
+      <component-plugin>
+        <name>PPTdocument.reader</name>
+        <set-method>addDocumentReader</set-method>
+        <type>org.exoplatform.services.document.impl.PPTDocumentReader</type>
+        <description>to read the ms ppt inputstream</description>
+      </component-plugin>
+
+      <component-plugin>
+        <name>MSXPPTdocument.reader</name>
+        <set-method>addDocumentReader</set-method>
+        <type>org.exoplatform.services.document.impl.MSXPPTDocumentReader</type>
+        <description>to read the ms pptx inputstream</description>
+      </component-plugin>
+
+      <component-plugin>
+        <name>document.readerHTML</name>
+        <set-method>addDocumentReader</set-method>
+        <type>org.exoplatform.services.document.impl.HTMLDocumentReader</type>
+        <description>to read the html inputstream</description>
+      </component-plugin>
+
+      <component-plugin>
+        <name>document.readerXML</name>
+        <set-method>addDocumentReader</set-method>
+        <type>org.exoplatform.services.document.impl.XMLDocumentReader</type>
+        <description>to read the xml inputstream</description>
+      </component-plugin>
+
+      <component-plugin>
+        <name>TPdocument.reader</name>
+        <set-method>addDocumentReader</set-method>
+        <type>org.exoplatform.services.document.impl.TextPlainDocumentReader</type>
+        <description>to read the plain text inputstream</description>
+        <init-params>
+          <!--
+             values-param> <name>defaultEncoding</name> <description>description</description> <value>UTF-8</value>
+             </values-param
+          -->
+        </init-params>
+      </component-plugin>
+
+      <component-plugin>
+        <name>document.readerOO</name>
+        <set-method>addDocumentReader</set-method>
+        <type>org.exoplatform.services.document.impl.OpenOfficeDocumentReader</type>
+        <description>to read the OO inputstream</description>
+      </component-plugin>
+
+    </component-plugins>
+
+    <init-params>
+      <value-param>
+        <name>tika-configuration</name>
+        <value>jar:/conf/portal/tika-config.xml</value>
+      </value-param>
+    </init-params>
+
+  </component>
+   <component>
       <key>org.exoplatform.services.jcr.RepositoryService</key>
       <type>org.exoplatform.services.jcr.impl.RepositoryServiceImpl</type>
       <component-plugins>
