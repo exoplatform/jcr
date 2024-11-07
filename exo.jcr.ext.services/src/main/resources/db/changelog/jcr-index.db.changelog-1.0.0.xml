@@ -17,10 +17,10 @@
       <column name="INDEXING_QUEUE_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_JCR_INDEXING_QUEUE_ID"/>
       </column>
-      <column name="JCR_UUID" type="NVARCHAR(70)">
+      <column name="JCR_UUID" type="VARCHAR(70)">
         <constraints nullable="false"/>
       </column>
-      <column name="WORKSPACE" type="NVARCHAR(30)">
+      <column name="WORKSPACE" type="VARCHAR(30)">
         <constraints nullable="false"/>
       </column>
       <column name="OPERATION_TYPE" type="BIGINT">
@@ -34,7 +34,7 @@
       </column>
     </createTable>
     <modifySql dbms="mysql">
-      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+      <append value=" ENGINE=INNODB CHARSET=UTF8MB4 COLLATE utf8mb4_0900_ai_ci"/>
     </modifySql>
   </changeSet>
   <changeSet author="jcr-index" id="1.0.0-3">
@@ -45,12 +45,12 @@
       <column name="INDEXING_QUEUE_ID" type="BIGINT">
         <constraints foreignKeyName="FK_JCR_INDEXING_QUEUE" references="JCR_INDEXING_QUEUE(INDEXING_QUEUE_ID)" nullable="false" deleteCascade="true" />
       </column>
-      <column name="NODE_NAME" type="NVARCHAR(50)">
+      <column name="NODE_NAME" type="VARCHAR(50)">
         <constraints nullable="false" />
       </column>
     </createTable>
     <modifySql dbms="mysql">
-      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+      <append value=" ENGINE=INNODB CHARSET=UTF8MB4 COLLATE utf8mb4_0900_ai_ci"/>
     </modifySql>
   </changeSet>
   <changeSet author="jcr-index" id="1.0.0-4" dbms="oracle,postgresql">
@@ -62,5 +62,10 @@
   <changeSet author="jcr-index" id="1.0.0-5" dbms="hsqldb">
     <createSequence sequenceName="SEQ_JCR_INDEXING_QUEUE" startValue="1"/>
   </changeSet>
-
+  <changeSet author="jcr-index" id="1.0.0-6" >
+    <sql dbms="mysql">
+      ALTER TABLE JCR_INDEXING_QUEUE CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+      ALTER TABLE JCR_INDEXING_QUEUE_NODES CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+    </sql>
+  </changeSet>
 </databaseChangeLog>
