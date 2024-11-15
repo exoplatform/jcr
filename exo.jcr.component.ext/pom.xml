@@ -57,10 +57,7 @@
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <optional>true</optional>
     </dependency>
-
-
     <dependency>
       <groupId>io.meeds.kernel</groupId>
       <artifactId>exo.kernel.commons.test</artifactId>

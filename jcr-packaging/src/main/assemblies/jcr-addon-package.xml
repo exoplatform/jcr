@@ -114,16 +114,13 @@
         <exclude>*:common-common:jar</exclude>
         <exclude>*:common-logging:jar</exclude>
         <exclude>*:commons-beanutils:jar</exclude>
-        <exclude>*:commons-chain:jar</exclude>
         <exclude>*:commons-codec:jar</exclude>
         <exclude>*:commons-collections:jar</exclude>
         <exclude>*:commons-compress:*</exclude>
         <exclude>*:commons-dbcp:jar</exclude>
-        <exclude>*:commons-digester:jar</exclude>
         <exclude>*:commons-fileupload:jar</exclude>
         <exclude>*:commons-io:jar</exclude>
         <exclude>*:commons-lang3:jar</exclude>
-        <exclude>*:commons-pool:jar</exclude>
         <exclude>*:dom4j:jar</exclude>
         <exclude>*:fontbox:jar</exclude>
         <exclude>*:groovy-all:jar</exclude>
@@ -131,8 +128,6 @@
         <exclude>*:hibernate-core:jar</exclude>
         <exclude>*:hibernate-jpa-2.0-api:jar</exclude>
         <exclude>*:httpclient:jar</exclude>
-        <exclude>*:infinispan-commons:jar</exclude>
-        <exclude>*:infinispan-core:jar</exclude>
         <exclude>*:isoparser:jar</exclude>
         <exclude>*:guava:jar</exclude>
         <exclude>*:jakarta-regexp:jar</exclude>
@@ -142,10 +137,7 @@
         <exclude>*:jakarta.xml.bind-api:jar</exclude>
         <exclude>*:jboss-logging:jar</exclude>
         <exclude>*:jboss-logging-annotations:jar</exclude>
-        <exclude>*:jboss-marshalling-osgi:jar</exclude>
-        <exclude>*:jbossjta:jar</exclude>
         <exclude>*:jcl-over-slf4j:jar</exclude>
-        <exclude>*:jgroups:jar</exclude>
         <exclude>*:jhighlight:jar</exclude>
         <exclude>*:jibx-run:jar</exclude>
         <exclude>*:json-simple:jar</exclude>

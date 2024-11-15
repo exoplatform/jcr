@@ -59,7 +59,7 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>io.meeds.kernel</groupId>
+         <groupId>org.exoplatform.commons-exo</groupId>
          <artifactId>exo.kernel.component.command</artifactId>
       </dependency>
       <dependency>
@@ -75,7 +75,7 @@
          <artifactId>exo.core.component.organization.api</artifactId>
       </dependency>
       <dependency>
-         <groupId>io.meeds.core</groupId>
+         <groupId>org.exoplatform.commons-exo</groupId>
          <artifactId>exo.core.component.database</artifactId>
          <exclusions>
             <exclusion>
@@ -274,7 +274,7 @@
          </exclusions>
       </dependency>
       <dependency>
-         <groupId>io.meeds.kernel</groupId>
+         <groupId>org.exoplatform.commons-exo</groupId>
          <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v8</artifactId>
       </dependency>
       <!-- TCK binaries and deps for repo stub, some eXo API test -->
