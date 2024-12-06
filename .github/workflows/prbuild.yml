@@ -14,6 +14,7 @@ jobs:
         with:
           maven_profiles: 'exo-release,coverage'
           jdk_major_version: 21
+          maximize_build_space: true
           NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           M2_SETTINGS_FILE_URL: ${{ vars.GHACI_SETTINGS_XML_URL }}
