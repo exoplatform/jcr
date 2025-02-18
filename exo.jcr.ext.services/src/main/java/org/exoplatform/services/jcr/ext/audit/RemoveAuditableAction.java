@@ -16,14 +16,15 @@
  */
 package org.exoplatform.services.jcr.ext.audit;
 
+import javax.jcr.Node;
+
 import org.apache.commons.chain.Context;
+
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.command.action.Action;
 import org.exoplatform.services.jcr.impl.core.ItemImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-
-import javax.jcr.Node;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>

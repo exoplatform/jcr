@@ -18,12 +18,16 @@ package org.exoplatform.services.jcr.ext.index.persistent.filter;
 
 import java.util.Set;
 
-import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingService;
-import org.exoplatform.services.jcr.impl.core.query.*;
+import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
+import org.exoplatform.services.jcr.impl.core.query.DefaultChangesFilter;
+import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
+import org.exoplatform.services.jcr.impl.core.query.LocalIndexMarker;
+import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
+import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 
 public class PersistentIndexChangesFilter extends DefaultChangesFilter implements LocalIndexMarker {
 

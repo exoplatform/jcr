@@ -60,22 +60,15 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>io.meeds.portal</groupId>
-      <artifactId>portal.component.common</artifactId>
+      <groupId>io.meeds.social</groupId>
+      <artifactId>social-component-api</artifactId>
       <scope>provided</scope>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>io.meeds.ws</groupId>-->
-<!--      <artifactId>exo.ws.rest.ext</artifactId>-->
-<!--      <scope>provided</scope>-->
-<!--    </dependency>-->
-
     <dependency>
       <groupId>io.meeds.kernel</groupId>
       <artifactId>exo.kernel.commons.test</artifactId>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>io.meeds.portal</groupId>
       <artifactId>portal.component.identity</artifactId>

@@ -16,14 +16,14 @@
  */
 package org.exoplatform.services.jcr.ext.audit;
 
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.util.TraversingItemVisitor;
+
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.

@@ -16,12 +16,12 @@
  */
 package org.exoplatform.services.jcr.ext.audit;
 
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.Constants;
-
 import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.Constants;
 
 /**
  * Created by The eXo Platform SAS .
