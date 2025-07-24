@@ -164,9 +164,11 @@ public class OpenOfficeDocumentReader extends BaseDocumentReader
          try
          {
             ZipEntry ze = zis.getNextEntry();
-            while (!ze.getName().equals("meta.xml"))
-            {
-               ze = zis.getNextEntry();
+            while (ze != null && !ze.getName().equals("meta.xml")) {
+              ze = zis.getNextEntry();
+            }
+            if (ze == null) {
+              throw new DocumentReadException("Can't find file 'meta.xml'");
             }
 
             OpenOfficeMetaHandler metaHandler = new OpenOfficeMetaHandler();
