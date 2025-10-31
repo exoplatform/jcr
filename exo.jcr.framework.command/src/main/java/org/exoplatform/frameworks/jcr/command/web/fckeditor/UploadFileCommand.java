@@ -31,7 +31,7 @@ import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
 import org.apache.commons.fileupload2.core.DiskFileItem;
 import org.apache.commons.fileupload2.core.FileItem;
-import org.apache.commons.fileupload2.jakarta.JakartaServletDiskFileUpload;
+import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletDiskFileUpload;
 
 import org.exoplatform.frameworks.jcr.command.JCRCommandHelper;
 import org.exoplatform.frameworks.jcr.command.web.GenericWebAppContext;
