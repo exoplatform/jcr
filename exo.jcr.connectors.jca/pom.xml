@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>7.2.0-20260304</version>
+    <version>7.2.x-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.connectors.jca</artifactId>
   <packaging>rar</packaging>
