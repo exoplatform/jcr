@@ -51,7 +51,7 @@ public class TestRepositoryCreationServiceInClusterNode1 extends AbstractBackupT
       Thread.sleep(60000);
       
       Map<String, String> connProps = new HashMap<String, String>();
-      connProps.put("driverClassName", "com.mysql.jdbc.Driver");
+      connProps.put("driverClassName", "com.mysql.cj.jdbc.Driver");
       connProps.put("username", "root");
       connProps.put("password", "24635457");
 
