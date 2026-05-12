@@ -351,7 +351,7 @@ public class TestIDNumeric extends TestCase
    public Connection createMysql(String[] ddl) throws Exception
    {
       // autocommit=true
-      Connection con = openDatabase("com.mysql.jdbc.Driver", "jdbc:mysql://localhost/portal", "exoadmin", "exo12321");
+      Connection con = openDatabase("com.mysql.cj.jdbc.Driver", "jdbc:mysql://localhost/portal", "exoadmin", "exo12321");
 
       runDDL(con, ddl);
 
