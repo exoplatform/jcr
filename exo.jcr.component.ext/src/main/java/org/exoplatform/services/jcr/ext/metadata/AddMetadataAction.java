@@ -83,16 +83,7 @@ public class AddMetadataAction implements Action
             setJCRProperties(parent, props);
          }
       }
-      catch (HandlerNotFoundException e)
-      {
-         LOG.debug("Binary value reader error, content by path " + property.getPath() + ", property id "
-            + property.getData().getIdentifier() + " : " + e.getMessage());
-      }
-      catch (IOException e)
-      {
-         printWarning(property, e);
-      }
-      catch (DocumentReadException e)
+      catch (Exception e)
       {
          printWarning(property, e);
       }
@@ -134,20 +125,24 @@ public class AddMetadataAction implements Action
     * Print warning message on the console
     * 
     * @param property property that has not been read
-    * @param exception the reason for which wasn't read property
+    * @param e the reason for which wasn't read property
     * @throws RepositoryException
     */
-   private void printWarning(PropertyImpl property, Exception exception) throws RepositoryException
+   private void printWarning(PropertyImpl property, Exception e) throws RepositoryException
    {
-      if (PropertyManager.isDevelopping())
+      if (PropertyManager.isDevelopping() || LOG.isDebugEnabled())
       {
-         LOG.warn("Binary value reader error, content by path " + property.getPath() + ", property id "
-            + property.getData().getIdentifier() + " : " + exception.getMessage(), exception);
+        LOG.warn("Binary value reader error, content by path '{}', property id '{}'. Add empty dc:elementSet properties to file",
+                 property.getPath(),
+                 property.getData().getIdentifier(),
+                 e);
       }
       else
       {
-         LOG.warn("Binary value reader error, content by path " + property.getPath() + ", property id "
-            + property.getData().getIdentifier() + " : " + exception.getMessage());
+        LOG.warn("Binary value reader error, content by path '{}', property id '{}'. Add empty dc:elementSet properties to file. Error (Enable Debug for full stack trace): {}",
+                 property.getPath(),
+                 property.getData().getIdentifier(),
+                 e.getMessage());
       }
    }
 
