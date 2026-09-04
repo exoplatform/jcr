@@ -20,57 +20,48 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.exoplatform.commons.api.persistence.ExoEntity;
 import org.exoplatform.services.jcr.ext.index.persistent.JCRIndexingOperationType;
+
+import io.meeds.common.persistence.PortableSequence;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity(name = "JCRIndexingQueue")
-@ExoEntity
 @Table(name = "JCR_INDEXING_QUEUE")
-@NamedQueries(
-  {
-      @NamedQuery(
-          name = "JCRIndexingQueue.findAllOperationNotExecutedByClusterNode",
-          query = "SELECT idx FROM JCRIndexingQueue idx"
-              + " WHERE :clusterNodeName NOT MEMBER OF idx.nodes"
-              + " ORDER BY idx.modificationDate ASC"
-      ),
-      @NamedQuery(
-          name = "JCRIndexingQueue.findAllOperationNotExecutedByClusterNodePreceedingAnID",
-          query = "SELECT idx FROM JCRIndexingQueue idx"
-              + " WHERE idx.id < :lastExecutedId "
-              + " AND :oldClusterNodeName MEMBER OF idx.nodes"
-              + " AND :clusterNodeName NOT MEMBER OF idx.nodes"
-              + " ORDER BY idx.id ASC"
-      ),
-      @NamedQuery(
-          name = "JCRIndexingQueue.deleteAllIndexingOperationsSince",
-          query = "Delete FROM JCRIndexingQueue idx WHERE idx.id < :id"
-      ),
-      @NamedQuery(
-          name = "JCRIndexingQueue.deleteOperationsByJCRUUID",
-          query = "Delete FROM JCRIndexingQueue idx WHERE idx.jcrUUID = :jcrUUID"
-      )
-  }
+@NamedQuery(
+  name = "JCRIndexingQueue.findAllOperationNotExecutedByClusterNode",
+  query = "SELECT idx FROM JCRIndexingQueue idx"
+      + " WHERE :clusterNodeName NOT MEMBER OF idx.nodes"
+      + " ORDER BY idx.modificationDate ASC"
+)
+@NamedQuery(
+  name = "JCRIndexingQueue.findAllOperationNotExecutedByClusterNodePreceedingAnID",
+  query = "SELECT idx FROM JCRIndexingQueue idx"
+      + " WHERE idx.id < :lastExecutedId "
+      + " AND :oldClusterNodeName MEMBER OF idx.nodes"
+      + " AND :clusterNodeName NOT MEMBER OF idx.nodes"
+      + " ORDER BY idx.id ASC"
+)
+@NamedQuery(
+  name = "JCRIndexingQueue.deleteAllIndexingOperationsSince",
+  query = "Delete FROM JCRIndexingQueue idx WHERE idx.id < :id"
+)
+@NamedQuery(
+  name = "JCRIndexingQueue.deleteOperationsByJCRUUID",
+  query = "Delete FROM JCRIndexingQueue idx WHERE idx.jcrUUID = :jcrUUID"
 )
 public class JCRIndexQueueEntity {
   @Id
   @Column(name = "INDEXING_QUEUE_ID")
-  @SequenceGenerator(name = "SEQ_JCR_INDEXING_QUEUE", sequenceName = "SEQ_JCR_INDEXING_QUEUE", allocationSize = 1)
-  @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_JCR_INDEXING_QUEUE")
+  @PortableSequence(name = "SEQ_JCR_INDEXING_QUEUE")
   private long                     id;
 
   @Column(name = "JCR_UUID", nullable = false)

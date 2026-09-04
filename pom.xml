@@ -158,6 +158,7 @@
           <include>**/*.ion</include>
           <include>**/*.conf</include>
           <include>**/*.config</include>
+          <include>**/*.idx</include>
         </includes>
       </resource>
     </resources>
