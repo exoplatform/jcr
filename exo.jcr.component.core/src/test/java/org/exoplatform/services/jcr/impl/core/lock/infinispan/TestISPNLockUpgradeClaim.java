@@ -220,14 +220,18 @@ public class TestISPNLockUpgradeClaim
       execute("CREATE TABLE " + claimTable + legacyTable);
       claim(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1));
 
-      Future<Boolean> upgraded = executor.submit(() -> upgrade(dataSource).run());
+      AtomicInteger renames = new AtomicInteger();
+      DataSource counted = onStatement("ALTER TABLE", renames::incrementAndGet);
+      Future<Boolean> upgraded = executor.submit(() -> upgrade(counted).run());
       Thread.sleep(3 * STALE_AFTER);
       assertFalse(upgraded.isDone());
       assertTrue(releases.isEmpty());
+      assertEquals("No rename while the claim is held", 0, renames.get());
 
       execute("DROP TABLE " + claimTable);
       assertTrue(upgraded.get(1, TimeUnit.MINUTES));
       assertEquals(List.of(List.of("node1", "node2")), releases);
+      assertEquals(1, renames.get());
    }
 
    @Test
@@ -302,6 +306,14 @@ public class TestISPNLockUpgradeClaim
             }
          }
       };
+      return onStatement(statement, await);
+   }
+
+   /**
+    * The data source, which runs the given action before each statement that starts with the given text.
+    */
+   private DataSource onStatement(String statement, Runnable action)
+   {
       return proxy(DataSource.class, dataSource, (target, method, args) -> {
          Object result = invoke(target, method, args);
          if (!method.getName().equals("getConnection"))
@@ -312,7 +324,7 @@ public class TestISPNLockUpgradeClaim
             if (connectionMethod.getName().equals("prepareStatement")
                && ((String) connectionArgs[0]).startsWith(statement))
             {
-               await.run();
+               action.run();
             }
             Object connectionResult = invoke(connection, connectionMethod, connectionArgs);
             if (!connectionMethod.getName().equals("createStatement"))
@@ -323,7 +335,7 @@ public class TestISPNLockUpgradeClaim
                if (sqlMethod.getName().startsWith("execute") && sqlArgs != null
                   && ((String) sqlArgs[0]).startsWith(statement))
                {
-                  await.run();
+                  action.run();
                }
                return invoke(sql, sqlMethod, sqlArgs);
             });
