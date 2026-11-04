@@ -30,6 +30,10 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
+import org.infinispan.commons.configuration.io.ConfigurationReader;
+import org.infinispan.commons.configuration.io.NamingStrategy;
+import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.commons.tx.lookup.TransactionManagerLookup;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
@@ -37,13 +41,10 @@ import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
-import org.infinispan.jmx.MBeanServerLookup;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.persistence.jdbc.configuration.JdbcBinaryStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
-import org.infinispan.transaction.lookup.TransactionManagerLookup;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,11 +56,10 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import javax.jcr.RepositoryException;
-import javax.management.MBeanServer;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 /**
  * Factory that creates and starts pre-configured instances of Infinispan.
@@ -91,14 +91,6 @@ public class ISPNCacheFactory<K, V>
     * A Map that contains all the registered CacheManager order by cluster name.
     */
    private static Map<String, CacheManagerInstance> CACHE_MANAGERS = new HashMap<String, CacheManagerInstance>();
-
-   private static final MBeanServerLookup MBEAN_SERVER_LOOKUP = new MBeanServerLookup()
-   {
-      public MBeanServer getMBeanServer(Properties properties)
-      {
-         return ExoContainerContext.getTopContainer().getMBeanServer();
-      }
-   };
 
    /**
     * Creates InfinispanCacheFactory with provided configuration transaction managers.
@@ -162,10 +154,24 @@ public class ISPNCacheFactory<K, V>
       {
          // creating new CacheManager
 
-         ParserRegistry parser = new ParserRegistry(Thread.currentThread().getContextClassLoader());
-         // Loads the configuration from the input stream
-         ConfigurationBuilderHolder holder = parser.parse(configStream);
+         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+         ConfigurationBuilderHolder holder = new ConfigurationBuilderHolder(classLoader);
+         // Loads the configuration from the input stream without validating it: a JDBC store gets its connection
+         // factory once the cache manager is chosen
+         new ParserRegistry(classLoader).parse(ConfigurationReader.from(configStream)
+                                                                  .withType(MediaType.APPLICATION_XML)
+                                                                  .withProperties(System.getProperties())
+                                                                  .withNamingStrategy(NamingStrategy.KEBAB_CASE)
+                                                                  .build(),
+                                               holder);
+         if (holder.getDefaultConfigurationBuilder().configuration() != null)
+         {
+            throw new RepositoryConfigurationException("The default cache of the Infinispan configuration "
+               + configurationPath + " cannot inherit from another configuration");
+         }
          GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();
+         // Configure the marshaller, which sets the deserialization filter of JGroups before any channel is created
+         Utils.configureSerialization(configBuilder, configurationPath);
          Utils.loadJGroupsConfig(configurationManager, configBuilder.build(), configBuilder);
          manager = getUniqueInstance(regionIdEscaped, holder, transactionManager, jndiUrl);
 
@@ -203,11 +209,8 @@ public class ISPNCacheFactory<K, V>
       GlobalConfiguration gc = configBuilder.build();
       ExoContainer container = ExoContainerContext.getCurrentContainer();
       // Ensure that the cluster name won't be used between 2 ExoContainers
-      configBuilder.transport().clusterName(gc.transport().clusterName() + "_" + container.getContext().getName())
-         .globalJmxStatistics()
-         .cacheManagerName(gc.globalJmxStatistics().cacheManagerName() + "_" + container.getContext().getName()).
-         // Configure the MBeanServerLookup
-         mBeanServerLookup(MBEAN_SERVER_LOOKUP);
+      configBuilder.transport().clusterName(gc.transport().clusterName() + "_" + container.getContext().getName());
+      configBuilder.cacheManagerName(gc.cacheManagerName() + "_" + container.getContext().getName());
       EmbeddedCacheManager manager;
       gc = configBuilder.build();
       String clusterName = gc.transport().clusterName();
@@ -221,7 +224,8 @@ public class ISPNCacheFactory<K, V>
       {
          // Reset the manager before storing it into the map since the default config is used as
          // template to define a new configuration
-         manager = new DefaultCacheManager(gc);
+         Utils.configureJmx(configBuilder);
+         manager = new DefaultCacheManager(configBuilder.build());
          CacheManagerInstance cacheManagerInstance = new CacheManagerInstance(manager);
          cacheManagerInstance.acquire();
          CACHE_MANAGERS.put(clusterName, cacheManagerInstance);
@@ -253,16 +257,10 @@ public class ISPNCacheFactory<K, V>
       {
          for (StoreConfigurationBuilder storeBuilder : configurationBuilder.persistence().stores())
          {
-            if(storeBuilder instanceof JdbcBinaryStoreConfigurationBuilder)
-            {
-               JdbcBinaryStoreConfigurationBuilder storeConfigurationBuilder =
-                       (JdbcBinaryStoreConfigurationBuilder) storeConfigurationBuilderList.get(0);
-               storeConfigurationBuilder.connectionFactory(ManagedConnectionFactoryConfigurationBuilder.class).jndiUrl(jndiUrl);
-            }
-            else if( storeBuilder instanceof JdbcStringBasedStoreConfigurationBuilder)
+            if (storeBuilder instanceof JdbcStringBasedStoreConfigurationBuilder)
             {
                JdbcStringBasedStoreConfigurationBuilder storeConfigurationBuilder =
-                       (JdbcStringBasedStoreConfigurationBuilder) storeConfigurationBuilderList.get(0);
+                       (JdbcStringBasedStoreConfigurationBuilder) storeBuilder;
                storeConfigurationBuilder.connectionFactory(ManagedConnectionFactoryConfigurationBuilder.class).jndiUrl(jndiUrl);
             }
          }

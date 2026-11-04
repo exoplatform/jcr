@@ -25,10 +25,14 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
+import org.infinispan.remoting.transport.Address;
+import org.infinispan.remoting.transport.Transport;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
+import org.jgroups.Event;
+import org.jgroups.stack.IpAddress;
 
 import java.util.concurrent.TimeUnit;
 
@@ -104,15 +108,21 @@ public class TestISPNCache extends TestCase
     */
    public void testJGroupTransportPhysicalAddress() throws Exception
    {
-      GlobalConfiguration myGlobalConfig = new GlobalConfigurationBuilder().clusteredDefault().build();
+      GlobalConfiguration myGlobalConfig =
+         new GlobalConfigurationBuilder().clusteredDefault().defaultCacheName("default").build();
       // Create cache manager
-      EmbeddedCacheManager manager = new DefaultCacheManager(myGlobalConfig);
+      EmbeddedCacheManager manager = new DefaultCacheManager(myGlobalConfig, false);
+      manager.defineConfiguration("default", new ConfigurationBuilder().build());
+      manager.start();
 
       // Create a cache
       Cache<String, String> cache = manager.getCache();
       
-      assertTrue(manager.getCoordinator() instanceof JGroupsAddress);
-      assertTrue(manager.getTransport() instanceof JGroupsTransport);
+      Transport transport = GlobalComponentRegistry.of(manager).getComponent(Transport.class);
+      assertTrue(transport instanceof JGroupsTransport);
+      org.jgroups.Address coordinator = Address.toExtendedUUID(manager.getCoordinator());
+      assertTrue(((JGroupsTransport)transport).getChannel().down(new Event(Event.GET_PHYSICAL_ADDRESS, coordinator))
+         instanceof IpAddress);
    }
 
    /**
@@ -122,9 +132,12 @@ public class TestISPNCache extends TestCase
     */
    public void testGetClusterCache() throws Exception
    {
-      GlobalConfiguration myGlobalConfig = new GlobalConfigurationBuilder().clusteredDefault().build();
+      GlobalConfiguration myGlobalConfig =
+         new GlobalConfigurationBuilder().clusteredDefault().defaultCacheName("default").build();
       // Create cache manager
-      EmbeddedCacheManager manager = new DefaultCacheManager(myGlobalConfig);
+      EmbeddedCacheManager manager = new DefaultCacheManager(myGlobalConfig, false);
+      manager.defineConfiguration("default", new ConfigurationBuilder().build());
+      manager.start();
 
       // Create a cache
       Cache<String, String> cache = manager.getCache();
