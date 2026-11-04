@@ -267,8 +267,17 @@ public class ISPNCacheFactory<K, V>
       }
       
       Configuration conf = configurationBuilder.build();
-      // Define the configuration of the cache
-      manager.defineConfiguration(regionId, new ConfigurationBuilder().read(conf).build());
+      // A running cache of the region is shared with its configuration
+      if (!manager.isRunning(regionId))
+      {
+         // A stopped cache keeps its configuration, which the region of a workspace added again replaces
+         if (manager.getCacheConfiguration(regionId) != null)
+         {
+            manager.undefineConfiguration(regionId);
+         }
+         // Define the configuration of the cache
+         manager.defineConfiguration(regionId, new ConfigurationBuilder().read(conf).build());
+      }
       if (LOG.isInfoEnabled())
       {
          LOG.info("The region " + regionId + " has been registered for the container "
