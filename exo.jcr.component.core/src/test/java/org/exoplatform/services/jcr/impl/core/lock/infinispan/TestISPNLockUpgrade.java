@@ -48,6 +48,7 @@ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
@@ -69,6 +70,11 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
 
    private final TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
 
+   /**
+    * A repository of its own: the shared one can hold workspaces of another database structure type.
+    */
+   private RepositoryImpl upgradeRepository;
+
    private WorkspaceEntry workspaceEntry;
 
    private DataSource dataSource;
@@ -88,14 +94,15 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
    public void setUp() throws Exception
    {
       super.setUp();
+      upgradeRepository = (RepositoryImpl)helper.createRepository(container, DatabaseStructureType.SINGLE, null);
       workspaceEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, null);
-      helper.addWorkspace(repository, workspaceEntry);
+      helper.addWorkspace(upgradeRepository, workspaceEntry);
       dataSource = (DataSource)new InitialContext().lookup(workspaceEntry.getContainer().getParameterValue("source-name"));
       ISPNLockTableHandler tables = (ISPNLockTableHandler)lockManager().getLockTableHandler();
       lockTable = tables.getTableName("L");
       claimTable = tables.getTableName("U");
 
-      Session locker = repository.login(credentials, workspaceEntry.getName());
+      Session locker = upgradeRepository.login(credentials, workspaceEntry.getName());
       try
       {
          Node deep = locker.getRootNode().addNode("deep");
@@ -115,16 +122,17 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
       {
          locker.logout();
       }
-      repository.removeWorkspace(workspaceEntry.getName());
+      upgradeRepository.removeWorkspace(workspaceEntry.getName());
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      if (repository.isWorkspaceInitialized(workspaceEntry.getName()))
+      if (upgradeRepository.isWorkspaceInitialized(workspaceEntry.getName()))
       {
-         repository.removeWorkspace(workspaceEntry.getName());
+         upgradeRepository.removeWorkspace(workspaceEntry.getName());
       }
+      helper.removeRepository(container, upgradeRepository.getName());
       super.tearDown();
    }
 
@@ -138,7 +146,7 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
 
       assertReleased("deep");
       assertReleased("shallow");
-      Session session = repository.login(credentials, workspaceEntry.getName());
+      Session session = upgradeRepository.login(credentials, workspaceEntry.getName());
       try
       {
          // The index no longer holds the lock properties: the search manager started before the lock manager
@@ -185,7 +193,7 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
       startWorkspaceAgain();
 
       assertReleased("shallow");
-      Session session = repository.login(credentials, workspaceEntry.getName());
+      Session session = upgradeRepository.login(credentials, workspaceEntry.getName());
       try
       {
          assertTrue(session.getRootNode().getNode("deep").isLocked());
@@ -221,7 +229,7 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
       execute("DROP TABLE " + claimTable);
       starter.join(TimeUnit.MINUTES.toMillis(1));
       assertFalse(starter.isAlive());
-      assertTrue(repository.isWorkspaceInitialized(workspaceEntry.getName()));
+      assertTrue(upgradeRepository.isWorkspaceInitialized(workspaceEntry.getName()));
       // The node that held the claim releases the locks, not the one that waited
       assertEquals(2, countLockOwners());
    }
@@ -231,9 +239,9 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
       startWorkspaceAgain();
       File backup = Files.createTempDirectory(Path.of("target"), "locks").toFile();
       lockManager().backup(backup);
-      repository.removeWorkspace(workspaceEntry.getName());
+      upgradeRepository.removeWorkspace(workspaceEntry.getName());
       // A restore runs before the workspace starts
-      helper.addWorkspace(repository, workspaceEntry);
+      helper.addWorkspace(upgradeRepository, workspaceEntry);
 
       DataRestore restorer = lockManager().getDataRestorer(new DataRestoreContext(
          new String[]{DataRestoreContext.STORAGE_DIR}, new Object[]{backup}));
@@ -249,7 +257,7 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
    {
       startWorkspaceAgain();
       ISPNCacheableLockManagerImpl stopped = lockManager();
-      repository.removeWorkspace(workspaceEntry.getName());
+      upgradeRepository.removeWorkspace(workspaceEntry.getName());
 
       assertThrows(IllegalLifecycleStateException.class, () -> stopped.lockExist(deepId));
    }
@@ -257,7 +265,7 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
    public void testReleaseSkipsTheNodesReleasedMeanwhile() throws Exception
    {
       startWorkspaceAgain();
-      Session session = repository.login(credentials, workspaceEntry.getName());
+      Session session = upgradeRepository.login(credentials, workspaceEntry.getName());
       try
       {
          // The lock properties of the node are in the cache of the workspace when another node removes them
@@ -280,11 +288,11 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
    public void testUnsegmentedLockStoreIsRefused() throws Exception
    {
       WorkspaceEntry unsegmented = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, null);
-      unsegmented.setUniqueName(repository.getName() + "_" + unsegmented.getName());
+      unsegmented.setUniqueName(upgradeRepository.getName() + "_" + unsegmented.getName());
       unsegmented.getLockManager().putParameterValue(ISPNCacheFactory.INFINISPAN_CONFIG,
          "conf/standalone/test-infinispan-lock-unsegmented.xml");
-      helper.addWorkspace(repository, workspaceEntry);
-      WorkspaceContainerFacade workspaceContainer = repository.getWorkspaceContainer(workspaceEntry.getName());
+      helper.addWorkspace(upgradeRepository, workspaceEntry);
+      WorkspaceContainerFacade workspaceContainer = upgradeRepository.getWorkspaceContainer(workspaceEntry.getName());
 
       RepositoryConfigurationException refusal = assertThrows(RepositoryConfigurationException.class,
          () -> new ISPNCacheableLockManagerImpl(
@@ -301,20 +309,20 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
     */
    private void startWorkspaceAgain() throws Exception
    {
-      helper.addWorkspace(repository, workspaceEntry);
-      helper.getRepositoryContainer(container, repository.getName()).getWorkspaceContainer(workspaceEntry.getName())
+      helper.addWorkspace(upgradeRepository, workspaceEntry);
+      helper.getRepositoryContainer(container, upgradeRepository.getName()).getWorkspaceContainer(workspaceEntry.getName())
             .start();
    }
 
    private ISPNCacheableLockManagerImpl lockManager()
    {
-      return (ISPNCacheableLockManagerImpl)repository.getWorkspaceContainer(workspaceEntry.getName())
+      return (ISPNCacheableLockManagerImpl)upgradeRepository.getWorkspaceContainer(workspaceEntry.getName())
                                                     .getComponent(WorkspaceLockManager.class);
    }
 
    private void assertReleased(String name) throws Exception
    {
-      Session session = repository.login(credentials, workspaceEntry.getName());
+      Session session = upgradeRepository.login(credentials, workspaceEntry.getName());
       try
       {
          Node node = session.getRootNode().getNode(name);
