@@ -432,6 +432,7 @@
                   <include>org/exoplatform/services/jcr/usecases/**/Test*.java</include>
                   <include>org/exoplatform/services/jcr/usecases/**/*Test.java</include>
                   <include>org/exoplatform/services/jcr/impl/**/Test*.java</include>
+                  <include>org/exoplatform/services/jcr/infinispan/**/Test*.java</include>
                </includes>
                <excludes>
                   <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
