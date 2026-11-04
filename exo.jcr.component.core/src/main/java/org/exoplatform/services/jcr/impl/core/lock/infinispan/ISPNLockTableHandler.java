@@ -100,6 +100,15 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
     */
    protected String getTableName() throws SQLException
    {
+      return getTableName("L");
+   }
+
+   /**
+    * Returns the name of a table of the workspace, quoted: the prefix of the lock tables, then the type of the table
+    * and the workspace.
+    */
+   protected String getTableName(String type) throws SQLException
+   {
       try
       {
          String dialect = getDialect();
@@ -107,7 +116,7 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
          if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
             quote = "`";
          return quote + lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME)
-            + "_" + "L" + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_") + quote;
+            + "_" + type + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_") + quote;
       }
       catch (RepositoryConfigurationException e)
       {
@@ -120,9 +129,9 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
     */
    protected boolean tableExists()
    {
-      try
+      try (Connection connection = openConnection())
       {
-         return JDBCUtils.tableExists(getTableName(), openConnection());
+         return JDBCUtils.tableExists(getTableName(), connection);
       }
       catch (SQLException e)
       {
