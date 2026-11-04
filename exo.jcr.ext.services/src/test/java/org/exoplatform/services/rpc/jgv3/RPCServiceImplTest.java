@@ -32,6 +32,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.jcr.RepositoryException;
 
@@ -116,6 +119,29 @@ public class RPCServiceImplTest
       assertEquals(Set.of("node1:arg", "node2:arg"), replies);
       assertEquals(Set.of(List.of("node1", "arg"), List.of("node2", "arg")),
                    new HashSet<>(node1.executeCommandOnAllNodes(list, true, "arg")));
+   }
+
+   @Test
+   public void testCommandSentWithoutWaitingRunsOnEveryNode() throws Exception
+   {
+      Set<String> ran = ConcurrentHashMap.newKeySet();
+      CountDownLatch done = new CountDownLatch(2);
+      RemoteCommand release = node1.register("release", (node, args) -> {
+         ran.add(node + ":" + args[0]);
+         done.countDown();
+         return null;
+      });
+      node2.register("release", (node, args) -> {
+         ran.add(node + ":" + args[0]);
+         done.countDown();
+         return null;
+      });
+      startNodes();
+
+      assertEquals(List.of(), node1.executeCommandOnAllNodes(release, false, "arg"));
+
+      assertTrue(done.await(10, TimeUnit.SECONDS));
+      assertEquals(Set.of("node1:arg", "node2:arg"), ran);
    }
 
    @Test
