@@ -85,8 +85,10 @@ public class RPCServiceImpl extends AbstractRPCService
     */
    protected RspList<Object> castMessage(List<Address> dests, Message msg, boolean synchronous, long timeout) throws Exception
    {
-      return dispatcher.castMessage(dests, msg, new RequestOptions(synchronous ? ResponseMode.GET_ALL
+      RspList<Object> rsps = dispatcher.castMessage(dests, msg, new RequestOptions(synchronous ? ResponseMode.GET_ALL
          : ResponseMode.GET_NONE, timeout));
+      // A request that waits for no response gets no list from JGroups 5, where JGroups 3 gave an empty one
+      return rsps == null && !synchronous ? new RspList<>() : rsps;
    }
    
    /**
