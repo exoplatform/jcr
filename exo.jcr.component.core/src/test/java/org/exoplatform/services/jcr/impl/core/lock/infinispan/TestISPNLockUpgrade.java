@@ -29,6 +29,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +43,9 @@ import javax.sql.DataSource;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
@@ -165,6 +168,38 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
       }
       assertFalse(tableExists(claimTable));
       assertTrue(hasSegmentColumn());
+   }
+
+   public void testLocksAreReleasedWhenTheTemplateNamesTheLockTable() throws Exception
+   {
+      // A configuration that leaves the names of the lock table and of its id column to the defaults of its template
+      LockManagerEntry lockManager = workspaceEntry.getLockManager();
+      List<SimpleParameterEntry> parameters = new ArrayList<>(lockManager.getParameters());
+      parameters.removeIf(parameter -> parameter.getName().equals(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME)
+         || parameter.getName().equals(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_CL_ID_COLUMN_NAME));
+      lockManager.setParameters(parameters);
+      lockManager.putParameterValue(ISPNCacheFactory.INFINISPAN_CONFIG,
+         "conf/standalone/test-infinispan-lock-default-prefix.xml");
+      execute("DROP TABLE " + lockTable);
+      execute("CREATE TABLE " + lockTable + LEGACY_TABLE);
+
+      startWorkspaceAgain();
+
+      assertReleased("deep");
+      assertReleased("shallow");
+      assertTrue(hasSegmentColumn());
+      assertEquals(lockTable, ((ISPNLockTableHandler)lockManager().getLockTableHandler()).getTableName("L"));
+      Session session = upgradeRepository.login(credentials, workspaceEntry.getName());
+      try
+      {
+         session.getRootNode().getNode("deep").lock(true, false);
+         // The identifiers of the locked nodes are read in the id column of the lock table
+         assertEquals(Set.of(deepId), lockManager().getLockTableHandler().getLockedNodesIds());
+      }
+      finally
+      {
+         session.logout();
+      }
    }
 
    public void testStaleClaimIsTakenOver() throws Exception

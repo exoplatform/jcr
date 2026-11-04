@@ -131,7 +131,7 @@ class ISPNLockUpgrade
       TableManipulationConfiguration table, LockReleaser releaser, long staleAfter, long pollInterval)
    {
       this.workspace = workspace;
-      this.tables = new ISPNLockTableHandler(workspace, lockDataSource);
+      this.tables = new ISPNLockTableHandler(workspace, lockDataSource, table);
       this.lockDataSource = lockDataSource;
       this.itemDataSource = itemDataSource;
       this.table = table;
