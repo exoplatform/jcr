@@ -129,7 +129,8 @@ public class BufferedISPNCache
       /**
        * {@inheritDoc}
        */
-         public String toString()
+      @Override
+      public String toString()
       {
          return key.toString() + " type=" + changesType + " historysIndex=" + historicalIndex;
       }
@@ -195,7 +196,8 @@ public class BufferedISPNCache
          this(key,value, cache, historicalIndex, local, allowLocalChanges, -1);
       }
 
-         public void apply()
+      @Override
+      public void apply()
       {
          if(lifespan == -1)
          {
@@ -207,7 +209,8 @@ public class BufferedISPNCache
          }
       }
 
-         void applyToBuffer(CompressedISPNChangesBuffer buffer)
+      @Override
+      void applyToBuffer(CompressedISPNChangesBuffer buffer)
       {
          buffer.put(key, value);
       }
@@ -238,7 +241,8 @@ public class BufferedISPNCache
          this(key, value, cache, historicalIndex, local, allowLocalChanges, -1);
       }
 
-         public void apply()
+      @Override
+      public void apply()
       {
          if (!localMode && value instanceof FakeValueSet)
          {
@@ -260,7 +264,8 @@ public class BufferedISPNCache
          }
       }
 
-         public boolean isTxRequired()
+      @Override
+      public boolean isTxRequired()
       {
          return true;
       }
@@ -284,7 +289,8 @@ public class BufferedISPNCache
          this.forceModify = forceModify;
       }
 
-         public void apply()
+      @Override
+      public void apply()
       {
          if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
          {
@@ -322,7 +328,8 @@ public class BufferedISPNCache
          }
       }
 
-         public boolean isTxRequired()
+      @Override
+      public boolean isTxRequired()
       {
          return true;
       }
@@ -343,7 +350,8 @@ public class BufferedISPNCache
          this.itemData = value;
       }
 
-         public void apply()
+      @Override
+      public void apply()
       {
          if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
          {
@@ -383,7 +391,8 @@ public class BufferedISPNCache
          }
       }
 
-         public boolean isTxRequired()
+      @Override
+      public boolean isTxRequired()
       {
          return true;
       }
@@ -404,7 +413,8 @@ public class BufferedISPNCache
          this.value = value;
       }
 
-         public void apply()
+      @Override
+      public void apply()
       {
          if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
          {
@@ -433,7 +443,8 @@ public class BufferedISPNCache
          }
       }
 
-         public boolean isTxRequired()
+      @Override
+      public boolean isTxRequired()
       {
          return true;
       }
@@ -454,7 +465,8 @@ public class BufferedISPNCache
          this.itemData = value;
       }
 
-         public void apply()
+      @Override
+      public void apply()
       {
          if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
          {
@@ -489,7 +501,8 @@ public class BufferedISPNCache
          }
       }
 
-         public boolean isTxRequired()
+      @Override
+      public boolean isTxRequired()
       {
          return true;
       }
@@ -506,7 +519,8 @@ public class BufferedISPNCache
          super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges);
       }
 
-         public void apply()
+      @Override
+      public void apply()
       {
          setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).remove(key);
       }
@@ -531,7 +545,8 @@ public class BufferedISPNCache
          this.value = value;
       }
 
-         public void apply()
+      @Override
+      public void apply()
       {
          setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP).remove(key, value);
       }
