@@ -50,6 +50,7 @@ import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.AdvancedCache;
+import org.infinispan.commons.IllegalLifecycleStateException;
 import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
@@ -328,7 +329,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          {
             if (stopped)
             {
-               throw new IllegalStateException("The lock manager of the workspace " + config.getUniqueName()
+               // The exception of a stopped lock store, which its callers expect
+               throw new IllegalLifecycleStateException("The lock manager of the workspace " + config.getUniqueName()
                   + " is stopped");
             }
             cache = createLockStore();
