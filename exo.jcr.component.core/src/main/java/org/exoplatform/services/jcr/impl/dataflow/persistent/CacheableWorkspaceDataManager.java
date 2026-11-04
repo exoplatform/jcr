@@ -1159,7 +1159,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          //    we get deadlocks because we try to acquire locks on cache entries that have been locked by the main tx.
          // 3. If we call them in the afterComplete, we use JOTM with ISPN and we suspend and resume the current tx, we get:
          //       jotm: resume: Invalid Transaction Status:STATUS_COMMITTED (Current.java, line 743) 
-         //       jakarta.transaction.InvalidTransactionException: Invalid resume org.objectweb.jotm.TransactionImpl
+         //       javax.transaction.InvalidTransactionException: Invalid resume org.objectweb.jotm.TransactionImpl
          //       at org.objectweb.jotm.Current.resume(Current.java:744)
          //    This is due to the fact that it is not allowed to resume a tx when its status is STATUS_COMMITED
 
