@@ -55,6 +55,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.Da
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.naming.InitialContextInitializer;
+import org.infinispan.commons.IllegalLifecycleStateException;
 
 import jakarta.transaction.TransactionManager;
 
@@ -250,7 +251,7 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
       ISPNCacheableLockManagerImpl stopped = lockManager();
       repository.removeWorkspace(workspaceEntry.getName());
 
-      assertThrows(IllegalStateException.class, () -> stopped.lockExist(deepId));
+      assertThrows(IllegalLifecycleStateException.class, () -> stopped.lockExist(deepId));
    }
 
    public void testReleaseSkipsTheNodesReleasedMeanwhile() throws Exception
