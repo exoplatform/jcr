@@ -20,11 +20,8 @@
 
 -->
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns="urn:infinispan:config:8.2"
-            xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd">
-  <jgroups transport="org.infinispan.remoting.transport.jgroups.JGroupsTransport">
-    <stack-file name="udp" path="${jgroups-configuration}"/>
-  </jgroups>
+            xmlns="urn:infinispan:config:16.0"
+            xsi:schemaLocation="urn:infinispan:config:16.0 https://infinispan.org/schemas/infinispan-config-16.0.xsd">
   <threads>
     <thread-factory name="infinispan-factory" group-name="infinispan" thread-name-pattern="%G %i" priority="5"/>
 
@@ -47,16 +44,16 @@
     <scheduled-thread-pool name="infinispan-repl-queue" thread-factory="infinispan-factory" />
   </threads>
 
-  <cache-container  default-cache="default" expiration-executor="infinispan-expiration"  listener-executor="infinispan-listener"
-                    replication-queue-executor="infinispan-repl-queue" state-transfer-executor="infinispan-state-transfer"  statistics="true"  shutdown-hook="REGISTER">
-    <transport cluster="${infinispan-cluster-name}" executor="infinispan-transport" total-order-executor="infinispan-cached"
-               remote-command-executor="infinispan-cached" lock-timeout="120000" stack="udp" />
-    <jmx duplicate-domains="true" domain="exo" mbean-server-lookup="org.infinispan.jmx.PlatformMBeanServerLookup"/>
-    <replicated-cache-configuration name="default" mode="SYNC" remote-timeout="20000" statistics="true">
-      <locking isolation="READ_COMMITTED" concurrency-level="500" striping="false" write-skew="false" acquire-timeout="20000"/>
+  <cache-container  default-cache="default" expiration-executor="infinispan-expiration"  listener-executor="infinispan-listener"  statistics="true"  shutdown-hook="REGISTER">
+    <transport cluster="${infinispan-cluster-name}" lock-timeout="120000">
+      <property name="configurationFile">${jgroups-configuration}</property>
+    </transport>
+    <jmx enabled="true" domain="exo"/>
+    <replicated-cache name="default" mode="SYNC" remote-timeout="20000" statistics="true">
+      <locking isolation="READ_COMMITTED" concurrency-level="500" striping="false" acquire-timeout="20000"/>
       <transaction mode="NON_XA" transaction-manager-lookup="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" />
       <state-transfer timeout="60000" await-initial-transfer="false"/>
-      <eviction max-entries="1000000" strategy="LIRS" thread-policy="DEFAULT"/>
-    </replicated-cache-configuration>
+      <memory max-count="1000000" when-full="REMOVE"/>
+    </replicated-cache>
   </cache-container>
 </infinispan>

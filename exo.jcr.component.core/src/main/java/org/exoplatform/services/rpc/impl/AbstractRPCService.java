@@ -24,6 +24,8 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
+import org.exoplatform.services.ispn.ClusterJavaSerializationMarshaller;
+import org.exoplatform.services.ispn.SharedJGroupsTransport;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rpc.RPCException;
@@ -32,25 +34,29 @@ import org.exoplatform.services.rpc.RemoteCommand;
 import org.exoplatform.services.rpc.TopologyChangeEvent;
 import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.jgroups.Address;
-import org.jgroups.Channel;
-import org.jgroups.MembershipListener;
+import org.jgroups.BytesMessage;
+import org.jgroups.JChannel;
 import org.jgroups.Message;
+import org.jgroups.Receiver;
 import org.jgroups.View;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
-import org.jgroups.conf.ConfiguratorFactory;
 import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.picocontainer.Startable;
 
 import java.io.Externalizable;
+import java.io.InvalidClassException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -67,7 +73,7 @@ import java.util.concurrent.CountDownLatch;
  * @author <a href="mailto:nicolas.filotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
  */
-public abstract class AbstractRPCService implements RPCService, Startable, RequestHandler, MembershipListener
+public abstract class AbstractRPCService implements RPCService, Startable, RequestHandler, Receiver
 {
 
    /**
@@ -114,6 +120,11 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
     * The default value of the cluster name
     */
    protected static final String CLUSTER_NAME = "RPCService-Cluster";
+
+   /**
+    * The name of the local node, given to the channel the node shares for the stack when the service creates it
+    */
+   protected static final String NODE_NAME = "exo.cluster.node.name";
    
    /**
     * The configurator used to create the JGroups Channel
@@ -133,7 +144,7 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
    /**
     * The JGroups Channel used to communicate with other nodes
     */
-   protected Channel channel;
+   protected JChannel channel;
 
    /**
     * The current list of all the members of the cluster
@@ -169,6 +180,12 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
     * The dispatcher used to launch the command of the cluster nodes
     */
    protected MessageDispatcher dispatcher;
+
+   /**
+    * Marshals the commands and their replies: only the classes of the cluster serialization allow-list are written
+    * and read
+    */
+   private final ClusterJavaSerializationMarshaller marshaller = new ClusterJavaSerializationMarshaller();
 
    /**
     * The signal that indicates that the service is started, it will be used
@@ -216,7 +233,10 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
 
       try
       {
-         this.configurator = ConfiguratorFactory.getStackConfigurator(properties);
+         try (InputStream input = properties.openStream())
+         {
+            this.configurator = SharedJGroupsTransport.parse(new String(input.readAllBytes(), StandardCharsets.UTF_8));
+         }
       }
       catch (Exception e)
       {
@@ -395,9 +415,22 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
       {
          throw new RPCException("Command " + commandId + " unknown, please register your command first");
       }
-      final Message msg = new Message();
-      setObject(msg, new MessageBody(dests.size() == 1 && dests != members ? dests.get(0) : null, commandId, args)); //NOSONAR
-      RspList rsps = null;
+      final Message msg;
+      try
+      {
+         msg = new BytesMessage(null, marshaller.objectToByteBuffer(
+            new MessageBody(dests.size() == 1 && dests != members ? dests.get(0) : null, commandId, args))); //NOSONAR
+      }
+      catch (InterruptedException e)
+      {
+         Thread.currentThread().interrupt();
+         throw new RPCException("Interrupted while marshalling the command " + commandId, e);
+      }
+      catch (IOException e)
+      {
+         throw new RPCException("Cannot marshal the command " + commandId + ": " + e.getMessage(), e);
+      }
+      RspList<Object> rsps = null;
       try
       {
          rsps = castMessage(dests, msg, synchronous, timeout);
@@ -429,16 +462,16 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
          }
          else if (!rsp.wasReceived())
          {
-            retval.add(new RPCException("Replication timeout for " + rsp.getSender() + ", rsp=" + rsp));
+            retval.add(new RPCException("Replication timeout for " + dest + ", rsp=" + rsp));
          }
          else
          {
-            Object value = rsp.getValue();
+            Object value = fromReply(rsp.getValue(), dest);
             if (value instanceof RPCException)
             {
                // if we have any application-level exceptions make sure we throw them!!
                if (LOG.isTraceEnabled())
-                  LOG.trace("Recieved exception'" + value + "' from " + rsp.getSender(), (RPCException)value);
+                  LOG.trace("Recieved exception'" + value + "' from " + dest, (RPCException)value);
             }
             retval.add(value);
          }
@@ -449,14 +482,19 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
    /**
     * {@inheritDoc}
     */
-   public Object handle(Message msg)
+   public Object handle(Message msg) throws Exception
    {
       String commandId = null;
       try
       {
          // Ensure that the service is fully started before trying to execute any command
          startSignal.await();
-         MessageBody body = (MessageBody)msg.getObject();
+         byte[] payload = msg.getArray();
+         if (msg.getOffset() != 0 || msg.getLength() != payload.length)
+         {
+            payload = Arrays.copyOfRange(payload, msg.getOffset(), msg.getOffset() + msg.getLength());
+         }
+         MessageBody body = (MessageBody)marshaller.objectFromByteBuffer(payload);
          commandId = body.getCommandId();
          if (!body.accept(getLocalAddress()))
          {
@@ -470,14 +508,15 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
          RemoteCommand command = getCommand(commandId);
          if (command == null)
          {
-            return new RPCException("Command " + commandId + " unkown, please register your command first");
+            return toReply(new RPCException("Command " + commandId + " unkown, please register your command first"),
+               commandId);
          }
          Object execResult = command.execute(body.getArgs());
          if (LOG.isTraceEnabled())
          {
             LOG.trace("Command : " + commandId + " executed, result is: " + execResult);
          }
-         return execResult;
+         return execResult == null ? null : toReply(execResult, commandId);
       }
       catch (Throwable x) //NOSONAR
       {
@@ -485,22 +524,64 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
          {
             LOG.trace("Problems invoking command.", x);
          }
-         return new RPCException("Cannot execute the command " + (commandId == null ? "" : commandId), x);
+         return toReply(new RPCException("Cannot execute the command " + (commandId == null ? "" : commandId), x),
+            commandId);
       }
    }
 
    /**
-    * {@inheritDoc}
+    * Marshals the reply of a command. A reply holding a class off the cluster serialization allow-list, typically the
+    * cause of a failure, would not be read by the caller: it is replaced by an {@link RPCException} that describes it.
     */
-   public void block()
+   private byte[] toReply(Object reply, String commandId) throws IOException, InterruptedException
    {
+      try
+      {
+         return marshaller.objectToByteBuffer(reply);
+      }
+      catch (InvalidClassException e)
+      {
+         StringBuilder description = new StringBuilder();
+         Throwable cause = reply instanceof Throwable ? (Throwable)reply : null;
+         if (cause == null)
+         {
+            description.append("The reply of the command ").append(commandId).append(" cannot be sent: ")
+               .append(e.getMessage());
+         }
+         else
+         {
+            description.append(cause.getMessage());
+            for (Throwable t = cause.getCause(); t != null && t != cause; cause = t, t = t.getCause())
+            {
+               description.append(", caused by ").append(t);
+            }
+         }
+         RPCException replacement = new RPCException(description.toString());
+         if (cause != null)
+         {
+            replacement.setStackTrace(cause.getStackTrace());
+         }
+         return marshaller.objectToByteBuffer(replacement);
+      }
    }
 
    /**
-    * {@inheritDoc}
+    * Reads the reply of a member: the marshalled result of its command, or <code>null</code>
     */
-   public void suspect(Address suspectedMbr)
+   private Object fromReply(Object reply, Address member)
    {
+      if (!(reply instanceof byte[]))
+      {
+         return reply;
+      }
+      try
+      {
+         return marshaller.objectFromByteBuffer((byte[])reply);
+      }
+      catch (IOException | ClassNotFoundException e)
+      {
+         return new RPCException("Cannot read the reply of the member " + member + ": " + e.getMessage(), e);
+      }
    }
 
    /**
@@ -654,7 +735,7 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
       try
       {
          channel = createChannel();
-         dispatcher = new MessageDispatcher(channel, null, AbstractRPCService.this, AbstractRPCService.this);
+         dispatcher = new MessageDispatcher(channel, AbstractRPCService.this).setReceiver(AbstractRPCService.this);
          channel.connect(clusterName);
       }
       catch (Exception e)
@@ -751,14 +832,14 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
     * @return A list of responses. Each response is an <code>Object</code> and associated to its sender.
     * @throws Exception if any error occur while casting the message
     */
-   protected abstract RspList castMessage(List<Address> dests, Message msg, boolean synchronous, long timeout) throws Exception;
+   protected abstract RspList<Object> castMessage(List<Address> dests, Message msg, boolean synchronous, long timeout) throws Exception;
    
    /**
     * Create a channel
     * @return An initialized channel
     * @throws Exception if any error occur while creating the channel
     */
-   protected abstract Channel createChannel() throws Exception;
+   protected abstract JChannel createChannel() throws Exception;
    
    /**
     * Returns a reference to the List of members (ordered)
@@ -768,12 +849,6 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
     * @return a reference to the ordered list of members in this view
     */
    protected abstract List<Address> getMembers(View view);
-   
-   /**
-    * Takes an object and uses Java serialization to generate the byte[] buffer which
-    * is set in the message.
-    */
-   protected abstract void setObject(Message m, Object o);
    
    /**
     * Gives the value of the {@link ValueParam} corresponding to the given key

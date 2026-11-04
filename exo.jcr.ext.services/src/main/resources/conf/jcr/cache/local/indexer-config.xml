@@ -20,8 +20,8 @@
 
 -->
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns="urn:infinispan:config:8.2"
-            xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd">
+            xmlns="urn:infinispan:config:16.0"
+            xsi:schemaLocation="urn:infinispan:config:16.0 https://infinispan.org/schemas/infinispan-config-16.0.xsd">
   <threads>
     <thread-factory name="infinispan-factory" group-name="infinispan" thread-name-pattern="%G %i" priority="5"/>
 
@@ -35,15 +35,13 @@
 
   <cache-container name="indexer"  default-cache="default" expiration-executor="infinispan-expiration"  listener-executor="infinispan-listener"
                    statistics="true">
-    <jmx duplicate-domains="true" domain="jcr.ispn.cache" mbean-server-lookup="org.infinispan.jmx.PlatformMBeanServerLookup"/>
-    <transport cluster="${exo.cluster.partition.name}-jcr-indexer" node-name="${exo.cluster.node.name}"  stack="stack" lock-timeout="240000"/>
-    <local-cache-configuration mode="SYNC" name="default" statistics="true" >
-      <eviction strategy="NONE"/>
+    <jmx enabled="true" domain="jcr.ispn.cache"/>
+    <local-cache name="default" statistics="true" >
       <transaction mode="NON_XA" transaction-manager-lookup="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup"/>
-      <locking isolation="READ_COMMITTED" concurrency-level="500" striping="false" write-skew="false" acquire-timeout="${exo.jcr.workspace.lockacquisitiontimeout:20000}"/>
+      <locking isolation="READ_COMMITTED" concurrency-level="500" striping="false" acquire-timeout="${exo.jcr.workspace.lockacquisitiontimeout:20000}"/>
       <persistence passivation="false">
-        <store class="${infinispan-cachestore-classname}" shared="false"  fetch-state="true" read-only="false" purge="false" preload="false"></store>
+        <store class="${infinispan-cachestore-classname}" shared="false" read-only="false" purge="false" preload="false"></store>
       </persistence>
-    </local-cache-configuration>
+    </local-cache>
   </cache-container>
 </infinispan>

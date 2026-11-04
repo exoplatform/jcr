@@ -23,8 +23,8 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jdbc.DataSourceProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.infinispan.persistence.jdbc.configuration.ConnectionFactoryConfiguration;
-import org.infinispan.persistence.jdbc.connectionfactory.ConnectionFactory;
+import org.infinispan.persistence.jdbc.common.configuration.ConnectionFactoryConfiguration;
+import org.infinispan.persistence.jdbc.common.connectionfactory.ConnectionFactory;
 import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.transaction.xa.GlobalTransaction;
 

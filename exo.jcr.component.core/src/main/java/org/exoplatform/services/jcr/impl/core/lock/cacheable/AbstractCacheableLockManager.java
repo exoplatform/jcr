@@ -79,7 +79,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS.
