@@ -136,39 +136,13 @@ public class ISPNCacheFactory<K, V>
       LOG.info("Infinispan Cache configuration used: " + configurationPath);
       // avoid dashes in cache name. Some SQL servers doesn't allow dashes in table names
       final String regionIdEscaped = regionId.replace("-", "_");
-      // prepare configuration
-      final InputStream configStream;
-      try
-      {
-         // fill template
-         configStream = configurationHelper.fillTemplate(configurationPath, parameterEntry.getParameters());
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryConfigurationException(e);
-      }
 
       // create cache
       final EmbeddedCacheManager manager;
       try
       {
          // creating new CacheManager
-
-         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-         ConfigurationBuilderHolder holder = new ConfigurationBuilderHolder(classLoader);
-         // Loads the configuration from the input stream without validating it: a JDBC store gets its connection
-         // factory once the cache manager is chosen
-         new ParserRegistry(classLoader).parse(ConfigurationReader.from(configStream)
-                                                                  .withType(MediaType.APPLICATION_XML)
-                                                                  .withProperties(System.getProperties())
-                                                                  .withNamingStrategy(NamingStrategy.KEBAB_CASE)
-                                                                  .build(),
-                                               holder);
-         if (holder.getDefaultConfigurationBuilder().configuration() != null)
-         {
-            throw new RepositoryConfigurationException("The default cache of the Infinispan configuration "
-               + configurationPath + " cannot inherit from another configuration");
-         }
+         ConfigurationBuilderHolder holder = readConfiguration(parameterEntry);
          GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();
          // Configure the marshaller, which sets the deserialization filter of JGroups before any channel is created
          Utils.configureSerialization(configBuilder, configurationPath);
@@ -189,6 +163,43 @@ public class ISPNCacheFactory<K, V>
                   regionIdEscaped);
       }
       return cache;
+   }
+
+   /**
+    * Reads the Infinispan configuration of the "infinispan-configuration" property of the given entry, its template
+    * filled with the parameters of the entry. The configuration is not validated: a JDBC store gets its connection
+    * factory once the cache manager is chosen.
+    *
+    * @param parameterEntry the entry that names the configuration and holds its parameters
+    * @return the configuration
+    * @throws RepositoryConfigurationException if the configuration cannot be read, or if its default cache inherits
+    *            from another configuration
+    */
+   public ConfigurationBuilderHolder readConfiguration(MappedParametrizedObjectEntry parameterEntry)
+      throws RepositoryConfigurationException
+   {
+      String configurationPath = parameterEntry.getParameterValue(INFINISPAN_CONFIG);
+      ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+      ConfigurationBuilderHolder holder = new ConfigurationBuilderHolder(classLoader);
+      try (InputStream configStream = configurationHelper.fillTemplate(configurationPath, parameterEntry.getParameters()))
+      {
+         new ParserRegistry(classLoader).parse(ConfigurationReader.from(configStream)
+                                                                  .withType(MediaType.APPLICATION_XML)
+                                                                  .withProperties(System.getProperties())
+                                                                  .withNamingStrategy(NamingStrategy.KEBAB_CASE)
+                                                                  .build(),
+                                               holder);
+      }
+      catch (IOException | RuntimeException e)
+      {
+         throw new RepositoryConfigurationException("Cannot read the Infinispan configuration " + configurationPath, e);
+      }
+      if (holder.getDefaultConfigurationBuilder().configuration() != null)
+      {
+         throw new RepositoryConfigurationException("The default cache of the Infinispan configuration "
+            + configurationPath + " cannot inherit from another configuration");
+      }
+      return holder;
    }
 
    /**
