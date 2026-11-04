@@ -29,6 +29,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -241,6 +242,29 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
       restorer.commit();
       restorer.close();
       assertEquals(Set.of(deepId, shallowId), lockManager().getLockTableHandler().getLockedNodesIds());
+   }
+
+   public void testReleaseSkipsTheNodesReleasedMeanwhile() throws Exception
+   {
+      startWorkspaceAgain();
+      Session session = repository.login(credentials, workspaceEntry.getName());
+      try
+      {
+         // The lock properties of the node are in the cache of the workspace when another node removes them
+         assertTrue(session.getRootNode().getNode("deep").hasProperty("jcr:lockOwner"));
+         assertTrue(session.getRootNode().getNode("deep").hasProperty("jcr:lockIsDeep"));
+      }
+      finally
+      {
+         session.logout();
+      }
+      String lockProperties = "SELECT ID FROM JCR_SITEM WHERE PARENT_ID = '" + workspaceEntry.getName() + deepId
+         + "' AND NAME IN ('[http://www.jcp.org/jcr/1.0]lockOwner', '[http://www.jcp.org/jcr/1.0]lockIsDeep')";
+      execute("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (" + lockProperties + ")");
+      execute("DELETE FROM JCR_SITEM WHERE ID IN (" + lockProperties + ")");
+
+      assertEquals(1, lockManager().releaseLocks(List.of(deepId, shallowId)));
+      assertReleased("shallow");
    }
 
    public void testUnsegmentedLockStoreIsRefused() throws Exception

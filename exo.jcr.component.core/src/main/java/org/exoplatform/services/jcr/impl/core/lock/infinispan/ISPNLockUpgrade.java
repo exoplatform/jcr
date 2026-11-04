@@ -143,7 +143,7 @@ class ISPNLockUpgrade
 
    /**
     * Upgrades the lock store when the lock table has no segment column or when a claim exists, and waits for the node
-    * that holds the claim otherwise.
+    * that holds the claim otherwise, until neither the claim nor a lock table without segment column is left.
     *
     * @return whether this node upgraded the lock store
     */
@@ -155,21 +155,20 @@ class ISPNLockUpgrade
          String claimTable = tables.getTableName("U");
          long claimWithoutRowSince = 0;
          boolean waiting = false;
+         boolean upgraded = false;
          while (true)
          {
             try (Connection connection = lockDataSource.getConnection())
             {
-               if (isLegacy(connection, lockTable))
-               {
-                  if (claim(connection, lockTable, claimTable) && upgrade(claimTable))
-                  {
-                     return true;
-                  }
-                  continue;
-               }
+               // A claim is awaited first: a node that lost the race to the claim reads it here
                if (!JDBCUtils.tableExists(claimTable, connection))
                {
-                  return false;
+                  if (!isLegacy(connection, lockTable))
+                  {
+                     return upgraded;
+                  }
+                  upgraded |= claim(connection, lockTable, claimTable) && upgrade(claimTable);
+                  continue;
                }
                Long claimed = readHeartbeat(connection, claimTable);
                long now = System.currentTimeMillis();
@@ -179,10 +178,7 @@ class ISPNLockUpgrade
                   claimWithoutRowSince = claimWithoutRowSince == 0 ? now : claimWithoutRowSince;
                   if (now - claimWithoutRowSince >= staleAfter)
                   {
-                     if (insertClaimUnlessPresent(connection, claimTable) && upgrade(claimTable))
-                     {
-                        return true;
-                     }
+                     upgraded |= insertClaimUnlessPresent(connection, claimTable) && upgrade(claimTable);
                      continue;
                   }
                }
@@ -192,10 +188,8 @@ class ISPNLockUpgrade
                }
                else if (now - claimed >= staleAfter)
                {
-                  if (takeOver(connection, claimTable, claimed) && upgrade(claimTable))
-                  {
-                     return true;
-                  }
+                  // A lock table without segment column left beside the claim is upgraded next
+                  upgraded |= takeOver(connection, claimTable, claimed) && upgrade(claimTable);
                   continue;
                }
                if (!waiting)
