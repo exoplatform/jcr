@@ -41,6 +41,7 @@ import org.exoplatform.services.jcr.impl.core.lock.cacheable.CacheableSessionLoc
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
@@ -414,43 +415,79 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
 
    /**
     * Removes the lock properties of the given nodes, in one change, as the lock remover removes those of an expired
-    * lock.
+    * lock. When another node removed some of them meanwhile, the nodes are released one by one, as they are at their
+    * turn: those whose lock properties are gone are skipped.
     *
     * @return the number of nodes whose lock properties were removed
     */
-   private int releaseLocks(List<String> nodeIdentifiers) throws RepositoryException
+   int releaseLocks(List<String> nodeIdentifiers) throws RepositoryException
    {
       TransactionChangesLog changes = new TransactionChangesLog();
       int released = 0;
       for (String nodeIdentifier : nodeIdentifiers)
       {
-         NodeData node = (NodeData)dataManager.getItemData(nodeIdentifier);
-         if (node == null)
-         {
-            continue;
-         }
-         PlainChangesLog unlock =
-            new PlainChangesLogImpl(new ArrayList<ItemState>(), IdentityConstants.SYSTEM, ExtendedEvent.UNLOCK);
-         for (InternalQName name : new InternalQName[]{Constants.JCR_LOCKOWNER, Constants.JCR_LOCKISDEEP})
-         {
-            PropertyData property =
-               (PropertyData)dataManager.getItemData(node, new QPathEntry(name, 1), ItemType.PROPERTY);
-            if (property != null)
-            {
-               unlock.add(ItemState.createDeletedState(copyItemData(property)));
-            }
-         }
-         if (unlock.getSize() > 0)
+         PlainChangesLog unlock = getUnlockChanges(nodeIdentifier);
+         if (unlock != null)
          {
             changes.addLog(unlock);
             released++;
          }
       }
-      if (released > 0)
+      if (released == 0)
+      {
+         return 0;
+      }
+      try
       {
          dataManager.save(changes);
+         return released;
+      }
+      catch (JCRInvalidItemStateException e)
+      {
+         LOG.debug("Lock properties were removed meanwhile, the nodes are released one by one", e);
+      }
+      released = 0;
+      for (String nodeIdentifier : nodeIdentifiers)
+      {
+         PlainChangesLog unlock = getUnlockChanges(nodeIdentifier);
+         if (unlock != null)
+         {
+            try
+            {
+               dataManager.save(new TransactionChangesLog(unlock));
+               released++;
+            }
+            catch (JCRInvalidItemStateException e)
+            {
+               LOG.debug("The lock properties of the node {} were removed meanwhile", nodeIdentifier, e);
+            }
+         }
       }
       return released;
+   }
+
+   /**
+    * The change that removes the lock properties of a node, as the system, or null when the node holds none.
+    */
+   private PlainChangesLog getUnlockChanges(String nodeIdentifier) throws RepositoryException
+   {
+      NodeData node = (NodeData)dataManager.getItemData(nodeIdentifier);
+      if (node == null)
+      {
+         return null;
+      }
+      PlainChangesLog unlock =
+         new PlainChangesLogImpl(new ArrayList<ItemState>(), IdentityConstants.SYSTEM, ExtendedEvent.UNLOCK);
+      for (InternalQName name : new InternalQName[]{Constants.JCR_LOCKOWNER, Constants.JCR_LOCKISDEEP})
+      {
+         PropertyData property =
+            (PropertyData)dataManager.getItemData(node, new QPathEntry(name, 1), ItemType.PROPERTY);
+         if (property != null)
+         {
+            unlock.add(ItemState.createDeletedState(copyItemData(property)));
+         }
+      }
+      return unlock.getSize() > 0 ? unlock : null;
    }
 
    /**
