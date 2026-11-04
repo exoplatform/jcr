@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.core.lock.AbstractLockTableHandler;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -49,11 +50,30 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
       .getLogger("exo.jcr.component.core.ISPNLockTableHandler");
 
    /**
-    * ISPNLockTableHandler constructor.
+    * The table of the JDBC store of the locks, <code>null</code> when the names come from the lock manager parameters
+    */
+   private final TableManipulationConfiguration table;
+
+   /**
+    * ISPNLockTableHandler constructor, which reads the names of the table and of its id column in the lock manager
+    * parameters.
     */
    public ISPNLockTableHandler(WorkspaceEntry workspaceEntry, DataSource ds)
    {
+      this(workspaceEntry, ds, null);
+   }
+
+   /**
+    * @param workspaceEntry the workspace
+    * @param ds the data source of the lock table
+    * @param table the table of the JDBC store of the locks, whose configuration names the table and its id column
+    * even when a template gives them a default the lock manager parameters do not hold; <code>null</code> to read them
+    * in the lock manager parameters
+    */
+   public ISPNLockTableHandler(WorkspaceEntry workspaceEntry, DataSource ds, TableManipulationConfiguration table)
+   {
       super(workspaceEntry, ds);
+      this.table = table;
    }
 
    /**
@@ -85,6 +105,10 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
     */
    private String getIdColumn() throws SQLException
    {
+      if (table != null)
+      {
+         return table.idColumnName();
+      }
       try
       {
          return lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_CL_ID_COLUMN_NAME);
@@ -115,8 +139,10 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
          String quote = "\"";
          if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
             quote = "`";
-         return quote + lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME)
-            + "_" + type + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_") + quote;
+         String prefix = table == null
+            ? lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME)
+            : table.tableNamePrefix();
+         return quote + prefix + "_" + type + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_") + quote;
       }
       catch (RepositoryConfigurationException e)
       {

@@ -61,6 +61,7 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
+import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -117,6 +118,11 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     * The upgrade of the lock store of Infinispan 8, null when the lock store has no JDBC store.
     */
    private ISPNLockUpgrade upgrade;
+
+   /**
+    * The table of the JDBC store of the locks, null when the lock store has no JDBC store.
+    */
+   private TableManipulationConfiguration lockTable;
 
    private volatile boolean stopped;
 
@@ -179,6 +185,14 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
             throw new RepositoryException(e.getMessage(), e);
          }
 
+         // configure cache loader parameters with correct DB data-types
+         ISPNCacheFactory.configureCacheStore(config.getLockManager(), INFINISPAN_JDBC_CL_DATASOURCE,
+            INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_ID_COLUMN, INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN
+            , INFINISPAN_JDBC_CL_DIALECT);
+         JdbcStringBasedStoreConfigurationBuilder jdbcStore =
+            getJdbcStore(factory.readConfiguration(config.getLockManager()));
+         lockTable = jdbcStore == null ? null : jdbcStore.table().create();
+
          //force clean lock cache entry store
          boolean deleteLocks =
                  "true".equalsIgnoreCase(System.getProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE,
@@ -198,12 +212,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
             }
          }
 
-         // configure cache loader parameters with correct DB data-types
-         ISPNCacheFactory.configureCacheStore(config.getLockManager(), INFINISPAN_JDBC_CL_DATASOURCE,
-            INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_ID_COLUMN, INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN
-            , INFINISPAN_JDBC_CL_DIALECT);
-
-         upgrade = createUpgrade(factory.readConfiguration(config.getLockManager()));
+         upgrade = jdbcStore == null ? null : createUpgrade(jdbcStore);
       }
       else
       {
@@ -384,32 +393,38 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     * is segmented: a table without segment column would be taken for the one of Infinispan 8, and its locks released
     * at each start.
     */
-   private ISPNLockUpgrade createUpgrade(ConfigurationBuilderHolder configuration)
+   private ISPNLockUpgrade createUpgrade(JdbcStringBasedStoreConfigurationBuilder jdbcStore)
       throws RepositoryConfigurationException, RepositoryException
+   {
+      if (!jdbcStore.attributes().attribute(AbstractStoreConfiguration.SEGMENTED).get())
+      {
+         throw new RepositoryConfigurationException("The JDBC store of the lock configuration "
+            + config.getLockManager().getParameterValue(ISPNCacheFactory.INFINISPAN_CONFIG)
+            + " must be segmented: the lock manager takes a table without segment column for the one of"
+            + " Infinispan 8, and releases its locks at each start");
+      }
+      String itemSourceName = config.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
+      try
+      {
+         return new ISPNLockUpgrade(config, dataSource, (DataSource)new InitialContext().lookup(itemSourceName),
+            lockTable, this::releaseLocks);
+      }
+      catch (NamingException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+   }
+
+   /**
+    * @return the JDBC store of the lock configuration, <code>null</code> when it has none
+    */
+   private static JdbcStringBasedStoreConfigurationBuilder getJdbcStore(ConfigurationBuilderHolder configuration)
    {
       for (StoreConfigurationBuilder<?, ?> store : configuration.getDefaultConfigurationBuilder().persistence().stores())
       {
          if (store instanceof JdbcStringBasedStoreConfigurationBuilder jdbcStore)
          {
-            if (!jdbcStore.attributes().attribute(AbstractStoreConfiguration.SEGMENTED).get())
-            {
-               throw new RepositoryConfigurationException("The JDBC store of the lock configuration "
-                  + config.getLockManager().getParameterValue(ISPNCacheFactory.INFINISPAN_CONFIG)
-                  + " must be segmented: the lock manager takes a table without segment column for the one of"
-                  + " Infinispan 8, and releases its locks at each start");
-            }
-            String itemSourceName =
-               config.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
-            try
-            {
-               return new ISPNLockUpgrade(config, dataSource,
-                  (DataSource)new InitialContext().lookup(itemSourceName), jdbcStore.table().create(),
-                  this::releaseLocks);
-            }
-            catch (NamingException e)
-            {
-               throw new RepositoryException(e.getMessage(), e);
-            }
+            return jdbcStore;
          }
       }
       return null;
@@ -588,7 +603,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     */
    public LockTableHandler getLockTableHandler()
    {
-      return new ISPNLockTableHandler(config, dataSource);
+      return new ISPNLockTableHandler(config, dataSource, lockTable);
    }
 
    @SuppressWarnings("rawtypes")
