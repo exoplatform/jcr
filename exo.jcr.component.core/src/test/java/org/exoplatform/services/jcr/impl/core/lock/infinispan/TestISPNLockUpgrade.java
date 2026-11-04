@@ -244,6 +244,15 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
       assertEquals(Set.of(deepId, shallowId), lockManager().getLockTableHandler().getLockedNodesIds());
    }
 
+   public void testStoppedLockManagerDoesNotCreateItsLockStoreAgain() throws Exception
+   {
+      startWorkspaceAgain();
+      ISPNCacheableLockManagerImpl stopped = lockManager();
+      repository.removeWorkspace(workspaceEntry.getName());
+
+      assertThrows(IllegalStateException.class, () -> stopped.lockExist(deepId));
+   }
+
    public void testReleaseSkipsTheNodesReleasedMeanwhile() throws Exception
    {
       startWorkspaceAgain();
