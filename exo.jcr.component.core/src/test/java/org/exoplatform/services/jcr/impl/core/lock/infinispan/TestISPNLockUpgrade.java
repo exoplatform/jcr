@@ -53,6 +53,7 @@ import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -94,8 +95,8 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
    public void setUp() throws Exception
    {
       super.setUp();
-      upgradeRepository = (RepositoryImpl)helper.createRepository(container, DatabaseStructureType.SINGLE, null);
-      workspaceEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, null);
+      upgradeRepository = (RepositoryImpl)helper.createRepository(container, structureType(), null);
+      workspaceEntry = helper.createWorkspaceEntry(structureType(), null);
       helper.addWorkspace(upgradeRepository, workspaceEntry);
       dataSource = (DataSource)new InitialContext().lookup(workspaceEntry.getContainer().getParameterValue("source-name"));
       ISPNLockTableHandler tables = (ISPNLockTableHandler)lockManager().getLockTableHandler();
@@ -276,10 +277,13 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
       {
          session.logout();
       }
-      String lockProperties = "SELECT ID FROM JCR_SITEM WHERE PARENT_ID = '" + workspaceEntry.getName() + deepId
+      String lockProperties = "SELECT ID FROM " + DBInitializerHelper.getItemTableName(workspaceEntry)
+         + " WHERE PARENT_ID = '" + internalId(deepId)
          + "' AND NAME IN ('[http://www.jcp.org/jcr/1.0]lockOwner', '[http://www.jcp.org/jcr/1.0]lockIsDeep')";
-      execute("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (" + lockProperties + ")");
-      execute("DELETE FROM JCR_SITEM WHERE ID IN (" + lockProperties + ")");
+      execute("DELETE FROM " + DBInitializerHelper.getValueTableName(workspaceEntry) + " WHERE PROPERTY_ID IN ("
+         + lockProperties + ")");
+      execute("DELETE FROM " + DBInitializerHelper.getItemTableName(workspaceEntry) + " WHERE ID IN (" + lockProperties
+         + ")");
 
       assertEquals(1, lockManager().releaseLocks(List.of(deepId, shallowId)));
       assertReleased("shallow");
@@ -287,7 +291,7 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
 
    public void testUnsegmentedLockStoreIsRefused() throws Exception
    {
-      WorkspaceEntry unsegmented = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, null);
+      WorkspaceEntry unsegmented = helper.createWorkspaceEntry(structureType(), null);
       unsegmented.setUniqueName(upgradeRepository.getName() + "_" + unsegmented.getName());
       unsegmented.getLockManager().putParameterValue(ISPNCacheFactory.INFINISPAN_CONFIG,
          "conf/standalone/test-infinispan-lock-unsegmented.xml");
@@ -301,6 +305,23 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
             (TransactionManager)null, (ConfigurationManager)container.getComponentInstanceOfType(ConfigurationManager.class),
             (LockRemoverHolder)workspaceContainer.getComponent(LockRemoverHolder.class)));
       assertTrue(refusal.getMessage(), refusal.getMessage().contains("conf/standalone/test-infinispan-lock-unsegmented.xml"));
+   }
+
+   /**
+    * @return the database structure of the workspace
+    */
+   protected DatabaseStructureType structureType()
+   {
+      return DatabaseStructureType.SINGLE;
+   }
+
+   /**
+    * @return the identifier of a node in the item table: a table shared by the workspaces prefixes it with the name of
+    * the workspace
+    */
+   private String internalId(String id)
+   {
+      return structureType().isMultiDatabase() ? id : workspaceEntry.getName() + id;
    }
 
    /**
@@ -349,12 +370,13 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
       }
    }
 
-   private int countLockOwners() throws SQLException
+   private int countLockOwners() throws SQLException, RepositoryConfigurationException
    {
       try (Connection connection = dataSource.getConnection();
            Statement statement = connection.createStatement();
-           ResultSet count = statement.executeQuery("SELECT COUNT(*) FROM JCR_SITEM WHERE CONTAINER_NAME = '"
-              + workspaceEntry.getName() + "' AND NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'"))
+           ResultSet count = statement.executeQuery("SELECT COUNT(*) FROM "
+              + DBInitializerHelper.getItemTableName(workspaceEntry) + " WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'"
+              + (structureType().isMultiDatabase() ? "" : " AND CONTAINER_NAME = '" + workspaceEntry.getName() + "'")))
       {
          count.next();
          return count.getInt(1);
