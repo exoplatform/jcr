@@ -61,7 +61,8 @@ import org.junit.Test;
 /**
  * The claim of the upgrade of a lock store between nodes that start together, each one an upgrade on the same
  * database: the rename of the old table that one node wins, the claim left without its reserved row, the takeover of a
- * stale claim that one node wins, the claimer replaced by another node, and the old table left beside a claim.
+ * stale claim that one node wins, the claimer replaced by another node, and the old table left beside a claim. On
+ * HSQLDB here, and on the engines of the integration tests that extend it.
  */
 public class TestISPNLockUpgradeClaim
 {
@@ -69,38 +70,29 @@ public class TestISPNLockUpgradeClaim
 
    private static final long POLL_INTERVAL = 20;
 
-   private static final String LEGACY_TABLE =
-      " (id VARCHAR(512) NOT NULL, data VARBINARY(65535), timestamp BIGINT NOT NULL, PRIMARY KEY (id))";
-
-   private static final String LOCK_TABLE = "\"lk_Lrepows\"";
-
-   private static final String CLAIM_TABLE = "\"lk_Urepows\"";
-
    private final List<List<String>> releases = Collections.synchronizedList(new ArrayList<>());
 
    private final ExecutorService executor = Executors.newCachedThreadPool();
 
-   private JDBCDataSource dataSource;
+   private DataSource dataSource;
 
    private WorkspaceEntry workspace;
 
    private TableManipulationConfiguration table;
 
+   private String lockTable;
+
+   private String claimTable;
+
+   /**
+    * The columns of the lock table of Infinispan 8.
+    */
+   private String legacyTable;
+
    @Before
    public void createDatabase() throws Exception
    {
-      dataSource = new JDBCDataSource();
-      dataSource.setUrl("jdbc:hsqldb:mem:" + UUID.randomUUID());
-      dataSource.setUser("sa");
-      dataSource.setPassword("");
-      execute("CREATE TABLE JCR_SITEM (ID VARCHAR(96) NOT NULL, PARENT_ID VARCHAR(96), NAME VARCHAR(512),"
-         + " I_CLASS INTEGER, CONTAINER_NAME VARCHAR(96), PRIMARY KEY (ID))");
-      for (String node : List.of("node1", "node2"))
-      {
-         execute("INSERT INTO JCR_SITEM VALUES ('ws" + node + "owner', 'ws" + node
-            + "', '[http://www.jcp.org/jcr/1.0]lockOwner', 2, 'ws')");
-      }
-
+      dataSource = createDataSource();
       workspace = new WorkspaceEntry();
       workspace.setName("ws");
       workspace.setUniqueName("repo_ws");
@@ -119,32 +111,85 @@ public class TestISPNLockUpgradeClaim
                    .timestampColumnName("timestamp")
                    .segmentColumnName("segment_id")
                    .create();
+      ISPNLockTableHandler tables = new ISPNLockTableHandler(workspace, dataSource);
+      lockTable = tables.getTableName("L");
+      claimTable = tables.getTableName("U");
+      legacyTable = " (id VARCHAR(512) NOT NULL, data " + binaryType()
+         + ", timestamp BIGINT NOT NULL, PRIMARY KEY (id))";
+
+      execute("CREATE TABLE JCR_SITEM (ID VARCHAR(96) NOT NULL, PARENT_ID VARCHAR(96), NAME VARCHAR(512),"
+         + " I_CLASS INTEGER, CONTAINER_NAME VARCHAR(96), PRIMARY KEY (ID))");
+      for (String node : List.of("node1", "node2"))
+      {
+         execute("INSERT INTO JCR_SITEM VALUES ('ws" + node + "owner', 'ws" + node
+            + "', '[http://www.jcp.org/jcr/1.0]lockOwner', 2, 'ws')");
+      }
    }
 
    @After
    public void stop() throws Exception
    {
       executor.shutdownNow();
+      executor.awaitTermination(1, TimeUnit.MINUTES);
+      dropDatabase();
+   }
+
+   /**
+    * The database of a test, an in-memory HSQLDB one.
+    */
+   protected DataSource createDataSource() throws SQLException
+   {
+      JDBCDataSource hsqldb = new JDBCDataSource();
+      hsqldb.setUrl("jdbc:hsqldb:mem:" + UUID.randomUUID());
+      hsqldb.setUser("sa");
+      hsqldb.setPassword("");
+      return hsqldb;
+   }
+
+   /**
+    * The type of the data column of the lock table of Infinispan 8 on the engine.
+    */
+   protected String binaryType()
+   {
+      return "VARBINARY(65535)";
+   }
+
+   protected void dropDatabase() throws SQLException
+   {
       execute("SHUTDOWN");
+   }
+
+   /**
+    * Drops the tables of a test, on an engine whose database outlives the test.
+    */
+   protected void dropTables() throws SQLException
+   {
+      for (String name : List.of(claimTable, lockTable, "JCR_SITEM"))
+      {
+         if (tableExists(name))
+         {
+            execute("DROP TABLE " + name);
+         }
+      }
    }
 
    @Test
    public void testOneNodeWinsTheRename() throws Exception
    {
-      execute("CREATE TABLE " + LOCK_TABLE + LEGACY_TABLE);
+      execute("CREATE TABLE " + lockTable + legacyTable);
 
       DataSource together = together("ALTER TABLE");
       List<Boolean> upgraded = runTogether(upgrade(together), upgrade(together));
 
       assertEquals(1, upgraded.stream().filter(Boolean::booleanValue).count());
       assertEquals(List.of(List.of("node1", "node2")), releases);
-      assertFalse(tableExists(CLAIM_TABLE));
+      assertFalse(tableExists(claimTable));
    }
 
    @Test
    public void testOneNodeTakesAStaleClaimOver() throws Exception
    {
-      execute("CREATE TABLE " + CLAIM_TABLE + LEGACY_TABLE);
+      execute("CREATE TABLE " + claimTable + legacyTable);
       claim(System.currentTimeMillis() - STALE_AFTER);
 
       DataSource together = together("UPDATE");
@@ -152,27 +197,27 @@ public class TestISPNLockUpgradeClaim
 
       assertEquals(1, upgraded.stream().filter(Boolean::booleanValue).count());
       assertEquals(List.of(List.of("node1", "node2")), releases);
-      assertFalse(tableExists(CLAIM_TABLE));
+      assertFalse(tableExists(claimTable));
    }
 
    @Test
    public void testClaimLeftWithoutItsRowIsTakenAfterTheBound() throws Exception
    {
-      execute("CREATE TABLE " + CLAIM_TABLE + LEGACY_TABLE);
+      execute("CREATE TABLE " + claimTable + legacyTable);
 
       long start = System.currentTimeMillis();
       assertTrue(upgrade(dataSource).run());
 
       assertTrue(System.currentTimeMillis() - start >= STALE_AFTER);
       assertEquals(List.of(List.of("node1", "node2")), releases);
-      assertFalse(tableExists(CLAIM_TABLE));
+      assertFalse(tableExists(claimTable));
    }
 
    @Test
    public void testClaimIsAwaitedBeforeTheOldTableIsRenamed() throws Exception
    {
-      execute("CREATE TABLE " + LOCK_TABLE + LEGACY_TABLE);
-      execute("CREATE TABLE " + CLAIM_TABLE + LEGACY_TABLE);
+      execute("CREATE TABLE " + lockTable + legacyTable);
+      execute("CREATE TABLE " + claimTable + legacyTable);
       claim(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1));
 
       Future<Boolean> upgraded = executor.submit(() -> upgrade(dataSource).run());
@@ -180,7 +225,7 @@ public class TestISPNLockUpgradeClaim
       assertFalse(upgraded.isDone());
       assertTrue(releases.isEmpty());
 
-      execute("DROP TABLE " + CLAIM_TABLE);
+      execute("DROP TABLE " + claimTable);
       assertTrue(upgraded.get(1, TimeUnit.MINUTES));
       assertEquals(List.of(List.of("node1", "node2")), releases);
    }
@@ -188,7 +233,7 @@ public class TestISPNLockUpgradeClaim
    @Test
    public void testClaimerReplacedByAnotherNodeStops() throws Exception
    {
-      execute("CREATE TABLE " + LOCK_TABLE + LEGACY_TABLE);
+      execute("CREATE TABLE " + lockTable + legacyTable);
 
       boolean upgraded = upgrade(dataSource, nodes -> {
          releases.add(List.copyOf(nodes));
@@ -196,7 +241,7 @@ public class TestISPNLockUpgradeClaim
          heartbeat(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1));
          executor.submit(() -> {
             Thread.sleep(3 * STALE_AFTER);
-            execute("DROP TABLE " + CLAIM_TABLE);
+            execute("DROP TABLE " + claimTable);
             return null;
          });
          return nodes.size();
@@ -209,15 +254,15 @@ public class TestISPNLockUpgradeClaim
    @Test
    public void testOldTableLeftBesideAStaleClaimIsUpgradedToo() throws Exception
    {
-      execute("CREATE TABLE " + LOCK_TABLE + LEGACY_TABLE);
-      execute("CREATE TABLE " + CLAIM_TABLE + LEGACY_TABLE);
+      execute("CREATE TABLE " + lockTable + legacyTable);
+      execute("CREATE TABLE " + claimTable + legacyTable);
       claim(System.currentTimeMillis() - STALE_AFTER);
 
       assertTrue(upgrade(dataSource).run());
 
       assertEquals(List.of(List.of("node1", "node2"), List.of("node1", "node2")), releases);
-      assertFalse(tableExists(LOCK_TABLE));
-      assertFalse(tableExists(CLAIM_TABLE));
+      assertFalse(tableExists(lockTable));
+      assertFalse(tableExists(claimTable));
    }
 
    private ISPNLockUpgrade upgrade(DataSource lockDataSource)
@@ -325,11 +370,12 @@ public class TestISPNLockUpgradeClaim
    private void claim(long heartbeat) throws SQLException
    {
       try (Connection connection = dataSource.getConnection();
-           PreparedStatement insert = connection.prepareStatement("INSERT INTO " + CLAIM_TABLE
-              + " (id, data, timestamp) VALUES (?, X'00', ?)"))
+           PreparedStatement insert = connection.prepareStatement("INSERT INTO " + claimTable
+              + " (id, data, timestamp) VALUES (?, ?, ?)"))
       {
          insert.setString(1, ISPNLockUpgrade.CLAIM_ID);
-         insert.setLong(2, heartbeat);
+         insert.setBytes(2, new byte[]{0});
+         insert.setLong(3, heartbeat);
          insert.executeUpdate();
       }
    }
@@ -337,7 +383,7 @@ public class TestISPNLockUpgradeClaim
    private void heartbeat(long heartbeat)
    {
       try (Connection connection = dataSource.getConnection();
-           PreparedStatement update = connection.prepareStatement("UPDATE " + CLAIM_TABLE
+           PreparedStatement update = connection.prepareStatement("UPDATE " + claimTable
               + " SET timestamp = ? WHERE id = ?"))
       {
          update.setLong(1, heartbeat);
@@ -350,7 +396,7 @@ public class TestISPNLockUpgradeClaim
       }
    }
 
-   private boolean tableExists(String name) throws SQLException
+   protected boolean tableExists(String name) throws SQLException
    {
       try (Connection connection = dataSource.getConnection())
       {
@@ -358,7 +404,7 @@ public class TestISPNLockUpgradeClaim
       }
    }
 
-   private void execute(String sql) throws SQLException
+   protected void execute(String sql) throws SQLException
    {
       try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement())
       {
