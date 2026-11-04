@@ -188,7 +188,6 @@
       <outputFileNameMapping>${artifact.artifactId}_${artifact.groupId}.${artifact.extension}</outputFileNameMapping>
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
-      <useTransitiveFiltering>true</useTransitiveFiltering>
     </dependencySet>
   </dependencySets>
 </assembly>
