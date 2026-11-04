@@ -20,12 +20,16 @@ package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
 import static org.junit.Assert.assertThrows;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.jcr.Node;
@@ -40,6 +44,8 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.impl.backup.DataRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
@@ -216,6 +222,25 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
       assertTrue(repository.isWorkspaceInitialized(workspaceEntry.getName()));
       // The node that held the claim releases the locks, not the one that waited
       assertEquals(2, countLockOwners());
+   }
+
+   public void testRestoreBeforeTheWorkspaceStartsReplacesItsLocks() throws Exception
+   {
+      startWorkspaceAgain();
+      File backup = Files.createTempDirectory(Path.of("target"), "locks").toFile();
+      lockManager().backup(backup);
+      repository.removeWorkspace(workspaceEntry.getName());
+      // A restore runs before the workspace starts
+      helper.addWorkspace(repository, workspaceEntry);
+
+      DataRestore restorer = lockManager().getDataRestorer(new DataRestoreContext(
+         new String[]{DataRestoreContext.STORAGE_DIR}, new Object[]{backup}));
+      restorer.clean();
+      assertEquals(0, lockManager().getLockTableHandler().getLockedNodesIds().size());
+      restorer.restore();
+      restorer.commit();
+      restorer.close();
+      assertEquals(Set.of(deepId, shallowId), lockManager().getLockTableHandler().getLockedNodesIds());
    }
 
    public void testUnsegmentedLockStoreIsRefused() throws Exception

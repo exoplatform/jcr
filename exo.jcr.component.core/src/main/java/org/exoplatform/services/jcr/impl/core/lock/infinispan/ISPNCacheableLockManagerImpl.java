@@ -116,6 +116,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     */
    private ISPNLockUpgrade upgrade;
 
+   private volatile boolean stopped;
+
    /**
     * The lock manager of a workspace with a search manager, which starts first: the upgrade of the lock store, when
     * the lock manager starts, updates the index.
@@ -226,7 +228,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public Boolean execute(String nodeId)
          {
-            return cache.withFlags(Flag.SKIP_CACHE_LOAD).containsKey(nodeId);
+            return lockStore().withFlags(Flag.SKIP_CACHE_LOAD).containsKey(nodeId);
          }
       };
 
@@ -234,7 +236,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public Object execute(LockData newLockData) throws LockException
          {
-            Object oldValue = PrivilegedISPNCacheHelper.put(cache, newLockData.getNodeIdentifier(), newLockData);
+            Object oldValue = PrivilegedISPNCacheHelper.put(lockStore(), newLockData.getNodeIdentifier(), newLockData);
             if (oldValue == null)
             {
                throw new LockException("Can't refresh lock for node " + newLockData.getNodeIdentifier()
@@ -248,7 +250,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public Boolean execute(String nodeId) throws LockException
          {
-            return cache.withFlags(Flag.SKIP_CACHE_LOAD).containsKey(nodeId);
+            return lockStore().withFlags(Flag.SKIP_CACHE_LOAD).containsKey(nodeId);
          }
       };
 
@@ -256,7 +258,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public LockData execute(String nodeId) throws LockException
          {
-            return (LockData)cache.withFlags(Flag.SKIP_CACHE_LOAD).get(nodeId);
+            return (LockData)lockStore().withFlags(Flag.SKIP_CACHE_LOAD).get(nodeId);
          }
       };
 
@@ -264,7 +266,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public List<LockData> execute(Object arg) throws LockException
          {
-            Collection<Object> datas = cache.withFlags(Flag.SKIP_CACHE_LOAD).values();
+            Collection<Object> datas = lockStore().withFlags(Flag.SKIP_CACHE_LOAD).values();
 
             List<LockData> locksData = new ArrayList<LockData>();
             for (Object lockData : datas)
@@ -284,6 +286,58 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     */
    public void start()
    {
+      stopped = false;
+      lockStore();
+      super.start();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void stop()
+   {
+      super.stop();
+      synchronized (this)
+      {
+         stopped = true;
+         AdvancedCache<Serializable, Object> lockCache = cache;
+         if (lockCache != null)
+         {
+            cache = null;
+            PrivilegedISPNCacheHelper.stop(lockCache);
+            ISPNCacheFactory.releaseUniqueInstance(lockCache.getCacheManager());
+         }
+      }
+   }
+
+   /**
+    * Gives the lock store, created once the lock store of Infinispan 8 is upgraded: when the lock manager starts, or
+    * before, when the restore of a workspace replaces its locks.
+    */
+   private AdvancedCache<Serializable, Object> lockStore()
+   {
+      AdvancedCache<Serializable, Object> lockCache = cache;
+      if (lockCache != null)
+      {
+         return lockCache;
+      }
+      synchronized (this)
+      {
+         if (cache == null)
+         {
+            if (stopped)
+            {
+               throw new IllegalStateException("The lock manager of the workspace " + config.getUniqueName()
+                  + " is stopped");
+            }
+            cache = createLockStore();
+         }
+         return cache;
+      }
+   }
+
+   private AdvancedCache<Serializable, Object> createLockStore()
+   {
       AdvancedCache<Serializable, Object> lockCache;
       try
       {
@@ -296,7 +350,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       }
       catch (RepositoryException | RepositoryConfigurationException e)
       {
-         throw new IllegalStateException("The lock manager of the workspace " + config.getUniqueName()
+         throw new IllegalStateException("The lock store of the workspace " + config.getUniqueName()
             + " cannot start", e);
       }
       lockCache.addListener(new CacheSizeEventListener());
@@ -306,23 +360,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          sizeCount.addAndGet(size);
       }
       PrivilegedISPNCacheHelper.start(lockCache);
-      cache = lockCache;
-      super.start();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void stop()
-   {
-      super.stop();
-      AdvancedCache<Serializable, Object> lockCache = cache;
-      if (lockCache != null)
-      {
-         cache = null;
-         PrivilegedISPNCacheHelper.stop(lockCache);
-         ISPNCacheFactory.releaseUniqueInstance(lockCache.getCacheManager());
-      }
+      return lockCache;
    }
 
    /**
@@ -331,7 +369,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    public void onSaveItems(ItemStateChangesLog changesLog)
    {
-      // No lock exists while the lock store is stopped: the changes of the upgrade release those of Infinispan 8
+      // No lock exists before the lock store is created: the changes of the upgrade release those of Infinispan 8
       if (cache != null)
       {
          super.onSaveItems(changesLog);
@@ -469,7 +507,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected LockData doPut(LockData lockData)
    {
-      return (LockData)PrivilegedISPNCacheHelper.putIfAbsent(cache, lockData.getNodeIdentifier(), lockData);
+      return (LockData)PrivilegedISPNCacheHelper.putIfAbsent(lockStore(), lockData.getNodeIdentifier(), lockData);
    }
 
    /**
@@ -478,7 +516,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected void doRemove(LockData lockData)
    {
-      cache.remove(lockData.getNodeIdentifier());
+      lockStore().remove(lockData.getNodeIdentifier());
    }
 
    /**
@@ -487,7 +525,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected boolean isAloneInCluster()
    {
-      return cache.getRpcManager() == null || cache.getCacheManager().getMembers().size() == 1;
+      AdvancedCache<Serializable, Object> lockCache = lockStore();
+      return lockCache.getRpcManager() == null || lockCache.getCacheManager().getMembers().size() == 1;
    }
 
    /**
@@ -496,7 +535,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected void doClean()
    {
-      if (cache.getStatus() == ComponentStatus.RUNNING)
+      if (lockStore().getStatus() == ComponentStatus.RUNNING)
       {
          for (LockData lockData : getLockList())
          {
@@ -524,7 +563,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          if (!evt.isPre() && evt.getKey() instanceof String)
          {
-            sizeCount.addAndGet(cache.size());
+            sizeCount.addAndGet(evt.getCache().size());
          }
       }
    }
