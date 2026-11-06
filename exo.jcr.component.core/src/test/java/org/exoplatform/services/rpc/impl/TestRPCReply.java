@@ -20,6 +20,13 @@ package org.exoplatform.services.rpc.impl;
 
 import junit.framework.TestCase;
 
+import java.util.Arrays;
+import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import org.exoplatform.services.ispn.ClusterJavaSerializationMarshaller;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.rpc.RPCException;
@@ -45,5 +52,43 @@ public class TestRPCReply extends TestCase
       assertEquals("configuration refused", cause.getMessage());
       assertTrue(cause.getCause() instanceof RPCException);
       assertTrue(cause.getCause().getMessage().contains("jcr failure"));
+   }
+
+   public void testAReplyOffTheListWhoseChainLoopsIsDescribedOnce() throws Exception
+   {
+      CarryingException failure = new CarryingException("Cannot execute the command create");
+      IllegalStateException inner = new IllegalStateException("inner failure");
+      failure.initCause(inner);
+      inner.initCause(failure);
+
+      ExecutorService executor = Executors.newSingleThreadExecutor();
+      try
+      {
+         Future<byte[]> reply = executor.submit(() -> AbstractRPCService.toReply(marshaller, failure, "create"));
+         Object received = marshaller.objectFromByteBuffer(reply.get(30, TimeUnit.SECONDS));
+
+         assertTrue(received instanceof RPCException);
+         assertEquals("Cannot execute the command create, caused by " + inner, ((Throwable)received).getMessage());
+         assertTrue(Arrays.equals(failure.getStackTrace(), ((Throwable)received).getStackTrace()));
+      }
+      finally
+      {
+         executor.shutdownNow();
+      }
+   }
+
+   /**
+    * A failure on the list that holds a value off it: the reply cannot travel with its types.
+    */
+   static class CarryingException extends Exception
+   {
+      private static final long serialVersionUID = 1L;
+
+      private final Vector<String> payload = new Vector<>();
+
+      CarryingException(String message)
+      {
+         super(message);
+      }
    }
 }

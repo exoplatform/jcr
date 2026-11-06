@@ -59,8 +59,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -559,7 +561,10 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
          else
          {
             description.append(cause.getMessage());
-            for (Throwable t = cause.getCause(); t != null && t != cause; cause = t, t = t.getCause())
+            // A chain may loop back on one of its throwables: each one is described once
+            Set<Throwable> described = Collections.newSetFromMap(new IdentityHashMap<>());
+            described.add(cause);
+            for (Throwable t = cause.getCause(); t != null && described.add(t); t = t.getCause())
             {
                description.append(", caused by ").append(t);
             }
