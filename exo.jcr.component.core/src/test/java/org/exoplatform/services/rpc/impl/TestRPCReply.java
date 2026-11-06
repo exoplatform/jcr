@@ -20,12 +20,18 @@ package org.exoplatform.services.rpc.impl;
 
 import junit.framework.TestCase;
 
+import java.awt.Point;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import org.jgroups.Address;
+import org.jgroups.util.UUID;
 
 import org.exoplatform.services.ispn.ClusterJavaSerializationMarshaller;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -38,6 +44,24 @@ import org.exoplatform.services.rpc.RPCException;
 public class TestRPCReply extends TestCase
 {
    private final ClusterJavaSerializationMarshaller marshaller = new ClusterJavaSerializationMarshaller();
+
+   public void testAReplyThisNodeRefusesIsAFailureOfItsMember() throws Exception
+   {
+      // A member whose allow-list differs replies with a class this node refuses
+      ByteArrayOutputStream reply = new ByteArrayOutputStream();
+      try (ObjectOutputStream out = new ObjectOutputStream(reply))
+      {
+         out.writeObject(new Point(1, 2));
+      }
+      Address member = UUID.randomUUID();
+
+      Object received = AbstractRPCService.fromReply(marshaller, reply.toByteArray(), member);
+
+      assertTrue(String.valueOf(received), received instanceof RPCException);
+      String message = ((Throwable)received).getMessage();
+      assertTrue(message, message.contains(member.toString()));
+      assertTrue(message, message.contains(Point.class.getName()));
+   }
 
    public void testAFailureKeepsTheTypesOfItsChainOnTheList() throws Exception
    {
