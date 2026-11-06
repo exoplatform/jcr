@@ -529,15 +529,23 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
       }
    }
 
-   /**
-    * Marshals the reply of a command. A reply holding a class off the cluster serialization allow-list, typically the
-    * cause of a failure, would not be read by the caller: it is replaced by an {@link RPCException} that describes it.
-    */
    private byte[] toReply(Object reply, String commandId) throws IOException, InterruptedException
+   {
+      return toReply(marshaller, reply, commandId);
+   }
+
+   /**
+    * Marshals the reply of a command. A throwable off the cluster serialization allow-list, typically a cause of a
+    * failure, would not be read by the caller: it travels as an {@link RPCException} that describes it, and the other
+    * throwables of the chain keep their types, which the caller rethrows. A value off the list that is not a throwable
+    * replaces the whole reply by an {@link RPCException} that describes it.
+    */
+   static byte[] toReply(ClusterJavaSerializationMarshaller marshaller, Object reply, String commandId) throws IOException,
+                                                                                                         InterruptedException
    {
       try
       {
-         return marshaller.objectToByteBuffer(reply);
+         return marshaller.objectToByteBuffer(reply, AbstractRPCService::describe);
       }
       catch (InvalidClassException e)
       {
@@ -563,6 +571,13 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
          }
          return marshaller.objectToByteBuffer(replacement);
       }
+   }
+
+   private static Throwable describe(Throwable refused)
+   {
+      RPCException replacement = new RPCException(refused.toString());
+      replacement.setStackTrace(refused.getStackTrace());
+      return replacement;
    }
 
    /**
