@@ -33,7 +33,7 @@ import java.util.StringTokenizer;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 /**
  * The default implementation of {@link DataSourceProvider}. It allows you
