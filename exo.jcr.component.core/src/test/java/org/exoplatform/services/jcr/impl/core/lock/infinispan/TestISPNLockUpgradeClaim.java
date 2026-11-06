@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.InvocationHandler;
@@ -283,6 +284,31 @@ public class TestISPNLockUpgradeClaim
 
       assertTrue(upgraded);
       assertEquals(List.of(List.of("node1")), releases);
+   }
+
+   @Test
+   public void testAFailedReadOfTheNewStoreStopsTheUpgradeAndKeepsItsClaim() throws Exception
+   {
+      execute("CREATE TABLE " + lockTable + legacyTable);
+
+      ISPNLockUpgrade upgrade = new ISPNLockUpgrade(workspace, dataSource, dataSource, table, nodes -> {
+         releases.add(List.copyOf(nodes));
+         try
+         {
+            // The new store cannot be read from the next batch on
+            execute("CREATE TABLE " + lockTable + " (lock_key VARCHAR(512), segment_id INTEGER NOT NULL)");
+            execute("INSERT INTO " + lockTable + " VALUES ('node2', 0)");
+         }
+         catch (SQLException e)
+         {
+            throw new javax.jcr.RepositoryException(e);
+         }
+         return nodes.size();
+      }, STALE_AFTER, POLL_INTERVAL, 1);
+
+      assertThrows(javax.jcr.RepositoryException.class, upgrade::run);
+      assertEquals(List.of(List.of("node1")), releases);
+      assertTrue(tableExists(claimTable));
    }
 
    @Test

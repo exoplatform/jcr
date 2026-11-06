@@ -53,7 +53,12 @@ import org.infinispan.persistence.jdbc.configuration.TableManipulationConfigurat
  * reserved row of the claim table holds the claiming node and its heartbeat, updated after each batch of nodes. The
  * other nodes wait until the claim table is gone, and take the upgrade over with a conditional update of the reserved
  * row when its heartbeat gets stale: each batch skips the nodes already locked in the new table, so the upgrade can be
- * run again.
+ * run again. A failure to read the new table stops the upgrade, which keeps its claim for another node, or the next
+ * start, to take over.
+ * <p>
+ * The new table is read before each batch, not within its release: a node that a node already started locks between
+ * that read and the release of its batch keeps its lock in the new table and loses its lock properties. The window is
+ * the release of one batch, while the first nodes of a cluster start on the new store.
  */
 class ISPNLockUpgrade
 {
