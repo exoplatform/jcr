@@ -33,6 +33,7 @@ import org.exoplatform.services.rpc.RPCService;
 import org.exoplatform.services.rpc.RemoteCommand;
 import org.exoplatform.services.rpc.TopologyChangeEvent;
 import org.exoplatform.services.rpc.TopologyChangeListener;
+import org.infinispan.commons.CacheException;
 import org.jgroups.Address;
 import org.jgroups.BytesMessage;
 import org.jgroups.JChannel;
@@ -468,7 +469,7 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
          }
          else
          {
-            Object value = fromReply(rsp.getValue(), dest);
+            Object value = fromReply(marshaller, rsp.getValue(), dest);
             if (value instanceof RPCException)
             {
                // if we have any application-level exceptions make sure we throw them!!
@@ -590,9 +591,10 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
    }
 
    /**
-    * Reads the reply of a member: the marshalled result of its command, or <code>null</code>
+    * Reads the reply of a member: the marshalled result of its command, or <code>null</code>. A reply this node
+    * cannot read is a failure of that member, a class its allow-list refuses included: the lists of the nodes differ.
     */
-   private Object fromReply(Object reply, Address member)
+   static Object fromReply(ClusterJavaSerializationMarshaller marshaller, Object reply, Address member)
    {
       if (!(reply instanceof byte[]))
       {
@@ -602,7 +604,7 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
       {
          return marshaller.objectFromByteBuffer((byte[])reply);
       }
-      catch (IOException | ClassNotFoundException e)
+      catch (IOException | ClassNotFoundException | CacheException e)
       {
          return new RPCException("Cannot read the reply of the member " + member + ": " + e.getMessage(), e);
       }
