@@ -256,6 +256,36 @@ public class TestISPNLockUpgradeClaim
    }
 
    @Test
+   public void testANodeLockedInTheNewStoreDuringTheUpgradeKeepsItsLock() throws Exception
+   {
+      execute("CREATE TABLE " + lockTable + legacyTable);
+
+      boolean upgraded = new ISPNLockUpgrade(workspace, dataSource, dataSource, table, nodes -> {
+         releases.add(List.copyOf(nodes));
+         if (releases.size() > 1)
+         {
+            return nodes.size();
+         }
+         try
+         {
+            // A node already started creates the new store, with its segment column, and locks node2 before its
+            // batch
+            execute("CREATE TABLE " + lockTable + " (id VARCHAR(512) NOT NULL, data " + binaryType()
+               + ", timestamp BIGINT NOT NULL, segment_id INTEGER NOT NULL, PRIMARY KEY (id))");
+            execute("INSERT INTO " + lockTable + " (id, timestamp, segment_id) VALUES ('node2', 0, 0)");
+         }
+         catch (SQLException e)
+         {
+            throw new javax.jcr.RepositoryException(e);
+         }
+         return nodes.size();
+      }, STALE_AFTER, POLL_INTERVAL, 1).run();
+
+      assertTrue(upgraded);
+      assertEquals(List.of(List.of("node1")), releases);
+   }
+
+   @Test
    public void testOldTableLeftBesideAStaleClaimIsUpgradedToo() throws Exception
    {
       execute("CREATE TABLE " + lockTable + legacyTable);

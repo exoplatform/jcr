@@ -28,7 +28,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.jcr.RepositoryException;
@@ -112,6 +111,8 @@ class ISPNLockUpgrade
 
    private final long pollInterval;
 
+   private final int batchSize;
+
    private long heartbeat;
 
    /**
@@ -130,6 +131,13 @@ class ISPNLockUpgrade
    ISPNLockUpgrade(WorkspaceEntry workspace, DataSource lockDataSource, DataSource itemDataSource,
       TableManipulationConfiguration table, LockReleaser releaser, long staleAfter, long pollInterval)
    {
+      this(workspace, lockDataSource, itemDataSource, table, releaser, staleAfter, pollInterval, BATCH_SIZE);
+   }
+
+   ISPNLockUpgrade(WorkspaceEntry workspace, DataSource lockDataSource, DataSource itemDataSource,
+      TableManipulationConfiguration table, LockReleaser releaser, long staleAfter, long pollInterval, int batchSize)
+   {
+      this.batchSize = batchSize;
       this.workspace = workspace;
       this.tables = new ISPNLockTableHandler(workspace, lockDataSource, table);
       this.lockDataSource = lockDataSource;
@@ -382,29 +390,48 @@ class ISPNLockUpgrade
    private boolean upgrade(String claimTable) throws SQLException, RepositoryException, RepositoryConfigurationException
    {
       List<String> lockedNodes = getNodesWithLockProperties();
-      Set<String> newLocks = tables.tableExists() ? tables.getLockedNodesIds() : Set.of();
-      lockedNodes.removeAll(newLocks);
       int released = 0;
-      for (int i = 0; i < lockedNodes.size(); i += BATCH_SIZE)
+      // The claim is renewed before each batch and before the drop: a node another node took the claim over from
+      // releases nothing more and leaves the claim table to that node
+      for (int i = 0; holdsClaim(claimTable); i += batchSize)
       {
-         released += releaser.release(lockedNodes.subList(i, Math.min(i + BATCH_SIZE, lockedNodes.size())));
-         try (Connection connection = lockDataSource.getConnection())
+         if (i >= lockedNodes.size())
          {
-            if (!beat(connection, claimTable, heartbeat))
+            try (Connection connection = lockDataSource.getConnection();
+                 Statement statement = connection.createStatement())
             {
-               LOG.info("Another node took over the upgrade of the lock store of the workspace {}",
-                  workspace.getUniqueName());
-               return false;
+               statement.executeUpdate("DROP TABLE " + claimTable);
             }
+            LOG.info("Upgraded the lock store of the workspace {}: the locks of {} nodes released, the table {} dropped",
+               workspace.getUniqueName(), released, claimTable);
+            return true;
+         }
+         List<String> batch = new ArrayList<>(lockedNodes.subList(i, Math.min(i + batchSize, lockedNodes.size())));
+         // A node locked in the new store meanwhile, by a node already started, keeps its lock
+         if (tables.tableExists())
+         {
+            batch.removeAll(tables.getLockedNodesIds());
+         }
+         if (!batch.isEmpty())
+         {
+            released += releaser.release(batch);
          }
       }
-      try (Connection connection = lockDataSource.getConnection(); Statement statement = connection.createStatement())
+      LOG.info("Another node took over the upgrade of the lock store of the workspace {}", workspace.getUniqueName());
+      return false;
+   }
+
+   /**
+    * Renews the heartbeat of the claim of this node.
+    *
+    * @return false if another node took the claim over
+    */
+   private boolean holdsClaim(String claimTable) throws SQLException
+   {
+      try (Connection connection = lockDataSource.getConnection())
       {
-         statement.executeUpdate("DROP TABLE " + claimTable);
+         return beat(connection, claimTable, heartbeat);
       }
-      LOG.info("Upgraded the lock store of the workspace {}: the locks of {} nodes released, the table {} dropped",
-         workspace.getUniqueName(), released, claimTable);
-      return true;
    }
 
    /**
