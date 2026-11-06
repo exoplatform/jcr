@@ -54,6 +54,20 @@ public class TestRPCReply extends TestCase
       assertTrue(cause.getCause().getMessage().contains("jcr failure"));
    }
 
+   public void testTheCausesBelowAThrowableOffTheListTravelToo() throws Exception
+   {
+      RPCException failure = new RPCException("Cannot execute the command create",
+         new javax.jcr.RepositoryException("jcr failure", new RepositoryConfigurationException("bad config")));
+
+      Object received = marshaller.objectFromByteBuffer(AbstractRPCService.toReply(marshaller, failure, "create"));
+
+      Throwable described = ((Throwable)received).getCause();
+      assertTrue(described instanceof RPCException);
+      assertTrue(described.getMessage().contains("jcr failure"));
+      assertTrue(String.valueOf(described.getCause()), described.getCause() instanceof RepositoryConfigurationException);
+      assertEquals("bad config", described.getCause().getMessage());
+   }
+
    public void testAReplyOffTheListWhoseChainLoopsIsDescribedOnce() throws Exception
    {
       CarryingException failure = new CarryingException("Cannot execute the command create");

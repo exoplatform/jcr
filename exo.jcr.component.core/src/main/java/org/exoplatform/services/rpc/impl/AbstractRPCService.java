@@ -578,9 +578,13 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
       }
    }
 
+   /**
+    * Describes a throwable off the list: its cause goes with it, and is written in turn, with its type when it is on
+    * the list, described otherwise.
+    */
    private static Throwable describe(Throwable refused)
    {
-      RPCException replacement = new RPCException(refused.toString());
+      RPCException replacement = new RPCException(refused.toString(), refused.getCause());
       replacement.setStackTrace(refused.getStackTrace());
       return replacement;
    }
