@@ -219,7 +219,11 @@ public class RPCServiceImplTest
 
    private void setProperty(String name, String value)
    {
-      formerProperties.putIfAbsent(name, System.getProperty(name));
+      // The value before the first change, an absent one included: putIfAbsent would replace a null with a later value
+      if (!formerProperties.containsKey(name))
+      {
+         formerProperties.put(name, System.getProperty(name));
+      }
       PropertyManager.setProperty(name, value);
    }
 
