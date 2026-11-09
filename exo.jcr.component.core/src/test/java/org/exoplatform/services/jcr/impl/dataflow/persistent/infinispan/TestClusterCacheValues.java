@@ -22,15 +22,22 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
+
+import javax.jcr.PropertyType;
 
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 import org.apache.lucene.document.Document;
@@ -39,12 +46,30 @@ import org.apache.lucene.index.Payload;
 import org.exoplatform.services.ispn.SharedJGroupsChannelConfigurator;
 import org.exoplatform.services.ispn.SharedJGroupsTransport;
 import org.exoplatform.services.ispn.Utils;
+import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
+import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.dataflow.NamePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.PathPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.PermissionPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ReferencePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.BooleanPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.CalendarPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.DoublePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.LongPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.SimplePersistedSize;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StringPersistedValueData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.PatternQPathEntryFilter;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
@@ -52,6 +77,7 @@ import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SingletonTokenStream;
+import org.exoplatform.services.jcr.infinispan.CacheKey;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
@@ -131,6 +157,86 @@ public class TestClusterCacheValues
       assertEquals(node.getQPath(), copy.getQPath());
       assertEquals(node.getPrimaryTypeName(), copy.getPrimaryTypeName());
       assertArrayEquals(node.getMixinTypeNames(), copy.getMixinTypeNames());
+   }
+
+   @Test
+   public void testPropertyArrivesWithAValueOfEachType() throws Exception
+   {
+      File file = Files.createTempFile("cluster-value", ".bin").toFile();
+      try
+      {
+         Files.write(file.toPath(), new byte[] {4, 5, 6});
+         List<ValueData> values = List.of(new StringPersistedValueData(0, "text"),
+                                          new LongPersistedValueData(1, 42L),
+                                          new BooleanPersistedValueData(2, true),
+                                          new DoublePersistedValueData(3, 1.5),
+                                          new CalendarPersistedValueData(4, Calendar.getInstance()),
+                                          new NamePersistedValueData(5, Constants.NT_UNSTRUCTURED),
+                                          new PathPersistedValueData(6, QPath.parse("[]:1[]node:1")),
+                                          new ReferencePersistedValueData(7, new Identifier("node-id")),
+                                          new PermissionPersistedValueData(8, new AccessControlEntry("john", "read")),
+                                          new ByteArrayPersistedValueData(9, new byte[] {1, 2, 3}),
+                                          // A value stored in a file travels as the path of the file, which the nodes share
+                                          new FilePersistedValueData(10, file, SpoolConfig.getDefaultSpoolConfig()));
+         PersistedPropertyData property =
+            new PersistedPropertyData("property-id", QPath.parse("[]:1[]node:1[]property:1"), "node-id", 1,
+                                      PropertyType.UNDEFINED, true, new ArrayList<>(values), new SimplePersistedSize(3));
+
+         cache1.put(new CacheId("workspace", "property-id"), property);
+         PersistedPropertyData copy = (PersistedPropertyData)cache2.get(new CacheId("workspace", "property-id"));
+
+         assertEquals(property.getQPath(), copy.getQPath());
+         assertEquals(values.size(), copy.getValues().size());
+         for (int i = 0; i < values.size(); i++)
+         {
+            ValueData value = values.get(i);
+            ValueData received = copy.getValues().get(i);
+            assertEquals(value.getClass(), received.getClass());
+            assertEquals(value.getOrderNumber(), received.getOrderNumber());
+            assertArrayEquals(value.getClass().getName(), value.getAsByteArray(), received.getAsByteArray());
+         }
+      }
+      finally
+      {
+         Files.deleteIfExists(file.toPath());
+      }
+   }
+
+   @Test
+   public void testNodeArrivesWithTheEntriesOfItsAccessControlList() throws Exception
+   {
+      AccessControlList acl =
+         new AccessControlList("john", new ArrayList<>(List.of(new AccessControlEntry("*:/platform/users", "read"),
+                                                               new AccessControlEntry("john", "set_property"))));
+      PersistedNodeData node = new PersistedNodeData("acl-node-id", QPath.parse("[]:1[]acl:1"), Constants.ROOT_UUID, 1,
+         1, Constants.NT_UNSTRUCTURED, new InternalQName[0], acl);
+
+      cache1.put(new CacheId("workspace", "acl-node-id"), node);
+      PersistedNodeData copy = (PersistedNodeData)cache2.get(new CacheId("workspace", "acl-node-id"));
+
+      assertEquals("john", copy.getACL().getOwner());
+      assertEquals(acl.getPermissionEntries(), copy.getACL().getPermissionEntries());
+   }
+
+   @Test
+   public void testEachKeyOfTheWorkspaceCacheFindsItsEntryOnTheOtherNode() throws Exception
+   {
+      QPath path = QPath.parse("[]:1[]node:1");
+      List<Supplier<CacheKey>> keys = List.of(() -> new CacheId("workspace", "node-id"),
+                                              () -> new CacheQPath("workspace", "parent-id", path, ItemType.NODE),
+                                              () -> new CacheNodesId("workspace", "node-id"),
+                                              () -> new CachePropsId("workspace", "node-id"),
+                                              () -> new CacheRefsId("workspace", "node-id"),
+                                              () -> new CacheNodesByPageId("workspace", "node-id"),
+                                              () -> new CachePatternNodesId("workspace", "node-id"),
+                                              () -> new CachePatternPropsId("workspace", "node-id"));
+      for (Supplier<CacheKey> key : keys)
+      {
+         String value = "value of " + key.get().getClass().getSimpleName();
+         cache1.put(key.get(), value);
+         // A key the other node builds again from the same data finds the entry
+         assertEquals(value, cache2.get(key.get()));
+      }
    }
 
    @Test
