@@ -37,10 +37,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
@@ -233,6 +235,28 @@ public class TestISPNLockUpgradeClaim
       assertTrue(upgraded.get(1, TimeUnit.MINUTES));
       assertEquals(List.of(List.of("node1", "node2")), releases);
       assertEquals(1, renames.get());
+   }
+
+   @Test
+   public void testANodeThatStopsWhileTheClaimIsHeldStopsWaiting() throws Exception
+   {
+      execute("CREATE TABLE " + lockTable + legacyTable);
+      execute("CREATE TABLE " + claimTable + legacyTable);
+      claim(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1));
+      AtomicBoolean stopped = new AtomicBoolean();
+      ISPNLockUpgrade upgrade = new ISPNLockUpgrade(workspace, dataSource, dataSource, table, this::release, stopped::get,
+                                                    STALE_AFTER, POLL_INTERVAL, ISPNLockUpgrade.BATCH_SIZE);
+      Future<Boolean> upgraded = executor.submit(upgrade::run);
+      Thread.sleep(3 * STALE_AFTER);
+      assertFalse(upgraded.isDone());
+
+      stopped.set(true);
+
+      // The node stops waiting at its next poll, and the claim stays with the node that holds it
+      ExecutionException failure = assertThrows(ExecutionException.class, () -> upgraded.get(5, TimeUnit.SECONDS));
+      assertTrue(String.valueOf(failure.getCause()), failure.getCause() instanceof javax.jcr.RepositoryException);
+      assertTrue(tableExists(claimTable));
+      assertTrue(releases.isEmpty());
    }
 
    @Test

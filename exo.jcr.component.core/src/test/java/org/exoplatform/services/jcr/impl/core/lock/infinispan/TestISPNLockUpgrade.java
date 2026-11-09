@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.Node;
 import javax.jcr.Session;
@@ -268,6 +269,50 @@ public class TestISPNLockUpgrade extends JcrImplBaseTest
       assertTrue(upgradeRepository.isWorkspaceInitialized(workspaceEntry.getName()));
       // The node that held the claim releases the locks, not the one that waited
       assertEquals(2, countLockOwners());
+   }
+
+   public void testStopDuringTheWaitForAnotherNodeDoesNotWaitForItsUpgrade() throws Exception
+   {
+      execute("DROP TABLE " + lockTable);
+      execute("CREATE TABLE " + claimTable + LEGACY_TABLE);
+      claim(System.currentTimeMillis());
+      AtomicReference<Throwable> startFailure = new AtomicReference<>();
+      Thread starter = new Thread(() -> {
+         try
+         {
+            startWorkspaceAgain();
+         }
+         catch (Throwable e)
+         {
+            startFailure.set(e);
+         }
+      });
+      starter.start();
+      starter.join(3 * ISPNLockUpgrade.POLL_INTERVAL);
+      assertTrue(starter.isAlive());
+
+      AtomicReference<Throwable> stopFailure = new AtomicReference<>();
+      Thread stopper = new Thread(() -> {
+         try
+         {
+            lockManager().stop();
+         }
+         catch (Throwable e)
+         {
+            stopFailure.set(e);
+         }
+      });
+      stopper.start();
+
+      // The stop and the start end within a poll of the wait, long before the claim of the other node goes stale
+      stopper.join(TimeUnit.SECONDS.toMillis(10));
+      assertFalse(stopper.isAlive());
+      assertNull(String.valueOf(stopFailure.get()), stopFailure.get());
+      starter.join(TimeUnit.SECONDS.toMillis(10));
+      assertFalse(starter.isAlive());
+      assertNotNull(startFailure.get());
+      // The claim stays with the node that holds it
+      assertTrue(tableExists(claimTable));
    }
 
    public void testRestoreBeforeTheWorkspaceStartsReplacesItsLocks() throws Exception

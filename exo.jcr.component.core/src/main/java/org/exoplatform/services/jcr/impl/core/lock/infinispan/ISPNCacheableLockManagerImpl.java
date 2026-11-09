@@ -307,10 +307,11 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     */
    public void stop()
    {
+      // First, and outside the monitor, which a start waiting for another node's upgrade of the lock store holds
+      stopped = true;
       super.stop();
       synchronized (this)
       {
-         stopped = true;
          AdvancedCache<Serializable, Object> lockCache = cache;
          if (lockCache != null)
          {
@@ -362,6 +363,11 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       }
       catch (RepositoryException | RepositoryConfigurationException e)
       {
+         if (stopped)
+         {
+            throw new IllegalLifecycleStateException("The lock manager of the workspace " + config.getUniqueName()
+               + " is stopped", e);
+         }
          throw new IllegalStateException("The lock store of the workspace " + config.getUniqueName()
             + " cannot start", e);
       }
@@ -407,7 +413,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       try
       {
          return new ISPNLockUpgrade(config, dataSource, (DataSource)new InitialContext().lookup(itemSourceName),
-            lockTable, this::releaseLocks);
+            lockTable, this::releaseLocks, () -> stopped);
       }
       catch (NamingException e)
       {

@@ -77,7 +77,11 @@ public class LockRemover
 
    public void stop()
    {
-      lockRemoverTask.cancel(false);
-      lockRemoverTask = null;
+      // A lock manager stopped while it starts stops a remover not started yet
+      if (lockRemoverTask != null)
+      {
+         lockRemoverTask.cancel(false);
+         lockRemoverTask = null;
+      }
    }
 }

@@ -29,6 +29,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 
 import javax.jcr.RepositoryException;
 import javax.sql.DataSource;
@@ -56,9 +57,12 @@ import org.infinispan.persistence.jdbc.configuration.TableManipulationConfigurat
  * run again. A failure to read the new table stops the upgrade, which keeps its claim for another node, or the next
  * start, to take over.
  * <p>
- * The new table is read before each batch, not within its release: a node that a node already started locks between
- * that read and the release of its batch keeps its lock in the new table and loses its lock properties. The window is
- * the release of one batch, while the first nodes of a cluster start on the new store.
+ * The new table is read before each batch, not within its release: a node locked, by a node already started on the
+ * new store, between that read and the release of its batch keeps its lock in the new table and loses its lock
+ * properties. The window is the release of one batch, while the first nodes of a cluster start on the new store.
+ * <p>
+ * The upgrade runs in the thread that starts the lock manager, which holds the monitor of the manager. A node that
+ * stops while it waits for another node's upgrade stops waiting, so that its stop does not wait for that upgrade.
  */
 class ISPNLockUpgrade
 {
@@ -118,6 +122,8 @@ class ISPNLockUpgrade
 
    private final int batchSize;
 
+   private final BooleanSupplier stopRequested;
+
    private long heartbeat;
 
    /**
@@ -126,22 +132,34 @@ class ISPNLockUpgrade
     * @param itemDataSource the data source of the items of the workspace
     * @param table the table of the lock store
     * @param releaser the releaser of the locks of the nodes
+    * @param stopRequested whether the lock manager stops, which ends a wait for another node's upgrade
     */
    ISPNLockUpgrade(WorkspaceEntry workspace, DataSource lockDataSource, DataSource itemDataSource,
-      TableManipulationConfiguration table, LockReleaser releaser)
+      TableManipulationConfiguration table, LockReleaser releaser, BooleanSupplier stopRequested)
    {
-      this(workspace, lockDataSource, itemDataSource, table, releaser, STALE_AFTER, POLL_INTERVAL);
+      this(workspace, lockDataSource, itemDataSource, table, releaser, stopRequested, STALE_AFTER, POLL_INTERVAL,
+         BATCH_SIZE);
    }
 
    ISPNLockUpgrade(WorkspaceEntry workspace, DataSource lockDataSource, DataSource itemDataSource,
       TableManipulationConfiguration table, LockReleaser releaser, long staleAfter, long pollInterval)
    {
-      this(workspace, lockDataSource, itemDataSource, table, releaser, staleAfter, pollInterval, BATCH_SIZE);
+      this(workspace, lockDataSource, itemDataSource, table, releaser, () -> false, staleAfter, pollInterval,
+         BATCH_SIZE);
    }
 
    ISPNLockUpgrade(WorkspaceEntry workspace, DataSource lockDataSource, DataSource itemDataSource,
       TableManipulationConfiguration table, LockReleaser releaser, long staleAfter, long pollInterval, int batchSize)
    {
+      this(workspace, lockDataSource, itemDataSource, table, releaser, () -> false, staleAfter, pollInterval,
+         batchSize);
+   }
+
+   ISPNLockUpgrade(WorkspaceEntry workspace, DataSource lockDataSource, DataSource itemDataSource,
+      TableManipulationConfiguration table, LockReleaser releaser, BooleanSupplier stopRequested, long staleAfter,
+      long pollInterval, int batchSize)
+   {
+      this.stopRequested = stopRequested;
       this.batchSize = batchSize;
       this.workspace = workspace;
       this.tables = new ISPNLockTableHandler(workspace, lockDataSource, table);
@@ -210,6 +228,12 @@ class ISPNLockUpgrade
                   LOG.info("Waiting for another node to upgrade the lock store of the workspace {}",
                      workspace.getUniqueName());
                   waiting = true;
+               }
+               if (stopRequested.getAsBoolean())
+               {
+                  // The claim stays with the node that holds it
+                  throw new RepositoryException("The lock manager of the workspace " + workspace.getUniqueName()
+                     + " stopped while another node upgrades its lock store");
                }
             }
             Thread.sleep(pollInterval);
