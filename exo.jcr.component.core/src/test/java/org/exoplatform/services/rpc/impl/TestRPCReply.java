@@ -23,12 +23,16 @@ import junit.framework.TestCase;
 import java.awt.Point;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.jgroups.Address;
 import org.jgroups.util.UUID;
@@ -61,6 +65,27 @@ public class TestRPCReply extends TestCase
       String message = ((Throwable)received).getMessage();
       assertTrue(message, message.contains(member.toString()));
       assertTrue(message, message.contains(Point.class.getName()));
+   }
+
+   public void testARequestAndAReplyNameTheirCommandInTheSizeWarning() throws Exception
+   {
+      List<String> sources = new ArrayList<>();
+      ClusterJavaSerializationMarshaller recording = new ClusterJavaSerializationMarshaller()
+      {
+         @Override
+         protected boolean warnIfOversized(int size, Supplier<String> source)
+         {
+            sources.add(source.get());
+            return super.warnIfOversized(size, source);
+         }
+      };
+
+      AbstractRPCService.toRequest(recording, new AbstractRPCService.MessageBody(null, "create",
+                                                                                 new Serializable[] {"workspace"}));
+      AbstractRPCService.toReply(recording, "created", "create");
+
+      assertEquals(Arrays.asList("the request of the RPC command create", "the reply of the RPC command create"),
+                   sources);
    }
 
    public void testAFailureKeepsTheTypesOfItsChainOnTheList() throws Exception

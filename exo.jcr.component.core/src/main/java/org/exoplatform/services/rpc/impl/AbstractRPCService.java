@@ -421,13 +421,8 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
       final Message msg;
       try
       {
-         msg = new BytesMessage(null, marshaller.objectToByteBuffer(
+         msg = new BytesMessage(null, toRequest(marshaller,
             new MessageBody(dests.size() == 1 && dests != members ? dests.get(0) : null, commandId, args))); //NOSONAR
-      }
-      catch (InterruptedException e)
-      {
-         Thread.currentThread().interrupt();
-         throw new RPCException("Interrupted while marshalling the command " + commandId, e);
       }
       catch (IOException e)
       {
@@ -538,6 +533,14 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
    }
 
    /**
+    * Marshals the request of a command, which a request too large for the warning size of the marshaller names.
+    */
+   static byte[] toRequest(ClusterJavaSerializationMarshaller marshaller, MessageBody body) throws IOException
+   {
+      return marshaller.objectToByteBuffer(body, null, () -> "the request of the RPC command " + body.getCommandId());
+   }
+
+   /**
     * Marshals the reply of a command. A throwable off the cluster serialization allow-list, typically a cause of a
     * failure, would not be read by the caller: it travels as an {@link RPCException} that describes it, and the other
     * throwables of the chain keep their types, which the caller rethrows. A value off the list that is not a throwable
@@ -548,7 +551,8 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
    {
       try
       {
-         return marshaller.objectToByteBuffer(reply, AbstractRPCService::describe);
+         return marshaller.objectToByteBuffer(reply, AbstractRPCService::describe,
+                                              () -> "the reply of the RPC command " + commandId);
       }
       catch (InvalidClassException e)
       {
