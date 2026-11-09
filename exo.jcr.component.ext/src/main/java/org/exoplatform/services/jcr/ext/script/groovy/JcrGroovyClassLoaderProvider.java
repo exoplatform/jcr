@@ -69,7 +69,7 @@ public class JcrGroovyClassLoaderProvider extends GroovyClassLoaderProvider
        */
       protected CompilationUnit createCompilationUnit(CompilerConfiguration config, CodeSource cs)
       {
-         return new JcrCompilationUnit(config, cs, this);
+         return new JcrCompilationUnit(sequentialParse(config), cs, this);
       }
 
       public URL[] findDependencies(final SourceFolder[] sources, final SourceFile[] files) throws IOException
@@ -96,13 +96,13 @@ public class JcrGroovyClassLoaderProvider extends GroovyClassLoaderProvider
             new HierarchicalResourceLoader(actualLoader, JcrGroovyClassLoader.this.getResourceLoader());
          
          CompilationUnit cunit =
-            new JcrCompilationUnit(config, cs, new JcrGroovyClassLoader(
-               JcrGroovyClassLoaderProvider.class.getClassLoader()) {
+            new JcrGroovyClassLoader(JcrGroovyClassLoaderProvider.class.getClassLoader())
+            {
                public GroovyResourceLoader getResourceLoader()
                {
                   return loader;
                }
-            });
+            }.createCompilationUnit(config, cs);
          
          for (int i = 0; i < files.length; i++)
             cunit.addSource(files[i].getPath());
