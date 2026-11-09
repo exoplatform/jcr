@@ -161,11 +161,13 @@ public class RPCServiceImplTest
       Set<String> causes = new HashSet<>();
       for (Object reply : replies)
       {
-         // The cause, a javax.jcr class, cannot be read by the caller: the reply describes it
+         // The cause, a javax.jcr class, cannot be read by the caller: it travels as a failure that describes it
          RPCException failure = (RPCException)reply;
-         assertTrue(failure.getMessage(), failure.getMessage().startsWith("Cannot execute the command failing, caused by "));
-         causes.add(failure.getMessage().substring(failure.getMessage().indexOf("caused by ") + 10));
-         assertEquals(RPCServiceImplTest.class.getName(), failure.getStackTrace()[0].getClassName().replaceAll("\\$.*", ""));
+         assertEquals("Cannot execute the command failing", failure.getMessage());
+         Throwable cause = failure.getCause();
+         assertTrue(String.valueOf(cause), cause instanceof RPCException);
+         causes.add(cause.getMessage());
+         assertEquals(RPCServiceImplTest.class.getName(), cause.getStackTrace()[0].getClassName().replaceAll("\\$.*", ""));
       }
       assertEquals(Set.of("javax.jcr.RepositoryException: The item of node1 is gone",
                           "javax.jcr.RepositoryException: The item of node2 is gone"),
