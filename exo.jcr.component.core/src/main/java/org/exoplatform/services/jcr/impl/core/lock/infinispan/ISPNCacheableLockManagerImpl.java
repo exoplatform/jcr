@@ -56,10 +56,6 @@ import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.context.Flag;
 import org.infinispan.lifecycle.ComponentStatus;
-import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
-import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 
@@ -68,7 +64,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
@@ -109,8 +104,6 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     * The lock store, which starts with the lock manager, once the lock store of Infinispan 8 is upgraded.
     */
    private volatile AdvancedCache<Serializable, Object> cache;
-
-   private AtomicInteger sizeCount = new AtomicInteger(0);
 
    private ISPNCacheFactory<Serializable, Object> factory;
 
@@ -223,7 +216,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public Integer execute(Object arg)
          {
-            return sizeCount.get();
+            AdvancedCache<Serializable, Object> lockCache = cache;
+            return lockCache == null ? 0 : heldLocks(lockCache);
          }
       };
 
@@ -231,7 +225,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public Boolean execute(Object arg)
          {
-            return (sizeCount.get() > 0);
+            AdvancedCache<Serializable, Object> lockCache = cache;
+            return lockCache != null && heldLocks(lockCache) > 0;
          }
       };
 
@@ -370,12 +365,6 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          }
          throw new IllegalStateException("The lock store of the workspace " + config.getUniqueName()
             + " cannot start", e);
-      }
-      lockCache.addListener(new CacheSizeEventListener());
-      int size = lockCache.size();
-      if (size != 0)
-      {
-         sizeCount.addAndGet(size);
       }
       PrivilegedISPNCacheHelper.start(lockCache);
       return lockCache;
@@ -612,19 +601,15 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       return new ISPNLockTableHandler(config, dataSource, lockTable);
    }
 
-   @SuppressWarnings("rawtypes")
-   @Listener
-   public class CacheSizeEventListener
+   /**
+    * Counts the locks this node holds in memory, where the lookups read them. The lock cache is replicated and
+    * preloaded, so every node holds every lock in memory once its write is applied, before the originating node writes
+    * the shared store: a count of the store, such as the one Infinispan gives for the size of a cache with a shared
+    * store, misses the locks a node receives from another one while their write is in progress. The data container
+    * answers without a stream over the cache, as the check runs on every write; locks do not expire.
+    */
+   private static int heldLocks(AdvancedCache<Serializable, Object> lockCache)
    {
-
-      @CacheEntryCreated
-      @CacheEntryRemoved
-      public void CacheEntryRemoved(CacheEntryEvent evt)
-      {
-         if (!evt.isPre() && evt.getKey() instanceof String)
-         {
-            sizeCount.addAndGet(evt.getCache().size());
-         }
-      }
+      return lockCache.getDataContainer().sizeIncludingExpired();
    }
 }
