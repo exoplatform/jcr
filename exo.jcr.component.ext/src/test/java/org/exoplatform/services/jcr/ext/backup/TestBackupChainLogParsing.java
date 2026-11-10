@@ -242,23 +242,28 @@ public class TestBackupChainLogParsing
 
       public void stop()
       {
+         // Never called by the chain logs under test
       }
 
       public void init(ManageableRepository repository, String workspaceName, BackupConfig config,
          Calendar timeStamp)
       {
+         // Never called by the chain logs under test
       }
 
       public void addListener(BackupJobListener listener)
       {
+         // Never called by the chain logs under test
       }
 
       public void removeListener(BackupJobListener listener)
       {
+         // Never called by the chain logs under test
       }
 
       public void run()
       {
+         // Never called by the chain logs under test
       }
    }
 }
