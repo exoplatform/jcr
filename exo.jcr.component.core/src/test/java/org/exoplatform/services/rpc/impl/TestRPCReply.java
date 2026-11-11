@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.jgroups.Address;
+import org.jgroups.util.Rsp;
 import org.jgroups.util.UUID;
 
 import org.exoplatform.services.ispn.ClusterJavaSerializationMarshaller;
@@ -65,6 +66,18 @@ public class TestRPCReply extends TestCase
       String message = ((Throwable)received).getMessage();
       assertTrue(message, message.contains(member.toString()));
       assertTrue(message, message.contains(Point.class.getName()));
+   }
+
+   public void testAReplyJGroupsFlagsAsAnExceptionIsAFailureOfItsMember() throws Exception
+   {
+      Address member = UUID.randomUUID();
+      IllegalStateException raised = new IllegalStateException("not delivered");
+
+      Object received = AbstractRPCService.fromResponse(marshaller, new Rsp<>(raised), member);
+
+      assertTrue(String.valueOf(received), received instanceof RPCException);
+      assertSame(raised, ((Throwable)received).getCause());
+      assertTrue(((Throwable)received).getMessage(), ((Throwable)received).getMessage().contains(member.toString()));
    }
 
    public void testARequestAndAReplyNameTheirCommandInTheSizeWarning() throws Exception

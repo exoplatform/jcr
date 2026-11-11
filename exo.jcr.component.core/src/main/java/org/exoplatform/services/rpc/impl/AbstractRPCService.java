@@ -464,7 +464,7 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
          }
          else
          {
-            Object value = fromReply(marshaller, rsp.getValue(), dest);
+            Object value = fromResponse(marshaller, rsp, dest);
             if (value instanceof RPCException)
             {
                // if we have any application-level exceptions make sure we throw them!!
@@ -597,6 +597,20 @@ public abstract class AbstractRPCService implements RPCService, Startable, Reque
    /**
     * Reads the reply of a member: the marshalled result of its command, or <code>null</code>. A reply this node
     * cannot read is a failure of that member, a class its allow-list refuses included: the lists of the nodes differ.
+    */
+   static Object fromResponse(ClusterJavaSerializationMarshaller marshaller, Rsp<Object> response, Address member)
+   {
+      if (response.hasException())
+      {
+         // JGroups sends what the member's handler threw as an exception reply, with no value
+         return new RPCException("The member " + member + " replied with a failure: " + response.getException(),
+            response.getException());
+      }
+      return fromReply(marshaller, response.getValue(), member);
+   }
+
+   /**
+    * Reads the value of a member's reply: see {@link #fromResponse}.
     */
    static Object fromReply(ClusterJavaSerializationMarshaller marshaller, Object reply, Address member)
    {

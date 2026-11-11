@@ -277,7 +277,9 @@ class ISPNLockUpgrade
    }
 
    /**
-    * Renames the lock table to the claim table, which only one node can do, and adds the reserved row.
+    * Renames the lock table to the claim table, which only one node can do, and adds the reserved row. The rename
+    * is run by the tests on HSQLDB, MySQL and PostgreSQL only: the SQL Server, Sybase and DB2 forms follow each engine's
+    * documented statement, and Oracle takes the ALTER TABLE form; none of them is run by a test.
     */
    private boolean claim(Connection connection, String lockTable, String claimTable) throws SQLException
    {
