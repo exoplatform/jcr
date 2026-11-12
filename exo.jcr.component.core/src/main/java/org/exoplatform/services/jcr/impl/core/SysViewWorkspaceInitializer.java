@@ -45,6 +45,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+import org.exoplatform.services.jcr.impl.util.SafeXMLInputFactory;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.impl.xml.importing.ACLInitializationHelper;
 import org.exoplatform.services.log.ExoLogger;
@@ -67,7 +68,6 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.StartElement;
@@ -562,7 +562,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       InputStream input = new FileInputStream(restorePath);
       try
       {
-         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
+         XMLStreamReader reader = SafeXMLInputFactory.newInstance().createXMLStreamReader(input);
 
          // SV prefix URIs
          String svURI = null;

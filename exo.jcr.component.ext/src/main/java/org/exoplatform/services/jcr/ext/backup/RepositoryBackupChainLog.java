@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
 import org.exoplatform.services.jcr.ext.backup.server.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+import org.exoplatform.services.jcr.impl.util.SafeXMLInputFactory;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jibx.runtime.BindingDirectory;
@@ -44,7 +45,6 @@ import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
 import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -238,7 +238,7 @@ public class RepositoryBackupChainLog
       {
          this.logFile = logFile;
          reader =
-                  XMLInputFactory.newInstance().createXMLStreamReader(new FileInputStream(logFile),
+                  SafeXMLInputFactory.newInstance().createXMLStreamReader(new FileInputStream(logFile),
                            Constants.DEFAULT_ENCODING);
       }
 
@@ -311,7 +311,8 @@ public class RepositoryBackupChainLog
 
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
          RepositoryServiceConfiguration conf =
-                  (RepositoryServiceConfiguration) uctx.unmarshalDocument(new FileInputStream(configFile), null);
+                  (RepositoryServiceConfiguration) SafeXMLInputFactory.unmarshalDocument(uctx,
+                           new FileInputStream(configFile), configFile.getName());
 
          if (conf.getRepositoryConfigurations().size() != 1)
          {

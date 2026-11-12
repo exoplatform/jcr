@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.ext.backup.server.WorkspaceRestoreExeption;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+import org.exoplatform.services.jcr.impl.util.SafeXMLInputFactory;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jibx.runtime.BindingDirectory;
@@ -52,7 +53,6 @@ import java.util.List;
 import javax.jcr.RepositoryException;
 import javax.jcr.ValueFormatException;
 import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -484,7 +484,7 @@ public class BackupChainLog
          jobEntries = new ArrayList<JobEntryInfo>();
 
          reader =
-                  XMLInputFactory.newInstance().createXMLStreamReader(
+                  SafeXMLInputFactory.newInstance().createXMLStreamReader(
                            new FileInputStream(this.logFile), Constants.DEFAULT_ENCODING);
       }
 
@@ -588,7 +588,8 @@ public class BackupChainLog
 
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
          RepositoryServiceConfiguration conf =
-                  (RepositoryServiceConfiguration) uctx.unmarshalDocument(new FileInputStream(configFile), null);
+                  (RepositoryServiceConfiguration) SafeXMLInputFactory.unmarshalDocument(uctx,
+                           new FileInputStream(configFile), configFile.getName());
 
          RepositoryEntry repositoryEntry = conf.getRepositoryConfiguration(getBackupConfig().getRepository());
 
