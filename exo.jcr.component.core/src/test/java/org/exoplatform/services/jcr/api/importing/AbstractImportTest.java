@@ -40,6 +40,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,6 +51,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.jcr.ImportUUIDBehavior;
+import javax.jcr.InvalidSerializedDataException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -67,6 +70,16 @@ import javax.xml.transform.stream.StreamResult;
  */
 public abstract class AbstractImportTest extends JcrAPIBaseTest
 {
+   /**
+    * Message of the refusal of an external DTD or entity.
+    */
+   protected static final String EXTERNAL_RESOURCE_REFUSAL = "External DTD or entity not allowed";
+
+   /**
+    * Marker written in the external files a document refers to.
+    */
+   protected static final String EXTERNAL_MARKER = "MARKER-EXO-92938";
+
    /**
     * Initialization flag.
     */
@@ -97,6 +110,74 @@ public abstract class AbstractImportTest extends JcrAPIBaseTest
 
          isInitialized = true;
       }
+   }
+
+   /**
+    * @param suffix the temporary file suffix
+    * @param content the file content
+    * @return the URI of a temporary file holding the content
+    * @throws IOException if the file cannot be written
+    */
+   protected String createExternalFile(String suffix, String content) throws IOException
+   {
+      File file = File.createTempFile("external", suffix);
+      file.deleteOnExit();
+      Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
+      return file.toURI().toString();
+   }
+
+   /**
+    * Imports the XML by stream through the session and through the workspace, and checks that both refuse it
+    * as an external DTD or entity, and that nothing is imported.
+    * 
+    * @param xml the document to import
+    * @param importedNodeName the name of the node the document would create
+    * @throws Exception if the import fails otherwise
+    */
+   protected void assertStreamImportRefused(String xml, String importedNodeName) throws Exception
+   {
+      for (XmlSaveType saveType : XmlSaveType.values())
+      {
+         Node importRoot = root.addNode("refusedImport" + saveType);
+         session.save();
+         try
+         {
+            deserialize(importRoot, saveType, true, ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW,
+               new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+            fail("Import accepted through the " + saveType);
+         }
+         catch (InvalidSerializedDataException e)
+         {
+            assertNotNull(e.getCause());
+            assertTrue(e.getCause().getMessage(), e.getCause().getMessage().contains(EXTERNAL_RESOURCE_REFUSAL));
+            assertFalse(e.getCause().getMessage().contains(EXTERNAL_MARKER));
+         }
+         session.refresh(false);
+         assertFalse(importRoot.hasNode(importedNodeName));
+      }
+   }
+
+   /**
+    * Imports the XML by stream through the session and through the workspace.
+    * 
+    * @param xml the document to import
+    * @param importedNodeName the name of the node the document creates
+    * @return the node imported through the workspace
+    * @throws Exception if an import fails
+    */
+   protected Node importByStream(String xml, String importedNodeName) throws Exception
+   {
+      Node imported = null;
+      for (XmlSaveType saveType : XmlSaveType.values())
+      {
+         Node importRoot = root.addNode("acceptedImport" + saveType);
+         session.save();
+         deserialize(importRoot, saveType, true, ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW,
+            new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+         session.save();
+         imported = importRoot.getNode(importedNodeName);
+      }
+      return imported;
    }
 
    /**

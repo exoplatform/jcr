@@ -431,4 +431,32 @@ public class TestDocumentViewImport extends AbstractImportTest
       assertEquals("a", nodeA.getProperty("jcr:xmlcharacters").getString());
       assertEquals("c", nodeC.getProperty("jcr:xmlcharacters").getString());
    }
+
+   public void testImportStreamRefusesExternalDtd() throws Exception
+   {
+      String dtd = createExternalFile(".dtd", "<!ENTITY m \"" + EXTERNAL_MARKER + "\">");
+      assertStreamImportRefused("<?xml version='1.0'?><!DOCTYPE exo:test SYSTEM '" + dtd + "'>" + docViewRoot("&m;", ""),
+         "exo:test");
+   }
+
+   public void testImportStreamRefusesExternalEntity() throws Exception
+   {
+      String entity = createExternalFile(".txt", EXTERNAL_MARKER);
+      assertStreamImportRefused("<?xml version='1.0'?><!DOCTYPE exo:test [<!ENTITY e SYSTEM '" + entity + "'>]>"
+         + docViewRoot("value", "&e;"), "exo:test");
+   }
+
+   public void testImportStreamAcceptsInternalDtdSubset() throws Exception
+   {
+      Node imported =
+         importByStream("<?xml version='1.0'?><!DOCTYPE exo:test [<!ENTITY i 'internal-value'>]>"
+            + docViewRoot("&i;", ""), "exo:test");
+      assertEquals("internal-value", imported.getProperty("marker").getString());
+   }
+
+   private String docViewRoot(String marker, String text)
+   {
+      return "<exo:test xmlns:jcr='http://www.jcp.org/jcr/1.0' xmlns:exo='http://www.exoplatform.com/jcr/exo/1.0' "
+         + "jcr:primaryType='nt:unstructured' marker='" + marker + "'>" + text + "</exo:test>";
+   }
 }

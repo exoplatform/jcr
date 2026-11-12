@@ -647,4 +647,34 @@ public class TestSystemViewImport extends AbstractImportTest
 
       super.tearDown();
    }
+
+   public void testImportStreamRefusesExternalDtd() throws Exception
+   {
+      String dtd = createExternalFile(".dtd", "<!ENTITY m \"" + EXTERNAL_MARKER + "\">");
+      assertStreamImportRefused("<?xml version='1.0'?><!DOCTYPE sv:node SYSTEM '" + dtd + "'>" + sysViewNode("&m;"),
+         "imported");
+   }
+
+   public void testImportStreamRefusesExternalEntity() throws Exception
+   {
+      String entity = createExternalFile(".txt", EXTERNAL_MARKER);
+      assertStreamImportRefused("<?xml version='1.0'?><!DOCTYPE sv:node [<!ENTITY e SYSTEM '" + entity + "'>]>"
+         + sysViewNode("&e;"), "imported");
+   }
+
+   public void testImportStreamAcceptsInternalDtdSubset() throws Exception
+   {
+      Node imported =
+         importByStream("<?xml version='1.0'?><!DOCTYPE sv:node [<!ENTITY i 'internal value'>]>" + sysViewNode("&i;"),
+            "imported");
+      assertEquals("internal value", imported.getProperty("marker").getString());
+   }
+
+   private String sysViewNode(String marker)
+   {
+      return "<sv:node xmlns:sv='http://www.jcp.org/jcr/sv/1.0' xmlns:jcr='http://www.jcp.org/jcr/1.0' sv:name='imported'>"
+         + "<sv:property sv:name='jcr:primaryType' sv:type='Name'><sv:value>nt:unstructured</sv:value></sv:property>"
+         + "<sv:property sv:name='marker' sv:type='String'><sv:value>" + marker + "</sv:value></sv:property>"
+         + "</sv:node>";
+   }
 }

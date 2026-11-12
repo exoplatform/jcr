@@ -20,11 +20,17 @@ package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPath;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Calendar;
 
 import javax.jcr.Node;
@@ -32,6 +38,7 @@ import javax.jcr.Property;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Created by The eXo Platform SAS. <br>
@@ -43,6 +50,7 @@ import javax.jcr.ValueFormatException;
  */
 public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
 {
+   private static final String RESTORE_MARKER = "MARKER-EXO-92938";
 
    /**
     * Make export of system ws with custom NT with multivalued properties.
@@ -128,5 +136,102 @@ public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
             fail(e.getMessage());
          }
       } // else skip test
+   }
+
+   public void testRestoreRefusesExternalDtd() throws Exception
+   {
+      File dtd = createRestoreFile(".dtd", "<!ENTITY m \"" + RESTORE_MARKER + "\">");
+      assertRestoreRefused("<?xml version='1.0'?><!DOCTYPE sv:node SYSTEM '" + dtd.toURI() + "'>" + restoreRoot("&m;"));
+   }
+
+   public void testRestoreRefusesExternalEntity() throws Exception
+   {
+      File entity = createRestoreFile(".txt", RESTORE_MARKER);
+      assertRestoreRefused("<?xml version='1.0'?><!DOCTYPE sv:node [<!ENTITY e SYSTEM '" + entity.toURI() + "'>]>"
+         + restoreRoot("&e;"));
+   }
+
+   public void testRestoreReadsInternalDtdSubset() throws Exception
+   {
+      PlainChangesLog changes =
+         read("<?xml version='1.0'?><!DOCTYPE sv:node [<!ENTITY i 'internal value'>]>" + restoreRoot("&i;"));
+      assertEquals("internal value", restoredMarker(changes, null));
+   }
+
+   public void testRestoreReadsWorkspaceExport() throws Exception
+   {
+      Node node = root.addNode("restoreExport");
+      node.setProperty("marker", "exported value");
+      session.save();
+      File export = File.createTempFile("restore", ".xml");
+      export.deleteOnExit();
+      try (FileOutputStream out = new FileOutputStream(export))
+      {
+         session.exportWorkspaceSystemView(out, false, false);
+      }
+
+      PlainChangesLog changes = initializer(export).read();
+
+      assertEquals("exported value", restoredMarker(changes, "restoreExport"));
+   }
+
+   private void assertRestoreRefused(String xml) throws Exception
+   {
+      try
+      {
+         PlainChangesLog changes = read(xml);
+         fail("Restore file read, marker: " + restoredMarker(changes, null));
+      }
+      catch (XMLStreamException e)
+      {
+         assertTrue(e.getMessage(), e.getMessage().contains("External DTD or entity not allowed"));
+         assertFalse(e.getMessage().contains(RESTORE_MARKER));
+      }
+   }
+
+   private PlainChangesLog read(String xml) throws Exception
+   {
+      return initializer(createRestoreFile(".xml", xml)).read();
+   }
+
+   private SysViewWorkspaceInitializer initializer(File restoreFile) throws Exception
+   {
+      return new SysViewWorkspaceInitializer(repository.getConfiguration().getWorkspaceEntries().get(0),
+         repository.getConfiguration(), null, (NamespaceRegistryImpl)repository.getNamespaceRegistry(),
+         session.getLocationFactory(), null, session.getValueFactory(), null, restoreFile.getAbsolutePath());
+   }
+
+   private File createRestoreFile(String suffix, String content) throws Exception
+   {
+      File file = File.createTempFile("restore", suffix);
+      file.deleteOnExit();
+      Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
+      return file;
+   }
+
+   private String restoreRoot(String marker)
+   {
+      return "<sv:node xmlns:sv='http://www.jcp.org/jcr/sv/1.0' xmlns:jcr='http://www.jcp.org/jcr/1.0' "
+         + "xmlns:exo='http://www.exoplatform.com/jcr/exo/1.0' sv:name='jcr:root' exo:id='00exo0jcr0root0uuid0000000000000'>"
+         + "<sv:property sv:name='jcr:primaryType' sv:type='Name' exo:id='restoreprimarytype'>"
+         + "<sv:value>nt:unstructured</sv:value></sv:property>"
+         + "<sv:property sv:name='marker' sv:type='String' exo:id='restoremarker'><sv:value>" + marker
+         + "</sv:value></sv:property></sv:node>";
+   }
+
+   private String restoredMarker(PlainChangesLog changes, String parentName) throws Exception
+   {
+      for (ItemState state : changes.getAllStates())
+      {
+         QPath path = state.getData().getQPath();
+         String parent = path.getDepth() > 1 ? path.makeParentPath().getName().getName() : null;
+         if (!state.isNode() && "marker".equals(path.getName().getName())
+            && (parentName == null ? parent == null : parentName.equals(parent)))
+         {
+            return new String(((PropertyData)state.getData()).getValues().get(0).getAsByteArray(),
+               StandardCharsets.UTF_8);
+         }
+      }
+      return null;
    }
 }
