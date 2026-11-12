@@ -473,6 +473,11 @@ class ISPNLockUpgrade
     * on any error, as {@link JDBCUtils#tableExists(String, Connection)} does, would let a waiting node start its lock
     * store while another node upgrades the old table, or release the locks the new store holds.
     *
+    * <p>
+    * The lookup is narrowed to the connection's catalog and schema, where the statements that follow it read the
+    * table unqualified: a table of the same name in another schema the account can see, another platform's on the same
+    * database, is not this workspace's.
+    *
     * @param table the table's name, quoted as {@link ISPNLockTableHandler} quotes it, which keeps its case; a database
     *          that folds names stores it upper or lower case, so the three are looked up
     */
@@ -481,12 +486,13 @@ class ISPNLockUpgrade
       String name = table.replaceAll("^[\"`](.*)[\"`]$", "$1");
       DatabaseMetaData metaData = connection.getMetaData();
       String escape = metaData.getSearchStringEscape();
+      String schema = connection.getSchema();
+      String schemaPattern = schema == null ? null : escape(schema, escape);
       for (String candidate : new LinkedHashSet<>(List.of(name, name.toUpperCase(Locale.ROOT),
          name.toLowerCase(Locale.ROOT))))
       {
-         String pattern = escape == null ? candidate : candidate.replace(escape, escape + escape)
-            .replace("_", escape + "_").replace("%", escape + "%");
-         try (ResultSet found = metaData.getTables(connection.getCatalog(), null, pattern, null))
+         try (ResultSet found = metaData.getTables(connection.getCatalog(), schemaPattern, escape(candidate, escape),
+            null))
          {
             if (found.next())
             {
@@ -495,6 +501,15 @@ class ISPNLockUpgrade
          }
       }
       return false;
+   }
+
+   /**
+    * @return the name as a metadata search pattern that matches it only
+    */
+   private static String escape(String name, String escape)
+   {
+      return escape == null ? name : name.replace(escape, escape + escape).replace("_", escape + "_")
+         .replace("%", escape + "%");
    }
 
    /**

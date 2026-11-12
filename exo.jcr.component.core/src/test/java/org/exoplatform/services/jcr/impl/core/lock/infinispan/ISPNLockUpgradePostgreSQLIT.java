@@ -76,5 +76,6 @@ public class ISPNLockUpgradePostgreSQLIT extends TestISPNLockUpgradeClaim
    protected void dropDatabase() throws SQLException
    {
       dropTables();
+      execute("DROP SCHEMA IF EXISTS " + OTHER_SCHEMA + " CASCADE");
    }
 }

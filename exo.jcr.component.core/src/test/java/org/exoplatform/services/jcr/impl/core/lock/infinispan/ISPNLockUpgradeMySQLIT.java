@@ -72,6 +72,16 @@ public class ISPNLockUpgradeMySQLIT extends TestISPNLockUpgradeClaim
       return "LONGBLOB";
    }
 
+   /**
+    * A MySQL schema is a database, to which the connection's catalog already narrows the lookup, and the container's
+    * account cannot create a second one.
+    */
+   @Override
+   public void testANewStoreOfAnotherSchemaIsNotThisWorkspaces()
+   {
+      Assume.assumeTrue("A MySQL schema is a database", false);
+   }
+
    @Override
    protected void dropDatabase() throws SQLException
    {

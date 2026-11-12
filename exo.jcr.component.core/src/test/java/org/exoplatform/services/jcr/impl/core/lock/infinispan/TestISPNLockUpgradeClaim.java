@@ -73,6 +73,11 @@ public class TestISPNLockUpgradeClaim
 
    private static final long POLL_INTERVAL = 20;
 
+   /**
+    * A schema of another platform on the same database, which the account can see.
+    */
+   protected static final String OTHER_SCHEMA = "other_platform";
+
    private final List<List<String>> releases = Collections.synchronizedList(new ArrayList<>());
 
    private final ExecutorService executor = Executors.newCachedThreadPool();
@@ -441,6 +446,22 @@ public class TestISPNLockUpgradeClaim
             });
          });
       });
+   }
+
+   @Test
+   public void testANewStoreOfAnotherSchemaIsNotThisWorkspaces() throws Exception
+   {
+      execute("CREATE TABLE " + lockTable + legacyTable);
+      // Another platform on the same database has upgraded its own lock store, which locks node2
+      execute("CREATE SCHEMA " + OTHER_SCHEMA);
+      execute("CREATE TABLE " + OTHER_SCHEMA + "." + lockTable + " (id VARCHAR(512) NOT NULL, data " + binaryType()
+         + ", timestamp BIGINT NOT NULL, segment_id INTEGER NOT NULL, PRIMARY KEY (id))");
+      execute("INSERT INTO " + OTHER_SCHEMA + "." + lockTable + " (id, timestamp, segment_id) VALUES ('node2', 0, 0)");
+
+      assertTrue(upgrade(dataSource).run());
+
+      assertEquals(List.of(List.of("node1", "node2")), releases);
+      assertFalse(tableExists(lockTable));
    }
 
    @Test
