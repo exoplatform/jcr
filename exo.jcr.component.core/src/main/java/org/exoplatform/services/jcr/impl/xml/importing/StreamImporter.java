@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.util.SafeXMLInputFactory;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
@@ -99,9 +100,7 @@ public class StreamImporter implements RawDataImporter
    {
       try
       {
-         XMLInputFactory factory = XMLInputFactory.newInstance();
-         //needed to avoid XXE Attacks
-         factory.setProperty("javax.xml.stream.isSupportingExternalEntities",false);
+         XMLInputFactory factory = SafeXMLInputFactory.newInstance();
          if (log.isDebugEnabled())
             log.debug("FACTORY: " + factory);
          XMLEventReader reader = factory.createXMLEventReader(stream);
