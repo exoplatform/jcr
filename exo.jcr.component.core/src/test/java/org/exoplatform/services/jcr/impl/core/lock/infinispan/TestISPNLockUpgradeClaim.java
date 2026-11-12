@@ -341,7 +341,7 @@ public class TestISPNLockUpgradeClaim
       execute("CREATE TABLE " + lockTable + legacyTable);
       AtomicBoolean created = new AtomicBoolean();
       // Once the new store exists, a query that counts its rows fails, as a query an existence check runs may
-      DataSource failing = failing(created, "getMetaData", false);
+      DataSource failing = failing(created, lockTable, false);
 
       boolean upgraded = new ISPNLockUpgrade(workspace, failing, dataSource, table, nodes -> {
          releases.add(List.copyOf(nodes));
@@ -359,7 +359,7 @@ public class TestISPNLockUpgradeClaim
       execute("CREATE TABLE " + lockTable + legacyTable);
       AtomicBoolean created = new AtomicBoolean();
       // Once the new store exists, the database metadata cannot be read
-      DataSource failing = failing(created, "getMetaData", true);
+      DataSource failing = failing(created, lockTable, true);
 
       ISPNLockUpgrade upgrade = new ISPNLockUpgrade(workspace, failing, dataSource, table, nodes -> {
          releases.add(List.copyOf(nodes));
@@ -370,6 +370,24 @@ public class TestISPNLockUpgradeClaim
       assertThrows(javax.jcr.RepositoryException.class, upgrade::run);
       assertEquals(List.of(List.of("node1")), releases);
       assertTrue(tableExists(claimTable));
+   }
+
+   @Test
+   public void testAWaitingNodeWhoseClaimQueryFailsKeepsWaiting() throws Exception
+   {
+      // Another node renamed the old table and holds the claim
+      execute("CREATE TABLE " + claimTable + legacyTable);
+      claim(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1));
+      // A query that counts the claim table's rows fails, as a query an existence check runs may
+      DataSource failing = failing(new AtomicBoolean(true), claimTable, false);
+
+      // The node waits for the claim, and stops waiting since it is asked to stop, instead of starting its lock store
+      ISPNLockUpgrade upgrade = new ISPNLockUpgrade(workspace, failing, dataSource, table, this::release, () -> true,
+                                                    STALE_AFTER, POLL_INTERVAL, ISPNLockUpgrade.BATCH_SIZE);
+
+      assertThrows(javax.jcr.RepositoryException.class, upgrade::run);
+      assertTrue(tableExists(claimTable));
+      assertTrue(releases.isEmpty());
    }
 
    /**
@@ -391,12 +409,12 @@ public class TestISPNLockUpgradeClaim
    }
 
    /**
-    * The data source, which, once the flag is set, fails each query that counts the rows of the lock table, and, when
+    * The data source, which, once the flag is set, fails each query that counts the rows of the given table, and, when
     * asked, each read of the database metadata.
     */
-   private DataSource failing(AtomicBoolean active, String metadataMethod, boolean failMetadata)
+   private DataSource failing(AtomicBoolean active, String countedTable, boolean failMetadata)
    {
-      String count = "SELECT count(*) FROM " + lockTable;
+      String count = "SELECT count(*) FROM " + countedTable;
       return proxy(DataSource.class, dataSource, (target, method, args) -> {
          Object result = invoke(target, method, args);
          if (!method.getName().equals("getConnection"))
@@ -404,7 +422,7 @@ public class TestISPNLockUpgradeClaim
             return result;
          }
          return proxy(Connection.class, (Connection) result, (connection, connectionMethod, connectionArgs) -> {
-            if (active.get() && failMetadata && connectionMethod.getName().equals(metadataMethod))
+            if (active.get() && failMetadata && connectionMethod.getName().equals("getMetaData"))
             {
                throw new SQLException("The database metadata cannot be read");
             }
@@ -417,7 +435,7 @@ public class TestISPNLockUpgradeClaim
                if (active.get() && sqlMethod.getName().startsWith("execute") && sqlArgs != null
                   && ((String) sqlArgs[0]).equalsIgnoreCase(count))
                {
-                  throw new SQLException("The rows of " + lockTable + " cannot be counted");
+                  throw new SQLException("The rows of " + countedTable + " cannot be counted");
                }
                return invoke(sql, sqlMethod, sqlArgs);
             });

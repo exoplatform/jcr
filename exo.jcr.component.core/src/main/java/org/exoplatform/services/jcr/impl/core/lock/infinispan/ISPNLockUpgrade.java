@@ -196,7 +196,7 @@ class ISPNLockUpgrade
             try (Connection connection = lockDataSource.getConnection())
             {
                // A claim is awaited first: a node that lost the race to the claim reads it here
-               if (!JDBCUtils.tableExists(claimTable, connection))
+               if (!tableExists(connection, claimTable))
                {
                   if (!isLegacy(connection, lockTable))
                   {
@@ -261,7 +261,7 @@ class ISPNLockUpgrade
     */
    private boolean isLegacy(Connection connection, String lockTable) throws SQLException
    {
-      if (!JDBCUtils.tableExists(lockTable, connection))
+      if (!tableExists(connection, lockTable))
       {
          return false;
       }
@@ -307,7 +307,7 @@ class ISPNLockUpgrade
       }
       catch (SQLException e)
       {
-         if (isLegacy(connection, lockTable) && !JDBCUtils.tableExists(claimTable, connection))
+         if (isLegacy(connection, lockTable) && !tableExists(connection, claimTable))
          {
             throw e;
          }
@@ -371,7 +371,7 @@ class ISPNLockUpgrade
       }
       catch (SQLException e)
       {
-         if (JDBCUtils.tableExists(claimTable, connection))
+         if (tableExists(connection, claimTable))
          {
             throw e;
          }
@@ -454,34 +454,47 @@ class ISPNLockUpgrade
    }
 
    /**
-    * The nodes locked in the new store, none while its table does not exist. The table is looked up in the database
-    * metadata, and a failed lookup or read stops the upgrade: a check that answers "absent" on any error, as
-    * {@link JDBCUtils#tableExists(String, Connection)} does, would release the locks the new store holds.
+    * The nodes locked in the new store, none while its table does not exist; a failed lookup or read stops the upgrade.
     */
    private Set<String> getNodesLockedInTheNewStore() throws SQLException
    {
-      // The name comes quoted, which keeps its case; a database that folds names stores it upper or lower case
-      String lockTable = tables.getTableName("L").replaceAll("^[\"`](.*)[\"`]$", "$1");
       try (Connection connection = lockDataSource.getConnection())
       {
-         DatabaseMetaData metaData = connection.getMetaData();
-         String escape = metaData.getSearchStringEscape();
-         Set<String> names = new LinkedHashSet<>(List.of(lockTable, lockTable.toUpperCase(Locale.ROOT),
-            lockTable.toLowerCase(Locale.ROOT)));
-         for (String name : names)
+         if (!tableExists(connection, tables.getTableName("L")))
          {
-            String pattern = escape == null ? name : name.replace(escape, escape + escape).replace("_", escape + "_")
-               .replace("%", escape + "%");
-            try (ResultSet found = metaData.getTables(connection.getCatalog(), null, pattern, null))
+            return Set.of();
+         }
+      }
+      return tables.getLockedNodesIds();
+   }
+
+   /**
+    * Whether a table exists, looked up in the database metadata. A failed lookup throws: a check that answers "absent"
+    * on any error, as {@link JDBCUtils#tableExists(String, Connection)} does, would let a waiting node start its lock
+    * store while another node upgrades the old table, or release the locks the new store holds.
+    *
+    * @param table the table's name, quoted as {@link ISPNLockTableHandler} quotes it, which keeps its case; a database
+    *          that folds names stores it upper or lower case, so the three are looked up
+    */
+   private static boolean tableExists(Connection connection, String table) throws SQLException
+   {
+      String name = table.replaceAll("^[\"`](.*)[\"`]$", "$1");
+      DatabaseMetaData metaData = connection.getMetaData();
+      String escape = metaData.getSearchStringEscape();
+      for (String candidate : new LinkedHashSet<>(List.of(name, name.toUpperCase(Locale.ROOT),
+         name.toLowerCase(Locale.ROOT))))
+      {
+         String pattern = escape == null ? candidate : candidate.replace(escape, escape + escape)
+            .replace("_", escape + "_").replace("%", escape + "%");
+         try (ResultSet found = metaData.getTables(connection.getCatalog(), null, pattern, null))
+         {
+            if (found.next())
             {
-               if (found.next())
-               {
-                  return tables.getLockedNodesIds();
-               }
+               return true;
             }
          }
       }
-      return Set.of();
+      return false;
    }
 
    /**
