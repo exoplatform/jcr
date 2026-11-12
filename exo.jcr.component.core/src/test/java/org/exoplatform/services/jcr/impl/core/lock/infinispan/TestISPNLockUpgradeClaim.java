@@ -336,6 +336,96 @@ public class TestISPNLockUpgradeClaim
    }
 
    @Test
+   public void testANewStoreWhoseExistenceQueryFailsKeepsItsLocks() throws Exception
+   {
+      execute("CREATE TABLE " + lockTable + legacyTable);
+      AtomicBoolean created = new AtomicBoolean();
+      // Once the new store exists, a query that counts its rows fails, as a query an existence check runs may
+      DataSource failing = failing(created, "getMetaData", false);
+
+      boolean upgraded = new ISPNLockUpgrade(workspace, failing, dataSource, table, nodes -> {
+         releases.add(List.copyOf(nodes));
+         createNewStoreLocking("node2", created);
+         return nodes.size();
+      }, STALE_AFTER, POLL_INTERVAL, 1).run();
+
+      assertTrue(upgraded);
+      assertEquals(List.of(List.of("node1")), releases);
+   }
+
+   @Test
+   public void testAFailedLookupOfTheNewStoreStopsTheUpgradeAndKeepsItsClaim() throws Exception
+   {
+      execute("CREATE TABLE " + lockTable + legacyTable);
+      AtomicBoolean created = new AtomicBoolean();
+      // Once the new store exists, the database metadata cannot be read
+      DataSource failing = failing(created, "getMetaData", true);
+
+      ISPNLockUpgrade upgrade = new ISPNLockUpgrade(workspace, failing, dataSource, table, nodes -> {
+         releases.add(List.copyOf(nodes));
+         createNewStoreLocking("node2", created);
+         return nodes.size();
+      }, STALE_AFTER, POLL_INTERVAL, 1);
+
+      assertThrows(javax.jcr.RepositoryException.class, upgrade::run);
+      assertEquals(List.of(List.of("node1")), releases);
+      assertTrue(tableExists(claimTable));
+   }
+
+   /**
+    * Creates the new store, with its segment column, as a node already started does, and locks the given node in it.
+    */
+   private void createNewStoreLocking(String node, AtomicBoolean created) throws javax.jcr.RepositoryException
+   {
+      try
+      {
+         execute("CREATE TABLE " + lockTable + " (id VARCHAR(512) NOT NULL, data " + binaryType()
+            + ", timestamp BIGINT NOT NULL, segment_id INTEGER NOT NULL, PRIMARY KEY (id))");
+         execute("INSERT INTO " + lockTable + " (id, timestamp, segment_id) VALUES ('" + node + "', 0, 0)");
+         created.set(true);
+      }
+      catch (SQLException e)
+      {
+         throw new javax.jcr.RepositoryException(e);
+      }
+   }
+
+   /**
+    * The data source, which, once the flag is set, fails each query that counts the rows of the lock table, and, when
+    * asked, each read of the database metadata.
+    */
+   private DataSource failing(AtomicBoolean active, String metadataMethod, boolean failMetadata)
+   {
+      String count = "SELECT count(*) FROM " + lockTable;
+      return proxy(DataSource.class, dataSource, (target, method, args) -> {
+         Object result = invoke(target, method, args);
+         if (!method.getName().equals("getConnection"))
+         {
+            return result;
+         }
+         return proxy(Connection.class, (Connection) result, (connection, connectionMethod, connectionArgs) -> {
+            if (active.get() && failMetadata && connectionMethod.getName().equals(metadataMethod))
+            {
+               throw new SQLException("The database metadata cannot be read");
+            }
+            Object connectionResult = invoke(connection, connectionMethod, connectionArgs);
+            if (!connectionMethod.getName().equals("createStatement"))
+            {
+               return connectionResult;
+            }
+            return proxy(Statement.class, (Statement) connectionResult, (sql, sqlMethod, sqlArgs) -> {
+               if (active.get() && sqlMethod.getName().startsWith("execute") && sqlArgs != null
+                  && ((String) sqlArgs[0]).equalsIgnoreCase(count))
+               {
+                  throw new SQLException("The rows of " + lockTable + " cannot be counted");
+               }
+               return invoke(sql, sqlMethod, sqlArgs);
+            });
+         });
+      });
+   }
+
+   @Test
    public void testOldTableLeftBesideAStaleClaimIsUpgradedToo() throws Exception
    {
       execute("CREATE TABLE " + lockTable + legacyTable);

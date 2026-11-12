@@ -21,13 +21,17 @@ package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
@@ -439,10 +443,7 @@ class ISPNLockUpgrade
          }
          List<String> batch = new ArrayList<>(lockedNodes.subList(i, Math.min(i + batchSize, lockedNodes.size())));
          // A node locked in the new store meanwhile, by a node already started, keeps its lock
-         if (tables.tableExists())
-         {
-            batch.removeAll(tables.getLockedNodesIds());
-         }
+         batch.removeAll(getNodesLockedInTheNewStore());
          if (!batch.isEmpty())
          {
             released += releaser.release(batch);
@@ -450,6 +451,37 @@ class ISPNLockUpgrade
       }
       LOG.info("Another node took over the upgrade of the lock store of the workspace {}", workspace.getUniqueName());
       return false;
+   }
+
+   /**
+    * The nodes locked in the new store, none while its table does not exist. The table is looked up in the database
+    * metadata, and a failed lookup or read stops the upgrade: a check that answers "absent" on any error, as
+    * {@link JDBCUtils#tableExists(String, Connection)} does, would release the locks the new store holds.
+    */
+   private Set<String> getNodesLockedInTheNewStore() throws SQLException
+   {
+      // The name comes quoted, which keeps its case; a database that folds names stores it upper or lower case
+      String lockTable = tables.getTableName("L").replaceAll("^[\"`](.*)[\"`]$", "$1");
+      try (Connection connection = lockDataSource.getConnection())
+      {
+         DatabaseMetaData metaData = connection.getMetaData();
+         String escape = metaData.getSearchStringEscape();
+         Set<String> names = new LinkedHashSet<>(List.of(lockTable, lockTable.toUpperCase(Locale.ROOT),
+            lockTable.toLowerCase(Locale.ROOT)));
+         for (String name : names)
+         {
+            String pattern = escape == null ? name : name.replace(escape, escape + escape).replace("_", escape + "_")
+               .replace("%", escape + "%");
+            try (ResultSet found = metaData.getTables(connection.getCatalog(), null, pattern, null))
+            {
+               if (found.next())
+               {
+                  return tables.getLockedNodesIds();
+               }
+            }
+         }
+      }
+      return Set.of();
    }
 
    /**
