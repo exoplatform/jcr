@@ -30,6 +30,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.persistence.manager.PersistenceManager;
 
 import java.io.IOException;
@@ -82,7 +83,7 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
       this.cache = factory.createCache("Indexer_" + searchManager.getWsId(), config);
       PrivilegedISPNCacheHelper.start(this.cache);
 
-      PersistenceManager persistenceManager = cache.getAdvancedCache().getComponentRegistry().getComponent(PersistenceManager.class);
+      PersistenceManager persistenceManager = ComponentRegistry.of(cache).getComponent(PersistenceManager.class);
       Set<IndexerCacheStore> stores = persistenceManager.getStores(IndexerCacheStore.class);
       IndexerCacheStore cacheStore = null;
       if(!stores.isEmpty()){

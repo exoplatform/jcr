@@ -40,12 +40,12 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.RepositoryException;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -312,7 +312,7 @@ public class TransactionableResourceManager implements XAResource
       }
 
       /**
-       * @see javax.transaction.Synchronization#beforeCompletion()
+       * @see jakarta.transaction.Synchronization#beforeCompletion()
        */
       public void beforeCompletion()
       {
@@ -401,7 +401,7 @@ public class TransactionableResourceManager implements XAResource
       }
 
       /**
-       * @see javax.transaction.Synchronization#afterCompletion(int)
+       * @see jakarta.transaction.Synchronization#afterCompletion(int)
        */
       public void afterCompletion(int status)
       {

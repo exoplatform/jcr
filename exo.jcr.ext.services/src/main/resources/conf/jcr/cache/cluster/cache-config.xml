@@ -20,8 +20,8 @@
 
 -->
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns="urn:infinispan:config:8.2"
-            xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd">
+            xmlns="urn:infinispan:config:16.0"
+            xsi:schemaLocation="urn:infinispan:config:16.0 https://infinispan.org/schemas/infinispan-config-16.0.xsd">
   <threads>
     <thread-factory name="infinispan-factory" group-name="infinispan" thread-name-pattern="%G %i" priority="5"/>
 
@@ -32,20 +32,18 @@
     <scheduled-thread-pool name="infinispan-expiration" thread-factory="infinispan-factory" />
   </threads>
 
-  <jgroups transport="org.infinispan.remoting.transport.jgroups.JGroupsTransport">
-    <stack-file name="stack" path="${exo.jcr.cluster.jgroups.config}"/>
-  </jgroups>
-
   <cache-container name="jcr" default-cache="default" expiration-executor="infinispan-expiration"  listener-executor="infinispan-listener"
                    statistics="true">
-    <jmx duplicate-domains="true" domain="jcr.ispn.cache" mbean-server-lookup="org.infinispan.jmx.PlatformMBeanServerLookup"/>
-    <transport cluster="${exo.cluster.partition.name}-jcr" stack="stack" node-name="${exo.cluster.node.name}"  lock-timeout="240000"/>
-    <replicated-cache-configuration mode="SYNC" name="default" statistics="true" remote-timeout="${exo.jcr.cluster.workspace.sync.repltimeout:240000}">
-      <locking isolation="READ_COMMITTED" concurrency-level="500" striping="false" write-skew="false" acquire-timeout="${exo.jcr.workspace.lockacquisitiontimeout:180000}"/>
+    <jmx enabled="true" domain="jcr.ispn.cache"/>
+    <transport cluster="${exo.cluster.partition.name}-jcr" node-name="${exo.cluster.node.name}"  lock-timeout="240000">
+      <property name="configurationFile">${exo.jcr.cluster.jgroups.config}</property>
+    </transport>
+    <replicated-cache mode="SYNC" name="default" statistics="true" remote-timeout="${exo.jcr.cluster.workspace.sync.repltimeout:240000}">
+      <locking isolation="READ_COMMITTED" concurrency-level="500" striping="false" acquire-timeout="${exo.jcr.workspace.lockacquisitiontimeout:180000}"/>
       <transaction locking="PESSIMISTIC"  mode="NON_XA" transaction-manager-lookup="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" />
-      <eviction size="${exo.jcr.workspace.eviction.maxEntries:1000000}" strategy="LIRS" thread-policy="DEFAULT"/>
+      <memory max-count="${exo.jcr.workspace.eviction.maxEntries:1000000}" when-full="REMOVE"/>
       <state-transfer enabled="${exo.jcr.cluster.workspace.statetransfer.fetchinmemorystate:false}" timeout="${exo.jcr.cluster.workspace.statetransfer.timeout:240000}" />
       <expiration interval="${exo.jcr.workspace.expiration.wakeupinterval:60000}"/>
-    </replicated-cache-configuration>
+    </replicated-cache>
   </cache-container>
 </infinispan>

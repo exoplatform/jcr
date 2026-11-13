@@ -23,13 +23,15 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jdbc.DataSourceProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.infinispan.persistence.jdbc.configuration.ConnectionFactoryConfiguration;
-import org.infinispan.persistence.jdbc.connectionfactory.ConnectionFactory;
+import org.infinispan.persistence.jdbc.common.configuration.ConnectionFactoryConfiguration;
+import org.infinispan.persistence.jdbc.common.connectionfactory.ConnectionFactory;
 import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.transaction.xa.GlobalTransaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -68,6 +70,13 @@ public class ManagedConnectionFactory extends ConnectionFactory
     * Indicates whether or not the datasource provide managed connections.
     */
    private boolean managed;
+
+   /**
+    * Indicates whether or not the datasource is an HSQLDB database, whose upsert statements are rewritten.
+    */
+   private boolean hsqldb;
+
+   private final Map<String, String> hsqlStatements = new ConcurrentHashMap<>();
 
    static final ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
 
@@ -123,8 +132,12 @@ public class ManagedConnectionFactory extends ConnectionFactory
             throw new PersistenceException(String.format("Could not find a connection in jndi under the name '%s'",
                     datasourceName));
          }
+         try (Connection con = dataSource.getConnection())
+         {
+            hsqldb = con.getMetaData().getDatabaseProductName().startsWith("HSQL");
+         }
       }
-      catch (NamingException e)
+      catch (NamingException | SQLException e)
       {
          throw new PersistenceException(e);
       }
@@ -213,7 +226,7 @@ public class ManagedConnectionFactory extends ConnectionFactory
       {
          LOG.trace("Connection checked out: {}", connection);
       }
-      return connection;
+      return hsqldb ? HsqlUpsertStatements.wrap(connection, hsqlStatements) : connection;
    }
 
    @Override

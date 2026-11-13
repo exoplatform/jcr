@@ -23,37 +23,54 @@ import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
+import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemType;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.CacheableSessionLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
+import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
+import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.naming.InitialContextInitializer;
+import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.AdvancedCache;
+import org.infinispan.commons.IllegalLifecycleStateException;
+import org.infinispan.configuration.cache.AbstractStoreConfiguration;
+import org.infinispan.configuration.cache.StoreConfigurationBuilder;
+import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.context.Flag;
 import org.infinispan.lifecycle.ComponentStatus;
-import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
-import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
+import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
+import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 /**
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
@@ -83,9 +100,47 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
 
    public static final String INFINISPAN_JDBC_CL_AUTO = "auto";
 
-   private AdvancedCache<Serializable, Object> cache;
+   /**
+    * The lock store, which starts with the lock manager, once the lock store of Infinispan 8 is upgraded.
+    */
+   private volatile AdvancedCache<Serializable, Object> cache;
 
-   private AtomicInteger sizeCount = new AtomicInteger(0);
+   private ISPNCacheFactory<Serializable, Object> factory;
+
+   /**
+    * The upgrade of the lock store of Infinispan 8, null when the lock store has no JDBC store.
+    */
+   private ISPNLockUpgrade upgrade;
+
+   /**
+    * The table of the JDBC store of the locks, null when the lock store has no JDBC store.
+    */
+   private TableManipulationConfiguration lockTable;
+
+   private volatile boolean stopped;
+
+   /**
+    * The lock manager of a workspace with a search manager, which starts first: the upgrade of the lock store, when
+    * the lock manager starts, updates the index.
+    */
+   public ISPNCacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
+      LockRemoverHolder lockRemoverHolder, SearchManager searchManager)
+      throws RepositoryConfigurationException, RepositoryException
+   {
+      this(dataManager, config, context, transactionService, cfm, lockRemoverHolder);
+   }
+
+   /**
+    * The lock manager of a workspace with a search manager, which starts first: the upgrade of the lock store, when
+    * the lock manager starts, updates the index.
+    */
+   public ISPNCacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+      InitialContextInitializer context, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder,
+      SearchManager searchManager) throws RepositoryConfigurationException, RepositoryException
+   {
+      this(dataManager, config, context, cfm, lockRemoverHolder);
+   }
 
    public ISPNCacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
       InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
@@ -111,7 +166,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       if (config.getLockManager() != null)
       {
          // create cache using custom factory
-         ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm, transactionManager);
+         factory = new ISPNCacheFactory<Serializable, Object>(cfm, transactionManager);
 
          try
          {
@@ -122,6 +177,14 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          {
             throw new RepositoryException(e.getMessage(), e);
          }
+
+         // configure cache loader parameters with correct DB data-types
+         ISPNCacheFactory.configureCacheStore(config.getLockManager(), INFINISPAN_JDBC_CL_DATASOURCE,
+            INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_ID_COLUMN, INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN
+            , INFINISPAN_JDBC_CL_DIALECT);
+         JdbcStringBasedStoreConfigurationBuilder jdbcStore =
+            getJdbcStore(factory.readConfiguration(config.getLockManager()));
+         lockTable = jdbcStore == null ? null : jdbcStore.table().create();
 
          //force clean lock cache entry store
          boolean deleteLocks =
@@ -142,20 +205,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
             }
          }
 
-         // configure cache loader parameters with correct DB data-types
-         ISPNCacheFactory.configureCacheStore(config.getLockManager(), INFINISPAN_JDBC_CL_DATASOURCE,
-            INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_ID_COLUMN, INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN
-            , INFINISPAN_JDBC_CL_DIALECT);
-
-         cache =
-            factory.createCache("L" + config.getUniqueName().replace("_", ""), config.getLockManager())
-               .getAdvancedCache();
-         cache.addListener(new CacheSizeEventListener());
-         int size = cache.getAdvancedCache().size();
-         if(size != 0)
-         {
-            sizeCount.addAndGet(size);
-         }
+         upgrade = jdbcStore == null ? null : createUpgrade(jdbcStore);
       }
       else
       {
@@ -166,7 +216,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public Integer execute(Object arg)
          {
-            return sizeCount.get();
+            AdvancedCache<Serializable, Object> lockCache = cache;
+            return lockCache == null ? 0 : heldLocks(lockCache);
          }
       };
 
@@ -174,7 +225,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public Boolean execute(Object arg)
          {
-            return (sizeCount.get() > 0);
+            AdvancedCache<Serializable, Object> lockCache = cache;
+            return lockCache != null && heldLocks(lockCache) > 0;
          }
       };
 
@@ -182,7 +234,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public Boolean execute(String nodeId)
          {
-            return cache.withFlags(Flag.SKIP_CACHE_LOAD).containsKey(nodeId);
+            return lockStore().withFlags(Flag.SKIP_CACHE_LOAD).containsKey(nodeId);
          }
       };
 
@@ -190,7 +242,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public Object execute(LockData newLockData) throws LockException
          {
-            Object oldValue = PrivilegedISPNCacheHelper.put(cache, newLockData.getNodeIdentifier(), newLockData);
+            Object oldValue = PrivilegedISPNCacheHelper.put(lockStore(), newLockData.getNodeIdentifier(), newLockData);
             if (oldValue == null)
             {
                throw new LockException("Can't refresh lock for node " + newLockData.getNodeIdentifier()
@@ -204,7 +256,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public Boolean execute(String nodeId) throws LockException
          {
-            return cache.withFlags(Flag.SKIP_CACHE_LOAD).containsKey(nodeId);
+            return lockStore().withFlags(Flag.SKIP_CACHE_LOAD).containsKey(nodeId);
          }
       };
 
@@ -212,7 +264,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public LockData execute(String nodeId) throws LockException
          {
-            return (LockData)cache.withFlags(Flag.SKIP_CACHE_LOAD).get(nodeId);
+            return (LockData)lockStore().withFlags(Flag.SKIP_CACHE_LOAD).get(nodeId);
          }
       };
 
@@ -220,7 +272,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public List<LockData> execute(Object arg) throws LockException
          {
-            Collection<Object> datas = cache.withFlags(Flag.SKIP_CACHE_LOAD).values();
+            Collection<Object> datas = lockStore().withFlags(Flag.SKIP_CACHE_LOAD).values();
 
             List<LockData> locksData = new ArrayList<LockData>();
             for (Object lockData : datas)
@@ -240,7 +292,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     */
    public void start()
    {
-      PrivilegedISPNCacheHelper.start(cache);
+      stopped = false;
+      lockStore();
       super.start();
    }
 
@@ -249,9 +302,204 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     */
    public void stop()
    {
+      // First, and outside the monitor, which a start waiting for another node's upgrade of the lock store holds
+      stopped = true;
       super.stop();
-      PrivilegedISPNCacheHelper.stop(cache);
-      ISPNCacheFactory.releaseUniqueInstance(cache.getCacheManager());
+      synchronized (this)
+      {
+         AdvancedCache<Serializable, Object> lockCache = cache;
+         if (lockCache != null)
+         {
+            cache = null;
+            PrivilegedISPNCacheHelper.stop(lockCache);
+            ISPNCacheFactory.releaseUniqueInstance(lockCache.getCacheManager());
+         }
+      }
+   }
+
+   /**
+    * Gives the lock store, created once the lock store of Infinispan 8 is upgraded: when the lock manager starts, or
+    * before, when the restore of a workspace replaces its locks.
+    */
+   private AdvancedCache<Serializable, Object> lockStore()
+   {
+      AdvancedCache<Serializable, Object> lockCache = cache;
+      if (lockCache != null)
+      {
+         return lockCache;
+      }
+      synchronized (this)
+      {
+         if (cache == null)
+         {
+            if (stopped)
+            {
+               // The exception of a stopped lock store, which its callers expect
+               throw new IllegalLifecycleStateException("The lock manager of the workspace " + config.getUniqueName()
+                  + " is stopped");
+            }
+            cache = createLockStore();
+         }
+         return cache;
+      }
+   }
+
+   private AdvancedCache<Serializable, Object> createLockStore()
+   {
+      AdvancedCache<Serializable, Object> lockCache;
+      try
+      {
+         if (upgrade != null)
+         {
+            upgrade.run();
+         }
+         lockCache = factory.createCache("L" + config.getUniqueName().replace("_", ""), config.getLockManager())
+                            .getAdvancedCache();
+      }
+      catch (RepositoryException | RepositoryConfigurationException e)
+      {
+         if (stopped)
+         {
+            throw new IllegalLifecycleStateException("The lock manager of the workspace " + config.getUniqueName()
+               + " is stopped", e);
+         }
+         throw new IllegalStateException("The lock store of the workspace " + config.getUniqueName()
+            + " cannot start", e);
+      }
+      PrivilegedISPNCacheHelper.start(lockCache);
+      return lockCache;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void onSaveItems(ItemStateChangesLog changesLog)
+   {
+      // No lock exists before the lock store is created: the changes of the upgrade release those of Infinispan 8
+      if (cache != null)
+      {
+         super.onSaveItems(changesLog);
+      }
+   }
+
+   /**
+    * Gives the upgrade of the lock store of Infinispan 8, after checking that the JDBC store of the lock configuration
+    * is segmented: a table without segment column would be taken for the one of Infinispan 8, and its locks released
+    * at each start.
+    */
+   private ISPNLockUpgrade createUpgrade(JdbcStringBasedStoreConfigurationBuilder jdbcStore)
+      throws RepositoryConfigurationException, RepositoryException
+   {
+      if (!jdbcStore.attributes().attribute(AbstractStoreConfiguration.SEGMENTED).get())
+      {
+         throw new RepositoryConfigurationException("The JDBC store of the lock configuration "
+            + config.getLockManager().getParameterValue(ISPNCacheFactory.INFINISPAN_CONFIG)
+            + " must be segmented: the lock manager takes a table without segment column for the one of"
+            + " Infinispan 8, and releases its locks at each start");
+      }
+      String itemSourceName = config.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
+      try
+      {
+         return new ISPNLockUpgrade(config, dataSource, (DataSource)new InitialContext().lookup(itemSourceName),
+            lockTable, this::releaseLocks, () -> stopped);
+      }
+      catch (NamingException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+   }
+
+   /**
+    * @return the JDBC store of the lock configuration, <code>null</code> when it has none
+    */
+   private static JdbcStringBasedStoreConfigurationBuilder getJdbcStore(ConfigurationBuilderHolder configuration)
+   {
+      for (StoreConfigurationBuilder<?, ?> store : configuration.getDefaultConfigurationBuilder().persistence().stores())
+      {
+         if (store instanceof JdbcStringBasedStoreConfigurationBuilder jdbcStore)
+         {
+            return jdbcStore;
+         }
+      }
+      return null;
+   }
+
+   /**
+    * Removes the lock properties of the given nodes, in one change, as the lock remover removes those of an expired
+    * lock. When another node removed some of them meanwhile, the nodes are released one by one, as they are at their
+    * turn: those whose lock properties are gone are skipped.
+    *
+    * @return the number of nodes whose lock properties were removed
+    */
+   int releaseLocks(List<String> nodeIdentifiers) throws RepositoryException
+   {
+      TransactionChangesLog changes = new TransactionChangesLog();
+      int released = 0;
+      for (String nodeIdentifier : nodeIdentifiers)
+      {
+         PlainChangesLog unlock = getUnlockChanges(nodeIdentifier);
+         if (unlock != null)
+         {
+            changes.addLog(unlock);
+            released++;
+         }
+      }
+      if (released == 0)
+      {
+         return 0;
+      }
+      try
+      {
+         dataManager.save(changes);
+         return released;
+      }
+      catch (JCRInvalidItemStateException e)
+      {
+         LOG.debug("Lock properties were removed meanwhile, the nodes are released one by one", e);
+      }
+      released = 0;
+      for (String nodeIdentifier : nodeIdentifiers)
+      {
+         PlainChangesLog unlock = getUnlockChanges(nodeIdentifier);
+         if (unlock != null)
+         {
+            try
+            {
+               dataManager.save(new TransactionChangesLog(unlock));
+               released++;
+            }
+            catch (JCRInvalidItemStateException e)
+            {
+               LOG.debug("The lock properties of the node {} were removed meanwhile", nodeIdentifier, e);
+            }
+         }
+      }
+      return released;
+   }
+
+   /**
+    * The change that removes the lock properties of a node, as the system, or null when the node holds none.
+    */
+   private PlainChangesLog getUnlockChanges(String nodeIdentifier) throws RepositoryException
+   {
+      NodeData node = (NodeData)dataManager.getItemData(nodeIdentifier);
+      if (node == null)
+      {
+         return null;
+      }
+      PlainChangesLog unlock =
+         new PlainChangesLogImpl(new ArrayList<ItemState>(), IdentityConstants.SYSTEM, ExtendedEvent.UNLOCK);
+      for (InternalQName name : new InternalQName[]{Constants.JCR_LOCKOWNER, Constants.JCR_LOCKISDEEP})
+      {
+         PropertyData property =
+            (PropertyData)dataManager.getItemData(node, new QPathEntry(name, 1), ItemType.PROPERTY);
+         if (property != null)
+         {
+            unlock.add(ItemState.createDeletedState(copyItemData(property)));
+         }
+      }
+      return unlock.getSize() > 0 ? unlock : null;
    }
 
    /**
@@ -308,7 +556,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected LockData doPut(LockData lockData)
    {
-      return (LockData)PrivilegedISPNCacheHelper.putIfAbsent(cache, lockData.getNodeIdentifier(), lockData);
+      return (LockData)PrivilegedISPNCacheHelper.putIfAbsent(lockStore(), lockData.getNodeIdentifier(), lockData);
    }
 
    /**
@@ -317,7 +565,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected void doRemove(LockData lockData)
    {
-      cache.remove(lockData.getNodeIdentifier());
+      lockStore().remove(lockData.getNodeIdentifier());
    }
 
    /**
@@ -326,7 +574,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected boolean isAloneInCluster()
    {
-      return cache.getRpcManager() == null || cache.getCacheManager().getMembers().size() == 1;
+      AdvancedCache<Serializable, Object> lockCache = lockStore();
+      return lockCache.getRpcManager() == null || lockCache.getCacheManager().getMembers().size() == 1;
    }
 
    /**
@@ -335,7 +584,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected void doClean()
    {
-      if (cache.getStatus() == ComponentStatus.RUNNING)
+      if (lockStore().getStatus() == ComponentStatus.RUNNING)
       {
          for (LockData lockData : getLockList())
          {
@@ -349,22 +598,18 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     */
    public LockTableHandler getLockTableHandler()
    {
-      return new ISPNLockTableHandler(config, dataSource);
+      return new ISPNLockTableHandler(config, dataSource, lockTable);
    }
 
-   @SuppressWarnings("rawtypes")
-   @Listener
-   public class CacheSizeEventListener
+   /**
+    * Counts the locks this node holds in memory, where the lookups read them. The lock cache is replicated and
+    * preloaded, so every node holds every lock in memory once its write is applied, before the originating node writes
+    * the shared store: a count of the store, such as the one Infinispan gives for the size of a cache with a shared
+    * store, misses the locks a node receives from another one while their write is in progress. The data container
+    * answers without a stream over the cache, as the check runs on every write; locks do not expire.
+    */
+   private static int heldLocks(AdvancedCache<Serializable, Object> lockCache)
    {
-
-      @CacheEntryCreated
-      @CacheEntryRemoved
-      public void CacheEntryRemoved(CacheEntryEvent evt)
-      {
-         if (!evt.isPre() && evt.getKey() instanceof String)
-         {
-            sizeCount.addAndGet(cache.size());
-         }
-      }
+      return lockCache.getDataContainer().sizeIncludingExpired();
    }
 }

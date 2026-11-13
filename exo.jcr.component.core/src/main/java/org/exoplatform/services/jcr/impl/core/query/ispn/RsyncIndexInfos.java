@@ -24,11 +24,12 @@ import org.exoplatform.services.jcr.impl.core.query.RSyncJob;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
+import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
+import org.infinispan.remoting.transport.Transport;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.jgroups.Event;
 import org.jgroups.stack.IpAddress;
 
@@ -105,17 +106,18 @@ public class RsyncIndexInfos extends ISPNIndexInfos
       {
          EmbeddedCacheManager cacheManager = cache.getCacheManager();
 
-         if (cacheManager.getCoordinator() instanceof JGroupsAddress
-            && cacheManager.getTransport() instanceof JGroupsTransport)
+         Transport cacheTransport = GlobalComponentRegistry.of(cacheManager).getComponent(Transport.class);
+         if (cacheManager.getCoordinator() != null && cacheTransport instanceof JGroupsTransport)
          {
-            JGroupsTransport transport = (JGroupsTransport)cacheManager.getTransport();
+            JGroupsTransport transport = (JGroupsTransport)cacheTransport;
             // Coordinator's address
-            org.jgroups.Address jgAddress = ((JGroupsAddress)cacheManager.getCoordinator()).getJGroupsAddress();
+            org.jgroups.Address jgAddress =
+               org.infinispan.remoting.transport.Address.toExtendedUUID(cacheManager.getCoordinator());
             // if jgAddress is UUID address, not the physical one, then retrieve via channel
             if (!(jgAddress instanceof IpAddress))
             {
                // this is the only way of getting physical address. 
-               Channel channel = transport.getChannel();
+               JChannel channel = transport.getChannel();
                jgAddress = (org.jgroups.Address)channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, jgAddress));
             }
             if (jgAddress instanceof IpAddress)

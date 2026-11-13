@@ -77,8 +77,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
-import javax.transaction.Status;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.Status;
+import jakarta.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS. 
