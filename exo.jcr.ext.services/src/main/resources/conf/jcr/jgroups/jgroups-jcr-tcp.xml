@@ -41,7 +41,7 @@
   <MERGE3
       max_interval="${exo.jcr.cluster.jgroups.merge2.max_interval:100000}"
       min_interval="${exo.jcr.cluster.jgroups.merge2.min_interval:20000}" />
-  <FD_SOCK />
+  <FD_SOCK start_port="${exo.jcr.cluster.jgroups.fd_sock.start_port:7850}" />
   <FD_ALL3 />
   <VERIFY_SUSPECT timeout="${exo.jcr.cluster.jgroups.verify_suspect.timeout:1500}" />
   <BARRIER />
