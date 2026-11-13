@@ -477,7 +477,9 @@ class ISPNLockUpgrade
     * <p>
     * The lookup is narrowed to the connection's catalog and schema, where the statements that follow it read the
     * table unqualified: a table of the same name in another schema the account can see, another platform's on the same
-    * database, is not this workspace's. A connection that cannot name its schema is looked up in every schema.
+    * database, is not this workspace's. A connection that cannot name its schema, from a pool written before JDBC 4.1,
+    * is looked up in every schema: on a database with schemas (PostgreSQL, Oracle, SQL Server) such a table then reads
+    * as this workspace's. MySQL, whose schema is the catalog, is not concerned.
     *
     * @param table the table's name, quoted as {@link ISPNLockTableHandler} quotes it, which keeps its case; a database
     *          that folds names stores it upper or lower case, so the three are looked up
