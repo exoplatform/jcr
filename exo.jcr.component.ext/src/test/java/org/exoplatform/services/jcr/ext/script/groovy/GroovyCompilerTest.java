@@ -19,12 +19,22 @@
 
 package org.exoplatform.services.jcr.ext.script.groovy;
 
+import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 
+import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.CompilerConfiguration;
+
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
+import org.exoplatform.services.rest.ext.groovy.ExtendedGroovyClassLoader;
+import org.exoplatform.services.rest.ext.groovy.SourceFile;
 import org.exoplatform.services.rest.ext.groovy.SourceFolder;
 
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.security.CodeSource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.jcr.Node;
@@ -88,6 +98,39 @@ public class GroovyCompilerTest extends BaseGroovyTest
       assertEquals("groovy compiler test", go.invokeMethod("getMessage", new Object[0]));
    }
 
+   public void testDependenciesOfSeveralSources() throws Exception
+   {
+      JcrGroovyCompiler compiler = new JcrGroovyCompiler(new JcrGroovyClassLoaderProvider());
+      URL urlA = new UnifiedNodeReference("db1", "ws", scriptA).getURL();
+      URL urlB = new UnifiedNodeReference("db1", "ws", scriptB).getURL();
+      SourceFolder[] src =
+         new SourceFolder[]{new SourceFolder(new UnifiedNodeReference("db1", "ws", groovyRepo.getPath()).getURL())};
+      List<URL> dependencies =
+         Arrays.asList(compiler.getDependencies(src, new SourceFile[]{new SourceFile(urlB), new SourceFile(urlA)}));
+      assertTrue(dependencies.toString(), dependencies.contains(urlA));
+      assertTrue(dependencies.toString(), dependencies.contains(urlB));
+   }
+
+   public void testSeveralSourcesWithoutJcrClassLoader() throws Exception
+   {
+      ExtendedGroovyClassLoader classLoader = new ExtendedGroovyClassLoader(getClass().getClassLoader());
+      Class<?>[] classes =
+         classLoader.parseClasses(new SourceFile[]{new SourceFile(new UnifiedNodeReference("db1", "ws", scriptB).getURL()),
+            new SourceFile(new UnifiedNodeReference("db1", "ws", scriptA).getURL())});
+      assertEquals(2, classes.length);
+   }
+
+   /**
+    * Groovy 4 and later parse several sources on the common ForkJoin pool, whose
+    * threads carry no JCR session. Which thread reads a source is then a race,
+    * so this pins the configuration of every unit the loaders build.
+    */
+   public void testCompilationUnitsParseOnTheCallingThread() throws Exception
+   {
+      assertSequentialParse(new ExtendedGroovyClassLoader(getClass().getClassLoader()));
+      assertSequentialParse(new JcrGroovyClassLoaderProvider.JcrGroovyClassLoader(getClass().getClassLoader()));
+   }
+
    public void testAddDependenciesInRuntime() throws Exception
    {
       JcrGroovyClassLoaderProvider classLoaderProvider = new JcrGroovyClassLoaderProvider();
@@ -128,5 +171,19 @@ public class GroovyCompilerTest extends BaseGroovyTest
       assertTrue(names.contains("org.exoplatform.test.C"));
       assertTrue(names.contains("org.exoplatform.test.other.D"));
       //System.out.println(">>>>>>>>>>>>>>>>> "+names);      
+   }
+
+   private static void assertSequentialParse(GroovyClassLoader classLoader) throws Exception
+   {
+      Method createCompilationUnit =
+         GroovyClassLoader.class.getDeclaredMethod("createCompilationUnit", CompilerConfiguration.class,
+            CodeSource.class);
+      createCompilationUnit.setAccessible(true);
+      for (CompilerConfiguration configuration : new CompilerConfiguration[]{null, new CompilerConfiguration()})
+      {
+         CompilationUnit unit = (CompilationUnit)createCompilationUnit.invoke(classLoader, configuration, null);
+         assertEquals(classLoader.getClass().getName(), Boolean.FALSE,
+            unit.getConfiguration().getOptimizationOptions().get(CompilerConfiguration.PARALLEL_PARSE));
+      }
    }
 }

@@ -265,7 +265,21 @@ public class ExtendedGroovyClassLoader extends GroovyClassLoader
    @Override
    protected CompilationUnit createCompilationUnit(CompilerConfiguration config, CodeSource cs)
    {
-      return new CompilationUnit(config, cs, this);
+      return new CompilationUnit(sequentialParse(config), cs, this);
+   }
+
+   /**
+    * @param config a configuration, or null for the default one
+    * @return a copy of the configuration that parses the sources one after the
+    *         other, on the calling thread: a source may be read through a JCR
+    *         session bound to that thread, which a parsing thread of Groovy's
+    *         own does not have
+    */
+   protected static CompilerConfiguration sequentialParse(CompilerConfiguration config)
+   {
+      CompilerConfiguration configuration = new CompilerConfiguration(config == null ? CompilerConfiguration.DEFAULT : config);
+      configuration.getOptimizationOptions().put(CompilerConfiguration.PARALLEL_PARSE, Boolean.FALSE);
+      return configuration;
    }
 
    protected SingleClassCollector createSingleCollector(CompilationUnit unit, SourceUnit sunit)

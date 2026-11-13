@@ -124,6 +124,8 @@
         <exclude>*:dom4j:jar</exclude>
         <exclude>*:fontbox:jar</exclude>
         <exclude>*:groovy-all:jar</exclude>
+        <!-- Shipped by the distribution -->
+        <exclude>org.apache.groovy:*</exclude>
         <exclude>*:hibernate-commons-annotations:jar</exclude>
         <exclude>*:hibernate-core:jar</exclude>
         <exclude>*:hibernate-jpa-2.0-api:jar</exclude>
