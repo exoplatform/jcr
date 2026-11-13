@@ -34,6 +34,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
@@ -44,6 +45,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
@@ -414,12 +416,13 @@ public class TestISPNLockUpgradeClaim
    }
 
    /**
-    * The data source, which, once the flag is set, fails each query that counts the rows of the given table, and, when
-    * asked, each read of the database metadata.
+    * The data source, which, once the flag is set, fails each query that counts the rows of the given table, in each
+    * form the existence check of {@link org.exoplatform.services.database.utils.JDBCUtils} sends it (a plain count, or a
+    * count of a subquery limited to one row on the other engines), and, when asked, each read of the database metadata.
     */
    private DataSource failing(AtomicBoolean active, String countedTable, boolean failMetadata)
    {
-      String count = "SELECT count(*) FROM " + countedTable;
+      String table = countedTable.toLowerCase(Locale.ROOT);
       return proxy(DataSource.class, dataSource, (target, method, args) -> {
          Object result = invoke(target, method, args);
          if (!method.getName().equals("getConnection"))
@@ -438,7 +441,7 @@ public class TestISPNLockUpgradeClaim
             }
             return proxy(Statement.class, (Statement) connectionResult, (sql, sqlMethod, sqlArgs) -> {
                if (active.get() && sqlMethod.getName().startsWith("execute") && sqlArgs != null
-                  && ((String) sqlArgs[0]).equalsIgnoreCase(count))
+                  && isCount(((String) sqlArgs[0]).toLowerCase(Locale.ROOT), table))
                {
                   throw new SQLException("The rows of " + countedTable + " cannot be counted");
                }
@@ -492,6 +495,12 @@ public class TestISPNLockUpgradeClaim
    {
       releases.add(nodes.stream().sorted().toList());
       return nodes.size();
+   }
+
+
+   private static boolean isCount(String sql, String table)
+   {
+      return sql.startsWith("select count(*)") && sql.matches("(?s).* from " + Pattern.quote(table) + "([ )].*)?");
    }
 
    /**
