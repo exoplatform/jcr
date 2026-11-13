@@ -26,6 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -476,17 +477,17 @@ class ISPNLockUpgrade
     * <p>
     * The lookup is narrowed to the connection's catalog and schema, where the statements that follow it read the
     * table unqualified: a table of the same name in another schema the account can see, another platform's on the same
-    * database, is not this workspace's.
+    * database, is not this workspace's. A connection that cannot name its schema is looked up in every schema.
     *
     * @param table the table's name, quoted as {@link ISPNLockTableHandler} quotes it, which keeps its case; a database
     *          that folds names stores it upper or lower case, so the three are looked up
     */
-   private static boolean tableExists(Connection connection, String table) throws SQLException
+   static boolean tableExists(Connection connection, String table) throws SQLException
    {
       String name = table.replaceAll("^[\"`](.*)[\"`]$", "$1");
       DatabaseMetaData metaData = connection.getMetaData();
       String escape = metaData.getSearchStringEscape();
-      String schema = connection.getSchema();
+      String schema = getSchema(connection);
       String schemaPattern = schema == null ? null : escape(schema, escape);
       for (String candidate : new LinkedHashSet<>(List.of(name, name.toUpperCase(Locale.ROOT),
          name.toLowerCase(Locale.ROOT))))
@@ -501,6 +502,22 @@ class ISPNLockUpgrade
          }
       }
       return false;
+   }
+
+   /**
+    * @return the schema of the connection, or <code>null</code> when it cannot name it: a connection pool written
+    *         before JDBC 4.1, such as Commons DBCP 1, does not implement {@link Connection#getSchema()}
+    */
+   private static String getSchema(Connection connection) throws SQLException
+   {
+      try
+      {
+         return connection.getSchema();
+      }
+      catch (AbstractMethodError | SQLFeatureNotSupportedException e) // NOSONAR
+      {
+         return null;
+      }
    }
 
    /**
