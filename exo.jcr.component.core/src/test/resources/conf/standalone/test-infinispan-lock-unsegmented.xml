@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2017 eXo Platform SAS.
+    Copyright (C) 2026 eXo Platform SAS.
 
     This is free software; you can redistribute it and/or modify it
     under the terms of the GNU Lesser General Public License as
@@ -20,53 +20,37 @@
 
 -->
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns="urn:infinispan:config:8.2"
-            xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd">
-    <jgroups transport="org.infinispan.remoting.transport.jgroups.JGroupsTransport">
-        <stack-file name="udp" path="${jgroups-configuration}"/>
-    </jgroups>
+            xmlns="urn:infinispan:config:16.0"
+            xsi:schemaLocation="urn:infinispan:config:16.0 https://infinispan.org/schemas/infinispan-config-16.0.xsd">
     <threads>
         <thread-factory name="infinispan-factory" group-name="infinispan" thread-name-pattern="%G %i" priority="5"/>
 
         <!-- listener-executor -->
         <blocking-bounded-queue-thread-pool name="infinispan-listener" thread-factory="infinispan-factory"
                                             core-threads="1" max-threads="1" queue-length="0" keepalive-time="0"/>
-        <!-- transport.executor -->
-        <blocking-bounded-queue-thread-pool name="infinispan-transport" thread-factory="infinispan-factory"
-                                            core-threads="5" max-threads="10" queue-length="100" keepalive-time="10000"/>
-
-        <!-- state-transfer-executor -->
-        <blocking-bounded-queue-thread-pool name="infinispan-state-transfer" thread-factory="infinispan-factory"
-                                            core-threads="1" max-threads="60" queue-length="0" keepalive-time="0"/>
-
         <!-- transport.total-order-executor, transport.remote-command-executor, persistence-executor -->
         <cached-thread-pool name="infinispan-cached" thread-factory="infinispan-factory" />
         <!-- expiration-executor -->
         <scheduled-thread-pool name="infinispan-expiration" thread-factory="infinispan-factory" />
-        <!-- replication-queue-executor -->
-        <scheduled-thread-pool name="infinispan-repl-queue" thread-factory="infinispan-factory" />
     </threads>
 
     <cache-container  default-cache="default" expiration-executor="infinispan-expiration"  listener-executor="infinispan-listener"
-                      replication-queue-executor="infinispan-repl-queue" state-transfer-executor="infinispan-state-transfer"  statistics="true"  shutdown-hook="REGISTER">
-        <transport cluster="${infinispan-cluster-name}" executor="infinispan-transport" total-order-executor="infinispan-cached"
-                   remote-command-executor="infinispan-cached" lock-timeout="120000" stack="udp" />
-        <jmx duplicate-domains="true" domain="exo" mbean-server-lookup="org.infinispan.jmx.PlatformMBeanServerLookup"/>
-        <replicated-cache-configuration name="default" mode="SYNC" remote-timeout="20000" statistics="true">
-            <locking isolation="READ_COMMITTED" concurrency-level="500" striping="false" write-skew="false" acquire-timeout="20000"/>
+                      statistics="true"  shutdown-hook="DEFAULT">
+        <jmx enabled="true" domain="exo"/>
+        <local-cache name="default" statistics="true">
+            <locking isolation="READ_COMMITTED" concurrency-level="500" striping="false" acquire-timeout="20000"/>
             <transaction mode="NON_XA" transaction-manager-lookup="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" />
-            <eviction strategy="NONE"/>
-            <state-transfer timeout="60000" await-initial-transfer="false"/>
+            <memory max-count="1000000" when-full="REMOVE"/>
             <persistence passivation="false">
-                <string-keyed-jdbc-store xmlns="urn:infinispan:config:store:jdbc:8.0" shared="true" fetch-state="true" read-only="false" purge="false" preload="true">
+                <string-keyed-jdbc-store xmlns="urn:infinispan:config:store:jdbc:16.0" shared="false" read-only="false" purge="false" preload="true" segmented="false">
                     <string-keyed-table drop-on-exit="${infinispan-cl-cache.jdbc.table.drop}" create-on-start="${infinispan-cl-cache.jdbc.table.create}"
                                         prefix="${infinispan-cl-cache.jdbc.table.name}">
-                        <id-column name="${infinispan-cl-cache.jdbc.id.column}" type="${infinispan-cl-cache.jdbc.timestamp.column}" />
+                        <id-column name="${infinispan-cl-cache.jdbc.id.column}" type="${infinispan-cl-cache.jdbc.id.type}" />
                         <data-column name="${infinispan-cl-cache.jdbc.data.column}" type="${infinispan-cl-cache.jdbc.data.type}" />
                         <timestamp-column name="${infinispan-cl-cache.jdbc.timestamp.column}" type="${infinispan-cl-cache.jdbc.timestamp.type}" />
                     </string-keyed-table>
                 </string-keyed-jdbc-store>
             </persistence>
-        </replicated-cache-configuration>
+        </local-cache>
     </cache-container>
 </infinispan>

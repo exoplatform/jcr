@@ -84,6 +84,27 @@
   </dependencies>
   <build>
     <plugins>
+      <!-- The @ExoTransactional methods of the indexing queue begin their transaction through this aspect only -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>aspectj-maven-plugin</artifactId>
+        <configuration>
+          <aspectLibraries>
+            <aspectLibrary>
+              <groupId>io.meeds.portal</groupId>
+              <artifactId>portal.component.common</artifactId>
+            </aspectLibrary>
+          </aspectLibraries>
+        </configuration>
+        <!-- The compiler the plugin uses by default does not know the Java version the module targets -->
+        <dependencies>
+          <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjtools</artifactId>
+            <version>${org.aspectj.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>

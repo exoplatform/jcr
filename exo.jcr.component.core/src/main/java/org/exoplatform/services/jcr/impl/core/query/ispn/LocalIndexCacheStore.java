@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.core.query.ispn;
 
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
-import org.infinispan.persistence.spi.InitializationContext;
 
 /**
  * Implements Cache Store that designed to be used when each cluster node has it's own local index
@@ -44,11 +43,5 @@ public class LocalIndexCacheStore extends AbstractIndexerCacheStore
    public IndexerIoModeHandler getModeHandler()
    {
       return modeHandler;
-   }
-
-   @Override
-   public void init(InitializationContext ctx)
-   {
-      super.init(ctx);
    }
 }

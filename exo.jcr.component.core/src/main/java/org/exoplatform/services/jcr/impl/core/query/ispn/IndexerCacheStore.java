@@ -38,10 +38,11 @@ import org.infinispan.remoting.transport.Address;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.concurrent.CompletionStage;
 
 /**
  * Implements Cache Store for clustered environment. It gives control of Index for coordinator and
@@ -73,12 +74,12 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
 
 
    @Override
-   public void init(InitializationContext ctx)
+   public CompletionStage<Void> start(InitializationContext ctx)
    {
-      super.init(ctx);
       this.cacheManager = ctx.getCache().getCacheManager();
       listener = new CacheListener();
       cacheManager.addListener(listener);
+      return super.start(ctx);
    }
 
    /**
@@ -163,7 +164,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
    /**
     *  Flushes all cache content to underlying CacheStore
     */
-   @SuppressWarnings("rawtypes")
+   @SuppressWarnings({"rawtypes", "unchecked"})
    protected void doPushState()
    {
       final boolean debugEnabled = LOG.isDebugEnabled();
@@ -177,13 +178,12 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
       List<ChangesKey> processedItemKeys = new ArrayList<ChangesKey>();
 
       DataContainer dc = ctx.getCache().getAdvancedCache().getDataContainer();
-      Set keys = dc.keySet();
       InternalCacheEntry entry;
       // collect all cache entries into the following map:
       // <WS ID> : <Contracted lists of added/removed nodes>
-      for (Object k : keys)
+      for (Iterator<InternalCacheEntry> entries = dc.iterator(); entries.hasNext();)
       {
-         if ((entry = dc.get(k)) != null)
+         if ((entry = entries.next()) != null)
          {
             if (entry.getValue() instanceof ChangesFilterListsWrapper && entry.getKey() instanceof ChangesKey)
             {
@@ -275,10 +275,10 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
     * {@inheritDoc}
     */
    @Override
-   public void stop()
+   public CompletionStage<Void> stop()
    {
       cacheManager.removeListener(listener);
-      super.stop();
+      return super.stop();
    }
 
 }

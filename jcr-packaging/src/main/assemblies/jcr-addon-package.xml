@@ -167,11 +167,27 @@
         <exclude>*:xpp3:jar</exclude>
         <exclude>*:xstream:jar</exclude>
         <exclude>*:xz:jar</exclude>
+        <!-- Infinispan dependencies the base bundle ships: the add-ons manager refuses a file name that exists -->
+        <exclude>com.fasterxml.jackson.core:jackson-core</exclude>
+        <exclude>jakarta.transaction:jakarta.transaction-api</exclude>
+        <exclude>org.jspecify:jspecify</exclude>
+        <exclude>org.reactivestreams:reactive-streams</exclude>
+        <exclude>io.reactivex.rxjava3:*</exclude>
       </excludes>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <useTransitiveFiltering>true</useTransitiveFiltering>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>/lib</outputDirectory>
+      <includes>
+        <!-- conflicted with : io.reactivex.rxjava2:rxjava of the base bundle -->
+        <include>io.reactivex.rxjava3:*:jar</include>
+      </includes>
+      <outputFileNameMapping>${artifact.artifactId}_${artifact.groupId}.${artifact.extension}</outputFileNameMapping>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
     </dependencySet>
   </dependencySets>
 </assembly>
