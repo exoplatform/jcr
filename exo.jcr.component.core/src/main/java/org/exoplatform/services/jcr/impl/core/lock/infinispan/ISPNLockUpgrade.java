@@ -192,6 +192,10 @@ class ISPNLockUpgrade
          long claimWithoutRowSince = 0;
          boolean waiting = false;
          boolean upgraded = false;
+         try (Connection connection = lockDataSource.getConnection())
+         {
+            refuseALookupThatMisleadsInfinispan(connection, lockTable);
+         }
          while (true)
          {
             try (Connection connection = lockDataSource.getConnection())
@@ -255,6 +259,78 @@ class ISPNLockUpgrade
          throw new RepositoryException("Interrupted while upgrading the lock store of the workspace "
             + workspace.getUniqueName(), e);
       }
+   }
+
+   /**
+    * Refuses to start when the lock store of this workspace has no table in the database or schema of the connection
+    * yet, or only its table without segment column, which the upgrade renames, while Infinispan's lookup finds a
+    * table of that name elsewhere. Infinispan looks the table up with no catalog: MySQL Connector/J then reads every
+    * database the account can read, unless its URL sets <code>nullDatabaseMeansCurrent=true</code>, and PostgreSQL or
+    * HSQLDB every schema of the database. Infinispan would take that table for its own and not create it here, and
+    * every lock would fail. The tables are left as they are.
+    */
+   private void refuseALookupThatMisleadsInfinispan(Connection connection, String lockTable)
+      throws SQLException, RepositoryException
+   {
+      if (tableExists(connection, lockTable) && !isLegacy(connection, lockTable))
+      {
+         return;
+      }
+      String elsewhere = findElsewhere(connection, lockTable);
+      if (elsewhere != null)
+      {
+         throw new RepositoryException("The lock store of the workspace " + workspace.getUniqueName()
+            + " cannot start: its table " + lockTable + " is not in the database of the connection yet, and the"
+            + " lookup of Infinispan, which names no database, finds the table " + elsewhere
+            + " instead, which it would take for its own. On MySQL, add nullDatabaseMeansCurrent=true to the URL of"
+            + " the data source, or use an account that reads this database only. On another database, give the lock"
+            + " tables a prefix that no other schema of the database uses.");
+      }
+   }
+
+   /**
+    * @return the qualified name of a table that the lookup of Infinispan finds for the given one outside the
+    *         database and the schema of the connection, <code>null</code> when it finds none
+    */
+   static String findElsewhere(Connection connection, String table) throws SQLException
+   {
+      String name = table.replaceAll("^[\"`](.*)[\"`]$", "$1");
+      String schema = null;
+      int dot = name.indexOf('.');
+      if (dot > 0)
+      {
+         // Infinispan reads the schema from the prefix of the table name
+         schema = name.substring(0, dot);
+         name = name.substring(dot + 1);
+      }
+      String catalog = connection.getCatalog();
+      String connectionSchema = getSchema(connection);
+      // The lookup of Infinispan: no catalog, the name as a pattern
+      try (ResultSet found = connection.getMetaData().getTables(null, schema, name, new String[]{"TABLE"}))
+      {
+         while (found.next())
+         {
+            String foundCatalog = found.getString("TABLE_CAT");
+            String foundSchema = found.getString("TABLE_SCHEM");
+            String foundName = found.getString("TABLE_NAME");
+            boolean here = sameOrUnknown(foundCatalog, catalog) && sameOrUnknown(foundSchema, connectionSchema);
+            if (!here || !name.equalsIgnoreCase(foundName))
+            {
+               return (foundCatalog == null ? "" : foundCatalog + ".") + (foundSchema == null ? "" : foundSchema + ".")
+                  + foundName;
+            }
+         }
+      }
+      return null;
+   }
+
+   /**
+    * @return whether two names of a catalog or a schema are the same, a name the driver does not give matching any;
+    *         MySQL may give a name in another case than the one it was created with
+    */
+   private static boolean sameOrUnknown(String found, String expected)
+   {
+      return found == null || expected == null || found.equalsIgnoreCase(expected);
    }
 
    /**

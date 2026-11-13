@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -59,6 +61,39 @@ public class TestISPNLockUpgradeSchema
       assertTrue(ISPNLockUpgrade.tableExists(connection, "\"JCR_LOCK_WS\""));
 
       verify(connection.getMetaData()).getTables(any(), isNull(), anyString(), isNull());
+   }
+
+   @Test
+   public void testATableOfAnotherMySQLDatabaseIsFoundElsewhere() throws Exception
+   {
+      // MySQL Connector/J names the database as the catalog, and has no schema
+      Connection connection = mock(Connection.class);
+      DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+      ResultSet found = mock(ResultSet.class);
+      when(connection.getMetaData()).thenReturn(metaData);
+      when(connection.getCatalog()).thenReturn("plf");
+      when(metaData.getTables(isNull(), isNull(), eq("JCR_LOCK_Lws"), any())).thenReturn(found);
+      when(found.next()).thenReturn(true, true, false);
+      when(found.getString("TABLE_CAT")).thenReturn("plf", "other_plf");
+      when(found.getString("TABLE_NAME")).thenReturn("jcr_lock_lws", "JCR_LOCK_Lws");
+
+      assertEquals("other_plf.JCR_LOCK_Lws", ISPNLockUpgrade.findElsewhere(connection, "`JCR_LOCK_Lws`"));
+   }
+
+   @Test
+   public void testATableOfTheDatabaseOfTheConnectionIsNotFoundElsewhere() throws Exception
+   {
+      Connection connection = mock(Connection.class);
+      DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+      ResultSet found = mock(ResultSet.class);
+      when(connection.getMetaData()).thenReturn(metaData);
+      when(connection.getCatalog()).thenReturn("plf");
+      when(metaData.getTables(isNull(), isNull(), eq("JCR_LOCK_Lws"), any())).thenReturn(found);
+      when(found.next()).thenReturn(true, false);
+      when(found.getString("TABLE_CAT")).thenReturn("PLF");
+      when(found.getString("TABLE_NAME")).thenReturn("jcr_lock_lws");
+
+      assertNull(ISPNLockUpgrade.findElsewhere(connection, "`JCR_LOCK_Lws`"));
    }
 
    private static Connection connection() throws Exception

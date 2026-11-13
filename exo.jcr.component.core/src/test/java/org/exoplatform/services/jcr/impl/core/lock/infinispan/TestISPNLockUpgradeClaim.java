@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
+import javax.jcr.RepositoryException;
 import javax.sql.DataSource;
 
 import org.exoplatform.services.database.utils.JDBCUtils;
@@ -455,16 +456,46 @@ public class TestISPNLockUpgradeClaim
    public void testANewStoreOfAnotherSchemaIsNotThisWorkspaces() throws Exception
    {
       execute("CREATE TABLE " + lockTable + legacyTable);
-      // Another platform on the same database has upgraded its own lock store, which locks node2
+      // Another platform on the same database has upgraded its own lock store, which locks node2: Infinispan, which
+      // looks its table up in every schema, would take it for this workspace's once the old table is renamed
+      createTheNewStoreOfAnotherSchema();
+
+      RepositoryException e = assertThrows(RepositoryException.class, () -> upgrade(dataSource).run());
+
+      assertTrue(e.getMessage(), e.getMessage().contains("nullDatabaseMeansCurrent=true"));
+      assertTrue(e.getMessage(), e.getMessage().toUpperCase(Locale.ROOT).contains(OTHER_SCHEMA.toUpperCase(Locale.ROOT)));
+      // Nothing is claimed nor released
+      assertEquals(List.of(), releases);
+      assertTrue(tableExists(lockTable));
+      assertFalse(tableExists(claimTable));
+   }
+
+   @Test
+   public void testAWorkspaceWithoutLockStoreDoesNotStartWhenInfinispanWouldTakeAnotherSchemasOne() throws Exception
+   {
+      createTheNewStoreOfAnotherSchema();
+
+      assertThrows(RepositoryException.class, () -> upgrade(dataSource).run());
+   }
+
+   @Test
+   public void testAWorkspaceWithItsOwnLockStoreStartsBesideAnotherSchemasOne() throws Exception
+   {
+      execute("CREATE TABLE " + lockTable + " (id VARCHAR(512) NOT NULL, data " + binaryType()
+         + ", timestamp BIGINT NOT NULL, segment_id INTEGER NOT NULL, PRIMARY KEY (id))");
+      createTheNewStoreOfAnotherSchema();
+
+      assertFalse(upgrade(dataSource).run());
+
+      assertEquals(List.of(), releases);
+   }
+
+   private void createTheNewStoreOfAnotherSchema() throws SQLException
+   {
       execute("CREATE SCHEMA " + OTHER_SCHEMA);
       execute("CREATE TABLE " + OTHER_SCHEMA + "." + lockTable + " (id VARCHAR(512) NOT NULL, data " + binaryType()
          + ", timestamp BIGINT NOT NULL, segment_id INTEGER NOT NULL, PRIMARY KEY (id))");
       execute("INSERT INTO " + OTHER_SCHEMA + "." + lockTable + " (id, timestamp, segment_id) VALUES ('node2', 0, 0)");
-
-      assertTrue(upgrade(dataSource).run());
-
-      assertEquals(List.of(List.of("node1", "node2")), releases);
-      assertFalse(tableExists(lockTable));
    }
 
    @Test
