@@ -273,6 +273,9 @@ class ISPNLockUpgrade
     * needed. On PostgreSQL, a table of this workspace in a schema of the search path other than the current one is
     * not this workspace's for the guard, which refuses: Infinispan reads and writes the table of the search path, but
     * the guard cannot tell it from another platform's.
+    * <p>
+    * A pool whose connections cannot name their schema (a JDBC 4.0 pool, such as Commons DBCP 1) is not guarded: every
+    * schema then reads as the connection's own, so the guard lets the workspace start as it did before it existed.
     */
    private void refuseALookupThatMisleadsInfinispan(Connection connection, String lockTable)
       throws SQLException, RepositoryException
