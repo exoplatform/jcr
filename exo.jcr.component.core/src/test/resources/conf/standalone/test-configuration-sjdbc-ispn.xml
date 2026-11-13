@@ -154,7 +154,7 @@
   </component>
 
    <component>
-      <key>org.infinispan.transaction.lookup.TransactionManagerLookup</key>
+      <key>org.infinispan.commons.tx.lookup.TransactionManagerLookup</key>
       <type>org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup</type>
    </component>
 

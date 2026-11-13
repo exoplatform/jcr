@@ -154,7 +154,7 @@
   </component>
 
   <component>
-     <key>org.infinispan.transaction.lookup.TransactionManagerLookup</key>
+     <key>org.infinispan.commons.tx.lookup.TransactionManagerLookup</key>
      <type>org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup</type>
   </component>
    
@@ -169,16 +169,6 @@
     </init-params>   
   </component>
   
-   <component>
-      <type>org.exoplatform.services.ispn.DistributedCacheManager</type>
-      <init-params>
-         <value-param>
-            <name>infinispan-configuration</name>
-            <value>jar:/conf/standalone/cluster/distributed-cache-configuration.xml</value>
-         </value-param>
-      </init-params>
-   </component>
-           
   <component>
     <key>org.exoplatform.services.rpc.RPCService</key>
     <type>org.exoplatform.services.rpc.jgv3.RPCServiceImpl</type>

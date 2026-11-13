@@ -35,8 +35,8 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.naming.InitialContext;
-import javax.transaction.Transaction;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.UserTransaction;
 
 /**
  * Created by The eXo Platform SAS. <br>

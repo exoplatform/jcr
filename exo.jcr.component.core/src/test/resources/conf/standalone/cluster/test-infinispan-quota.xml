@@ -20,8 +20,8 @@
 
 -->
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns="urn:infinispan:config:8.2"
-            xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd">
+            xmlns="urn:infinispan:config:16.0"
+            xsi:schemaLocation="urn:infinispan:config:16.0 https://infinispan.org/schemas/infinispan-config-16.0.xsd">
     <threads>
         <thread-factory name="infinispan-factory" group-name="infinispan" thread-name-pattern="%G %i" priority="5"/>
 
@@ -34,28 +34,16 @@
         <scheduled-thread-pool name="infinispan-expiration" thread-factory="infinispan-factory" />
     </threads>
 
-    <jgroups transport="org.infinispan.remoting.transport.jgroups.JGroupsTransport">
-        <stack-file name="stack" path="${jgroups-configuration}"/>
-    </jgroups>
-
     <cache-container  default-cache="default" expiration-executor="infinispan-expiration"  listener-executor="infinispan-listener"
                       statistics="true"  shutdown-hook="REGISTER">
-        <jmx duplicate-domains="true" domain="exo-quota" mbean-server-lookup="org.infinispan.jmx.PlatformMBeanServerLookup"/>
-        <transport cluster="${infinispan-cluster-name}" stack="stack"/>
-        <replicated-cache-configuration mode="SYNC" name="default" statistics="true">
-            <locking isolation="READ_COMMITTED" concurrency-level="500" striping="false" write-skew="false" acquire-timeout="20000"/>
+        <jmx enabled="true" domain="exo-quota"/>
+        <transport cluster="${infinispan-cluster-name}">
+          <property name="configurationFile">${jgroups-configuration}</property>
+        </transport>
+        <replicated-cache mode="SYNC" name="default" statistics="true">
+            <locking isolation="READ_COMMITTED" concurrency-level="500" striping="false" acquire-timeout="20000"/>
             <state-transfer enabled="false" timeout="60000" chunk-size="10000" />
-            <eviction size="100000" strategy="LRU" thread-policy="DEFAULT"/>
-            <persistence passivation="false">
-                <binary-keyed-jdbc-store xmlns="urn:infinispan:config:store:jdbc:8.0" shared="true" preload="true" fetch-state="false" read-only="true" purge="false">
-                    <binary-keyed-table prefix="${infinispan-cl-cache.jdbc.table.name}" drop-on-exit="${infinispan-cl-cache.jdbc.table.drop}"
-                                        create-on-start="${infinispan-cl-cache.jdbc.table.create}">
-                        <id-column name="${infinispan-cl-cache.jdbc.id.column}" type="${infinispan-cl-cache.jdbc.id.type}" />
-                        <data-column name="${infinispan-cl-cache.jdbc.data.column}" type="${infinispan-cl-cache.jdbc.data.type}" />
-                        <timestamp-column name="${infinispan-cl-cache.jdbc.timestamp.column}" type="${infinispan-cl-cache.jdbc.timestamp.type}" />
-                    </binary-keyed-table>
-                </binary-keyed-jdbc-store>
-            </persistence>
-        </replicated-cache-configuration>
+            <memory max-count="100000" when-full="REMOVE"/>
+        </replicated-cache>
     </cache-container>
 </infinispan>

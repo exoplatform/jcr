@@ -18,12 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
-import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
-import org.exoplatform.services.ispn.DistributedCacheManager;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.CacheEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -57,7 +55,6 @@ import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.SimplePersistedSize;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
-import org.exoplatform.services.jcr.infinispan.AbstractMapper;
 import org.exoplatform.services.jcr.infinispan.CacheKey;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.log.ExoLogger;
@@ -65,12 +62,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.ActionNonTxAware;
 import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
-import org.infinispan.distexec.mapreduce.Collector;
-import org.infinispan.distexec.mapreduce.MapReduceTask;
-import org.infinispan.distexec.mapreduce.Reducer;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
@@ -96,10 +88,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS.<br>
@@ -128,11 +120,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 {
    private static final Log LOG = ExoLogger//NOSONAR
       .getLogger("exo.jcr.component.core.ISPNCacheWorkspaceStorageCache");//NOSONAR
-
-   /**
-    * Name of the cache in case of the distributed cache
-    */
-   private static final String CACHE_NAME = "JCRCache";
 
    /**
     * This id will be the unique identifier of the workspace in case the
@@ -547,7 +534,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    public ISPNCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, ConfigurationManager cfm) throws RepositoryException,
       RepositoryConfigurationException
    {
-      this(null, wsConfig, cfm, null, null);
+      this(null, wsConfig, cfm, null);
    }
 
    /**
@@ -563,39 +550,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    public ISPNCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, ConfigurationManager cfm,
       TransactionService ts) throws RepositoryException, RepositoryConfigurationException
    {
-      this(ctx, wsConfig, cfm, null, ts);
-   }
-
-   /**
-    * Cache constructor.
-    * 
-    * @param ctx The {@link ExoContainerContext} that owns the current component
-    * @param wsConfig WorkspaceEntry workspace configuration
-    * @param cfm The configuration manager
-    * @param dcm The distributed cache manager
-    * @throws RepositoryException if error of initialization
-    * @throws RepositoryConfigurationException if error of configuration
-    */
-   public ISPNCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, ConfigurationManager cfm,
-      DistributedCacheManager dcm) throws RepositoryException, RepositoryConfigurationException
-   {
-      this(ctx, wsConfig, cfm, dcm, null);
-   }
-
-   /**
-    * Cache constructor.
-    * 
-    * @param ctx The {@link ExoContainerContext} that owns the current component
-    * @param wsConfig WorkspaceEntry workspace configuration
-    * @param cfm The configuration manager
-    * @param dcm The distributed cache manager
-    * @param ts TransactionService external transaction service
-    * @throws RepositoryException if error of initialization
-    * @throws RepositoryConfigurationException if error of configuration
-    */
-   public ISPNCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, ConfigurationManager cfm,
-      DistributedCacheManager dcm, TransactionService ts) throws RepositoryException, RepositoryConfigurationException
-   {
       if (wsConfig.getCache() == null)
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
@@ -609,54 +563,19 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
       // create parent Infinispan instance
       CacheEntry cacheEntry = wsConfig.getCache();
-      boolean useDistributedCache = cacheEntry.getParameterBoolean("use-distributed-cache", false);
-      Cache<CacheKey, Object> parentCache;
-      if (useDistributedCache)
+      Cache<CacheKey, Object> parentCache = factory.createCache("Data_" + wsConfig.getUniqueName(), cacheEntry);
+      if (parentCache.getCacheConfiguration().clustering().cacheMode().isDistributed())
       {
-         // We expect a distributed cache
-         if (dcm == null)
-         {
-            throw new IllegalArgumentException("The DistributedCacheManager has not been defined in the configuration,"
-               + " please configure it at root container level if you want to use a distributed cache.");
-         }
-         parentCache = dcm.getCache(CACHE_NAME);
-         this.ownerId = ctx.getName();
-         if (LOG.isDebugEnabled())
-         {
-            LOG.debug("The distributed cache has been enabled for the workspace whose unique id is " + ownerId);
-         }
+         throw new IllegalArgumentException("Cache configuration not allowed: the distributed mode is no longer "
+            + "supported, configure the cache as replicated or invalidated.");
       }
-      else
-      {
-         parentCache = factory.createCache("Data_" + wsConfig.getUniqueName(), cacheEntry);
-         Configuration config = parentCache.getCacheConfiguration();
-         if (config.clustering().cacheMode() == CacheMode.DIST_SYNC
-            || config.clustering().cacheMode() == CacheMode.DIST_ASYNC)
-         {
-            throw new IllegalArgumentException("Cache configuration not allowed, if you want to use the distributed "
-               + "cache please enable the parameter 'use-distributed-cache' and configure the DistributedCacheManager.");
-         }
-         this.ownerId = null;
-      }
-      Boolean allowLocalChanges =
-         useDistributedCache ? cacheEntry.getParameterBoolean("allow-local-changes", Boolean.TRUE) : Boolean.TRUE;
-      this.cache = new BufferedISPNCache(parentCache, allowLocalChanges);
-      if (useDistributedCache)
-      {
-         this.caller = new DistributedOperationCaller();
-      }
-      else
-      {
-         this.caller = new GlobalOperationCaller();
-         cache.addListener(new CacheEventListener());
-      }
+      // The keys keep an owner, which only the former distributed mode set
+      this.ownerId = null;
+      this.cache = new BufferedISPNCache(parentCache, Boolean.TRUE);
+      this.caller = new GlobalOperationCaller();
+      cache.addListener(new CacheEventListener());
 
       this.cache.start();
-   }
-
-   private boolean isDistributedMode()
-   {
-      return ownerId != null;
    }
 
    private String getOwnerId()
@@ -1807,11 +1726,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    public void addListener(WorkspaceStorageCacheListener listener)
    {
-      if (isDistributedMode())
-      {
-         throw new UnsupportedOperationException("The cache listeners are not supported by the "
-            + "ISPNCacheWorkspaceStorageCache in case of the distributed mode");
-      }
       listeners.add(listener);
    }
 
@@ -1820,11 +1734,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    public void removeListener(WorkspaceStorageCacheListener listener)
    {
-      if (isDistributedMode())
-      {
-         throw new UnsupportedOperationException("The cache listeners are not supported by the "
-            + "ISPNCacheWorkspaceStorageCache in case of the distributed mode");
-      }
       listeners.remove(listener);
    }
 
@@ -1851,7 +1760,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       }
    }
 
-   private static boolean updateTreePath(Cache<CacheKey, Object> cache, String ownerId, ItemData data, QPath prevRootPath,
+   private static boolean updateTreePath(BufferedISPNCache cache, String ownerId, ItemData data, QPath prevRootPath,
       QPath newRootPath)
    {
       if (data == null)
@@ -2077,445 +1986,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             }
          }
          return result;
-      }
-   }
-
-   /**
-    * This class implements all the global operations for the distributed mode
-    *
-    */
-   private class DistributedOperationCaller extends GlobalOperationCaller
-   {
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      protected int getCacheSize()
-      {
-         MapReduceTask<CacheKey, Object, String, Integer> task =
-             new MapReduceTask<CacheKey, Object, String, Integer>(cache);
-         task.mappedWith(new GetSizeMapper(getOwnerId())).reducedWith(new GetSizeReducer<String>());
-         Map<String, Integer> map = task.execute();
-         int sum = 0;
-         for (Integer i : map.values())
-         {
-            sum += i;
-         }
-         return sum;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      protected void clearCache()
-      {
-         MapReduceTask<CacheKey, Object, Void, Void> task =
-             new MapReduceTask<CacheKey, Object, Void, Void>(cache);
-         task.mappedWith(new ClearCacheMapper(getOwnerId())).reducedWith(new IdentityReducer());
-         task.execute();
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      protected Set<String> updateTreePath(final QPath prevRootPath, final QPath newRootPath, Set<String> idsToSkip)
-      {
-         Set<String> result = new HashSet<String>();
-         final TransactionManager tm = getTransactionManager();
-         if (tm != null)
-         {
-            try
-            {
-               // Add the action out of the current transaction to avoid deadlocks
-               tm.getTransaction().registerSynchronization(new Synchronization()
-               {
-
-                  public void beforeCompletion()
-                  {
-                  }
-
-                  public void afterCompletion(int status)
-                  {
-                     if (status == Status.STATUS_COMMITTED)
-                     {
-                        try
-                        {
-                           // Since the tx is successfully committed we can call components non tx aware
-
-                           // The listeners will need to be executed outside the current tx so we suspend
-                           // the current tx we can face enlistment issues on product like ISPN
-                           tm.suspend();
-                           _updateTreePath(prevRootPath, newRootPath);
-                        }
-                        catch (SystemException e)
-                        {
-                           LOG.warn("Cannot suspend the transaction", e);
-                        }
-                     }
-                  }
-               });
-               return result;
-            }
-            catch (Exception e) //NOSONAR
-            {
-               if (LOG.isDebugEnabled())
-               {
-                  LOG.debug("Cannot register the synchronization to the current transaction in order to update"
-                     + " the path out of the transaction", e);
-               }
-            }
-         }
-         _updateTreePath(prevRootPath, newRootPath);
-         return result;
-      }
-
-      private void _updateTreePath(final QPath prevRootPath, final QPath newRootPath)
-      {
-         MapReduceTask<CacheKey, Object, Void, Void> task =
-             new MapReduceTask<CacheKey, Object, Void, Void>(cache);
-         task.mappedWith(new UpdateTreePathMapper(getOwnerId(), prevRootPath, newRootPath)).reducedWith(
-             new IdentityReducer());
-         task.execute();
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      protected void updateChildsACL(String parentId, final AccessControlList acl)
-      {
-         ItemData parentItem = get(parentId);
-         if (!(parentItem instanceof NodeData))
-         {
-            return;
-         }
-         final QPath parentPath = ((NodeData)parentItem).getQPath();
-         MapReduceTask<CacheKey, Object, Void, Void> task =
-             new MapReduceTask<CacheKey, Object, Void, Void>(cache);
-         task.mappedWith(new UpdateChildsACLMapper(getOwnerId(), parentPath, acl)).reducedWith(
-             new IdentityReducer());
-         task.execute();
-      }
-   }
-
-   public static class GetSizeMapper extends AbstractMapper<String, Integer>
-   {
-
-      public GetSizeMapper()
-      {
-      }
-
-      public GetSizeMapper(String ownerId)
-      {
-         super(ownerId);
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      protected void _map(CacheKey key, Object value, Collector<String, Integer> collector)
-      {
-         collector.emit("total", Integer.valueOf(1));
-      }
-   }
-
-   public static class GetSizeReducer<K> implements Reducer<K, Integer>
-   {
-
-      /**
-       * The serial version UID
-       */
-      private static final long serialVersionUID = 7877781449514234007L;
-
-      /**
-       * @see org.infinispan.distexec.mapreduce.Reducer#reduce(java.lang.Object, java.util.Iterator)
-       */
-      public Integer reduce(K reducedKey, Iterator<Integer> iter)
-      {
-         int sum = 0;
-         while (iter.hasNext())
-         {
-            Integer i = iter.next();
-            sum += i;
-         }
-         return sum;
-      }
-   }
-
-   public static class ClearCacheMapper extends AbstractMapper<Void, Void>
-   {
-      public ClearCacheMapper()
-      {
-      }
-
-      public ClearCacheMapper(String ownerId)
-      {
-         super(ownerId);
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      protected void _map(CacheKey key, Object value, Collector<Void, Void> collector)
-      {
-         ExoContainer container = ExoContainerContext.getTopContainer();
-         if (container == null)
-         {
-            LOG.error("The top container could not be found");
-            return;
-         }
-         DistributedCacheManager dcm =
-            (DistributedCacheManager)container.getComponentInstanceOfType(DistributedCacheManager.class);
-         if (dcm == null)
-         {
-            LOG.error("The DistributedCacheManager could not be found at top container level, please configure it.");
-            return;
-         }
-         Cache<CacheKey, Object> cache = dcm.getCache(CACHE_NAME);
-         cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.FAIL_SILENTLY).remove(key);
-      }
-   }
-
-   public static class IdentityReducer implements Reducer<Void, Void>
-   {
-
-      /**
-       * The serial version UID
-       */
-      private static final long serialVersionUID = -6193360351201912040L;
-
-      /**
-       * @see org.infinispan.distexec.mapreduce.Reducer#reduce(java.lang.Object, java.util.Iterator)
-       */
-      public Void reduce(Void reducedKey, Iterator<Void> iter)
-      {
-         return null;
-      }
-   }
-
-   public static class UpdateTreePathMapper extends AbstractMapper<Void, Void>
-   {
-      private QPath prevRootPath, newRootPath;
-
-      public UpdateTreePathMapper()
-      {
-      }
-
-      public UpdateTreePathMapper(String ownerId, QPath prevRootPath, QPath newRootPath)
-      {
-         super(ownerId);
-         this.prevRootPath = prevRootPath;
-         this.newRootPath = newRootPath;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      protected boolean isValid(CacheKey key)
-      {
-         return super.isValid(key) && key instanceof CacheId;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public void writeExternal(ObjectOutput out) throws IOException
-      {
-         super.writeExternal(out);
-         byte[] buf = prevRootPath.getAsString().getBytes(Constants.DEFAULT_ENCODING);
-         out.writeInt(buf.length);
-         out.write(buf);
-
-         buf = newRootPath.getAsString().getBytes(Constants.DEFAULT_ENCODING);
-         out.writeInt(buf.length);
-         out.write(buf);
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-      {
-         super.readExternal(in);
-         byte[] buf;
-
-         try
-         {
-            buf = new byte[in.readInt()];
-            in.readFully(buf);
-            String sQPath = new String(buf, Constants.DEFAULT_ENCODING);
-            prevRootPath = QPath.parse(sQPath);
-            buf = new byte[in.readInt()];
-            in.readFully(buf);
-            sQPath = new String(buf, Constants.DEFAULT_ENCODING);
-            newRootPath = QPath.parse(sQPath);
-         }
-         catch (IllegalPathException e)
-         {
-            throw new IOException("Deserialization error. ", e);
-         }
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      protected void _map(CacheKey key, Object value, Collector<Void, Void> collector)
-      {
-         ExoContainer container = ExoContainerContext.getTopContainer();
-         if (container == null)
-         {
-            LOG.error("The top container could not be found");
-            return;
-         }
-         DistributedCacheManager dcm =
-            (DistributedCacheManager)container.getComponentInstanceOfType(DistributedCacheManager.class);
-         if (dcm == null)
-         {
-            LOG.error("The DistributedCacheManager could not be found at top container level, please configure it.");
-            return;
-         }
-         Cache<CacheKey, Object> cache = dcm.getCache(CACHE_NAME);
-         ISPNCacheWorkspaceStorageCache.updateTreePath(cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP),
-            ownerId, (ItemData)value, prevRootPath, newRootPath);
-      }
-   }
-
-   public static class UpdateChildsACLMapper extends AbstractMapper<Void, Void>
-   {
-      private QPath parentPath;
-
-      private AccessControlList acl;
-
-      public UpdateChildsACLMapper()
-      {
-      }
-
-      public UpdateChildsACLMapper(String ownerId, QPath parentPath, AccessControlList acl)
-      {
-         super(ownerId);
-         this.parentPath = parentPath;
-         this.acl = acl;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      protected boolean isValid(CacheKey key)
-      {
-         return super.isValid(key) && key instanceof CacheId;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public void writeExternal(ObjectOutput out) throws IOException
-      {
-         super.writeExternal(out);
-         byte[] buf = parentPath.getAsString().getBytes(Constants.DEFAULT_ENCODING);
-         out.writeInt(buf.length);
-         out.write(buf);
-
-         out.writeBoolean(acl != null);
-         if (acl != null)
-         {
-            acl.writeExternal(out);
-         }
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-      {
-         super.readExternal(in);
-         byte[] buf;
-
-         try
-         {
-            buf = new byte[in.readInt()];
-            in.readFully(buf);
-            String sQPath = new String(buf, Constants.DEFAULT_ENCODING);
-            parentPath = QPath.parse(sQPath);
-         }
-         catch (IllegalPathException e)
-         {
-            throw new IOException("Deserialization error. ", e);
-         }
-         if (in.readBoolean())
-         {
-            this.acl = new AccessControlList();
-            acl.readExternal(in);
-         }
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      protected void _map(CacheKey key, Object value, Collector<Void, Void> collector)
-      {
-         if (!(value instanceof NodeData))
-         {
-            return;
-         }
-         NodeData prevNode = (NodeData)value;
-         // check is this descendant of parentPath
-         QPath nodeQPath = prevNode.getQPath();
-         if (nodeQPath == null || !nodeQPath.isDescendantOf(parentPath))
-         {
-            return;
-         }
-
-         // is ACL changes on this node (i.e. ACL inheritance brokes)
-         boolean hasExoPrivilegeable = false;
-         boolean hasExoOwneable = false;
-         for (InternalQName mixin : prevNode.getMixinTypeNames())
-         {
-            if (mixin.equals(Constants.EXO_PRIVILEGEABLE))
-            {
-               hasExoPrivilegeable = true;
-               if (hasExoOwneable)
-               {
-                  return;
-               }
-            }
-            else if (mixin.equals(Constants.EXO_OWNEABLE))
-            {
-               hasExoOwneable = true;
-               if (hasExoPrivilegeable)
-               {
-                  return;
-               }
-            }
-         }
-         ExoContainer container = ExoContainerContext.getTopContainer();
-         if (container == null)
-         {
-            LOG.error("The top container could not be found");
-            return;
-         }
-         DistributedCacheManager dcm =
-            (DistributedCacheManager)container.getComponentInstanceOfType(DistributedCacheManager.class);
-         if (dcm == null)
-         {
-            LOG.error("The DistributedCacheManager could not be found at top container level, please configure it.");
-            return;
-         }
-         Cache<CacheKey, Object> cache = dcm.getCache(CACHE_NAME);
-         // we force the reloading
-         cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.FAIL_SILENTLY).remove(key);
       }
    }
 

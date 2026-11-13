@@ -37,7 +37,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS.

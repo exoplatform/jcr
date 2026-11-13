@@ -18,9 +18,11 @@
  */
 package org.exoplatform.services.rpc.jgv3;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.services.ispn.SharedJGroupsTransport;
 import org.exoplatform.services.rpc.impl.AbstractRPCService;
 import org.jgroups.*;
 import org.jgroups.blocks.RequestOptions;
@@ -83,23 +85,23 @@ public class RPCServiceImpl extends AbstractRPCService
     */
    protected RspList<Object> castMessage(List<Address> dests, Message msg, boolean synchronous, long timeout) throws Exception
    {
-      return dispatcher.castMessage(dests, msg, new RequestOptions(synchronous ? ResponseMode.GET_ALL
+      RspList<Object> rsps = dispatcher.castMessage(dests, msg, new RequestOptions(synchronous ? ResponseMode.GET_ALL
          : ResponseMode.GET_NONE, timeout));
+      // A request that waits for no response gets no list from JGroups 5, where JGroups 3 gave an empty one
+      return rsps == null && !synchronous ? new RspList<>() : rsps;
    }
    
    /**
     * {@inheritDoc}
     */
-   protected Channel createChannel() throws Exception
+   protected JChannel createChannel() throws Exception
    {
+      if (SharedJGroupsTransport.getSingletonName(configurator) != null)
+      {
+         // A fork of the channel the node shares for the stack
+         return SharedJGroupsTransport.createChannel(configurator, getClusterName(), PropertyManager.getProperty(NODE_NAME));
+      }
       return new JChannel(configurator);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void unblock()
-   {
    }
 
    /**
@@ -108,13 +110,5 @@ public class RPCServiceImpl extends AbstractRPCService
    protected List<Address> getMembers(View view)
    {
       return view.getMembers();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected void setObject(Message m, Object o)
-   {
-      m.setObject(o);
    }
 }
