@@ -268,11 +268,21 @@ class ISPNLockUpgrade
     * database the account can read, unless its URL sets <code>nullDatabaseMeansCurrent=true</code>, and PostgreSQL or
     * HSQLDB every schema of the database. Infinispan would take that table for its own and not create it here, and
     * every lock would fail. The tables are left as they are.
+    * <p>
+    * On Oracle and DB2, Infinispan looks the table up in the schema of the user or the current one: no guard is
+    * needed. On PostgreSQL, a table of this workspace in a schema of the search path other than the current one is
+    * not this workspace's for the guard, which refuses: Infinispan reads and writes the table of the search path, but
+    * the guard cannot tell it from another platform's.
     */
    private void refuseALookupThatMisleadsInfinispan(Connection connection, String lockTable)
       throws SQLException, RepositoryException
    {
-      if (tableExists(connection, lockTable) && !isLegacy(connection, lockTable))
+      if (!lookedUpWithoutSchema(DialectDetecter.detect(connection.getMetaData())))
+      {
+         return;
+      }
+      boolean legacy = isLegacy(connection, lockTable);
+      if (tableExists(connection, lockTable) && !legacy)
       {
          return;
       }
@@ -283,9 +293,22 @@ class ISPNLockUpgrade
             + " cannot start: its table " + lockTable + " is not in the database of the connection yet, and the"
             + " lookup of Infinispan, which names no database, finds the table " + elsewhere
             + " instead, which it would take for its own. On MySQL, add nullDatabaseMeansCurrent=true to the URL of"
-            + " the data source, or use an account that reads this database only. On another database, give the lock"
-            + " tables a prefix that no other schema of the database uses.");
+            + " the data source, or use an account that reads this database only. On another database, "
+            + (legacy
+               ? "move the tables of the other platform to a database of its own: a new prefix would leave the locks of"
+                  + " the old table behind, on nodes that keep their lock properties and cannot be locked again until"
+                  + " the repository check repairs them."
+               : "give the lock tables a prefix that no other schema of the database uses."));
       }
+   }
+
+   /**
+    * @return whether Infinispan looks the lock table up with no schema on the database of the dialect: Oracle and DB2
+    *         look it up in the schema of the user or the current one
+    */
+   static boolean lookedUpWithoutSchema(String dialect)
+   {
+      return !dialect.startsWith(DBConstants.DB_DIALECT_ORACLE) && !dialect.startsWith(DBConstants.DB_DIALECT_DB2);
    }
 
    /**

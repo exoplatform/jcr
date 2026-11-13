@@ -463,6 +463,8 @@ public class TestISPNLockUpgradeClaim
       RepositoryException e = assertThrows(RepositoryException.class, () -> upgrade(dataSource).run());
 
       assertTrue(e.getMessage(), e.getMessage().contains("nullDatabaseMeansCurrent=true"));
+      // A new prefix would leave the old table's locks behind
+      assertTrue(e.getMessage(), e.getMessage().contains("database of its own"));
       assertTrue(e.getMessage(), e.getMessage().toUpperCase(Locale.ROOT).contains(OTHER_SCHEMA.toUpperCase(Locale.ROOT)));
       // Nothing is claimed nor released
       assertEquals(List.of(), releases);
@@ -475,7 +477,9 @@ public class TestISPNLockUpgradeClaim
    {
       createTheNewStoreOfAnotherSchema();
 
-      assertThrows(RepositoryException.class, () -> upgrade(dataSource).run());
+      RepositoryException e = assertThrows(RepositoryException.class, () -> upgrade(dataSource).run());
+
+      assertTrue(e.getMessage(), e.getMessage().contains("prefix that no other schema"));
    }
 
    @Test
@@ -490,7 +494,7 @@ public class TestISPNLockUpgradeClaim
       assertEquals(List.of(), releases);
    }
 
-   private void createTheNewStoreOfAnotherSchema() throws SQLException
+   protected void createTheNewStoreOfAnotherSchema() throws SQLException
    {
       execute("CREATE SCHEMA " + OTHER_SCHEMA);
       execute("CREATE TABLE " + OTHER_SCHEMA + "." + lockTable + " (id VARCHAR(512) NOT NULL, data " + binaryType()
@@ -512,7 +516,7 @@ public class TestISPNLockUpgradeClaim
       assertFalse(tableExists(claimTable));
    }
 
-   private ISPNLockUpgrade upgrade(DataSource lockDataSource)
+   protected ISPNLockUpgrade upgrade(DataSource lockDataSource)
    {
       return upgrade(lockDataSource, this::release);
    }

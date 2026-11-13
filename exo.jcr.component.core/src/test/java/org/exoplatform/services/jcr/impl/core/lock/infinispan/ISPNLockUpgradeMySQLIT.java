@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
+import static org.junit.Assert.assertFalse;
+
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
@@ -25,6 +27,7 @@ import javax.sql.DataSource;
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.mysql.MySQLContainer;
@@ -43,7 +46,9 @@ public class ISPNLockUpgradeMySQLIT extends TestISPNLockUpgradeClaim
    public static void startDatabase()
    {
       Assume.assumeTrue("Docker is needed to run MySQL", DockerClientFactory.instance().isDockerAvailable());
-      database = new MySQLContainer(DockerImageName.parse(System.getProperty("jcr.it.mysql.image", "mysql:8.4")).asCompatibleSubstituteFor("mysql"));
+      // The root account, which can create the database of another platform beside the test's
+      database = new MySQLContainer(DockerImageName.parse(System.getProperty("jcr.it.mysql.image", "mysql:8.4")).asCompatibleSubstituteFor("mysql"))
+                                                                                                                .withUsername("root");
       database.start();
    }
 
@@ -73,18 +78,25 @@ public class ISPNLockUpgradeMySQLIT extends TestISPNLockUpgradeClaim
    }
 
    /**
-    * A MySQL schema is a database, to which the connection's catalog already narrows the lookup, and the container's
-    * account cannot create a second one.
+    * With nullDatabaseMeansCurrent=true on its URL, Connector/J reads the lookup of Infinispan in the database of the
+    * URL only: the lock table of another database is not taken, and the workspace starts.
     */
-   @Override
-   public void testANewStoreOfAnotherSchemaIsNotThisWorkspaces()
+   @Test
+   public void testTheUrlThatNarrowsTheLookupToItsDatabaseStartsBesideAnotherDatabasesStore() throws Exception
    {
-      Assume.assumeTrue("A MySQL schema is a database", false);
+      createTheNewStoreOfAnotherSchema();
+      MysqlDataSource narrowed = (MysqlDataSource)createDataSource();
+      String url = database.getJdbcUrl();
+      narrowed.setURL(url + (url.contains("?") ? "&" : "?") + "nullDatabaseMeansCurrent=true");
+
+      assertFalse(upgrade(narrowed).run());
    }
 
    @Override
    protected void dropDatabase() throws SQLException
    {
       dropTables();
+      // A MySQL schema is a database, which outlives the test
+      execute("DROP DATABASE IF EXISTS " + OTHER_SCHEMA);
    }
 }

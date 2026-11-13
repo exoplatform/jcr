@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,8 +33,21 @@ import static org.mockito.Mockito.when;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.junit.Test;
+
+import org.exoplatform.services.jcr.config.ContainerEntry;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
+import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 
 /**
  * The lookup of the lock store tables on a connection that names its schema, and on one that cannot.
@@ -94,6 +108,58 @@ public class TestISPNLockUpgradeSchema
       when(found.getString("TABLE_NAME")).thenReturn("jcr_lock_lws");
 
       assertNull(ISPNLockUpgrade.findElsewhere(connection, "`JCR_LOCK_Lws`"));
+   }
+
+   @Test
+   public void testOracleAndDb2AreNotGuarded() throws Exception
+   {
+      // Infinispan looks the table up in the schema of the user on Oracle, in the current one on DB2: a table of
+      // another schema is not taken
+      assertFalse(ISPNLockUpgrade.lookedUpWithoutSchema(DBConstants.DB_DIALECT_ORACLE));
+      assertFalse(ISPNLockUpgrade.lookedUpWithoutSchema(DBConstants.DB_DIALECT_DB2));
+      assertTrue(ISPNLockUpgrade.lookedUpWithoutSchema(DBConstants.DB_DIALECT_MYSQL));
+      assertTrue(ISPNLockUpgrade.lookedUpWithoutSchema(DBConstants.DB_DIALECT_PGSQL));
+      assertTrue(ISPNLockUpgrade.lookedUpWithoutSchema(DBConstants.DB_DIALECT_MSSQL));
+      assertTrue(ISPNLockUpgrade.lookedUpWithoutSchema(DBConstants.DB_DIALECT_HSQLDB));
+   }
+
+   @Test
+   public void testAnOracleWorkspaceStartsBesideTheLockStoreOfAnotherSchema() throws Exception
+   {
+      Connection connection = mock(Connection.class);
+      DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+      when(connection.getMetaData()).thenReturn(metaData);
+      when(connection.getSchema()).thenReturn("PLF");
+      when(metaData.getDatabaseProductName()).thenReturn("Oracle");
+      when(metaData.getSearchStringEscape()).thenReturn("\\");
+      ResultSet none = mock(ResultSet.class);
+      when(metaData.getTables(any(), eq("PLF"), anyString(), any())).thenReturn(none);
+      // The table another platform created in its own schema, which a lookup with no schema finds
+      ResultSet other = mock(ResultSet.class);
+      when(other.next()).thenReturn(true, false);
+      when(other.getString("TABLE_SCHEM")).thenReturn("OTHER");
+      when(other.getString("TABLE_NAME")).thenReturn("lk_Lws");
+      when(metaData.getTables(any(), isNull(), anyString(), any())).thenReturn(other);
+      DataSource dataSource = mock(DataSource.class);
+      when(dataSource.getConnection()).thenReturn(connection);
+
+      WorkspaceEntry workspace = new WorkspaceEntry();
+      workspace.setName("ws");
+      workspace.setUniqueName("repo_ws");
+      workspace.setContainer(new ContainerEntry(JDBCWorkspaceDataContainer.class.getName(),
+         new ArrayList<>(List.of(new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE, "single")))));
+      TableManipulationConfiguration table = new ConfigurationBuilder().persistence()
+                                                                       .addStore(JdbcStringBasedStoreConfigurationBuilder.class)
+                                                                       .table()
+                                                                       .tableNamePrefix("lk")
+                                                                       .idColumnName("id")
+                                                                       .dataColumnName("data")
+                                                                       .timestampColumnName("timestamp")
+                                                                       .segmentColumnName("segment_id")
+                                                                       .create();
+
+      // Infinispan looks the table up in the user's schema on Oracle: nothing to upgrade, no refusal
+      assertFalse(new ISPNLockUpgrade(workspace, dataSource, dataSource, table, nodes -> 0, 300, 20).run());
    }
 
    private static Connection connection() throws Exception
