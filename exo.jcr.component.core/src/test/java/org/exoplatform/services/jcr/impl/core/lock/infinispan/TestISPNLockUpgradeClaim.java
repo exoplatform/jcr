@@ -28,7 +28,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -45,6 +47,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
 import javax.jcr.RepositoryException;
@@ -146,7 +151,7 @@ public class TestISPNLockUpgradeClaim
    }
 
    /**
-    * The database of a test, an in-memory HSQLDB one.
+    * The database of a test, an in-memory HSQLDB one, whose catalog is read apart from the schema changes.
     */
    protected DataSource createDataSource() throws SQLException
    {
@@ -154,7 +159,63 @@ public class TestISPNLockUpgradeClaim
       hsqldb.setUrl("jdbc:hsqldb:mem:" + UUID.randomUUID());
       hsqldb.setUser("sa");
       hsqldb.setPassword("");
-      return hsqldb;
+      return catalogApartFromSchemaChanges(hsqldb);
+   }
+
+   /**
+    * The data source, whose reads of the database metadata never run while a schema change does. The two nodes of a
+    * test share one HSQLDB database, which no two nodes of a cluster do: HSQLDB fails a metadata read made while
+    * another session renames a table, when it rebuilds its INFORMATION_SCHEMA. The schema changes still run together.
+    */
+   private static DataSource catalogApartFromSchemaChanges(DataSource dataSource)
+   {
+      ReadWriteLock catalog = new ReentrantReadWriteLock();
+      return proxy(DataSource.class, dataSource, (target, method, args) -> {
+         Object result = invoke(target, method, args);
+         if (!method.getName().equals("getConnection"))
+         {
+            return result;
+         }
+         return proxy(Connection.class, (Connection) result, (connection, connectionMethod, connectionArgs) -> {
+            if (connectionMethod.getName().equals("getMetaData"))
+            {
+               return proxy(DatabaseMetaData.class, connection.getMetaData(),
+                  (metaData, metaDataMethod, metaDataArgs) -> holding(catalog.writeLock(), metaData, metaDataMethod,
+                     metaDataArgs));
+            }
+            Object connectionResult = invoke(connection, connectionMethod, connectionArgs);
+            if (!connectionMethod.getName().equals("createStatement"))
+            {
+               return connectionResult;
+            }
+            return proxy(Statement.class, (Statement) connectionResult, (sql, sqlMethod, sqlArgs) -> {
+               if (sqlMethod.getName().startsWith("execute") && sqlArgs != null && isSchemaChange((String) sqlArgs[0]))
+               {
+                  return holding(catalog.readLock(), sql, sqlMethod, sqlArgs);
+               }
+               return invoke(sql, sqlMethod, sqlArgs);
+            });
+         });
+      });
+   }
+
+   private static boolean isSchemaChange(String sql)
+   {
+      return sql.trim().toUpperCase(Locale.ROOT).matches("(?s)(CREATE|ALTER|DROP)\\s.*");
+   }
+
+   private static Object holding(Lock lock, Object target, Method method, Object[] args)
+      throws Throwable
+   {
+      lock.lock();
+      try
+      {
+         return invoke(target, method, args);
+      }
+      finally
+      {
+         lock.unlock();
+      }
    }
 
    /**
@@ -195,6 +256,85 @@ public class TestISPNLockUpgradeClaim
       assertEquals(1, upgraded.stream().filter(Boolean::booleanValue).count());
       assertEquals(List.of(List.of("node1", "node2")), releases);
       assertFalse(tableExists(claimTable));
+   }
+
+   @Test
+   public void testANodeStalledBeforeItsReservedRowDefersToTheNodeThatAddedIt() throws Exception
+   {
+      execute("CREATE TABLE " + lockTable + legacyTable);
+      // The node that renames the table stalls before its reserved row until another node took the claim table over
+      DataSource stalled = onStatement("INSERT INTO " + claimTable, this::awaitAnotherNodesClaim);
+      // A claim stays valid longer than a thread of a loaded machine can go without its heartbeat: no node takes the
+      // other's claim over, so that the node that added the reserved row is the one that upgrades
+      long staleAfter = 2000;
+      Future<Boolean> renaming = executor.submit(upgrade(stalled, staleAfter)::run);
+      long start = System.currentTimeMillis();
+      while (!tableExists(claimTable) && System.currentTimeMillis() - start < 10000)
+      {
+         Thread.sleep(5);
+      }
+      Future<Boolean> other = executor.submit(upgrade(dataSource, staleAfter)::run);
+
+      boolean otherUpgraded = other.get(1, TimeUnit.MINUTES);
+      boolean renamingUpgraded = renaming.get(1, TimeUnit.MINUTES);
+
+      assertTrue(otherUpgraded);
+      assertFalse(renamingUpgraded);
+      assertFalse(tableExists(claimTable));
+   }
+
+   /**
+    * Waits until another node added the reserved row to the claim table, or dropped it, for 30 seconds at most: the
+    * stalled node's insert then always meets the other node's claim, never an empty claim table.
+    */
+   private void awaitAnotherNodesClaim()
+   {
+      long start = System.currentTimeMillis();
+      try
+      {
+         while (System.currentTimeMillis() - start < 30000)
+         {
+            if (!tableExists(claimTable) || hasReservedRow())
+            {
+               return;
+            }
+            Thread.sleep(POLL_INTERVAL);
+         }
+      }
+      catch (InterruptedException e)
+      {
+         Thread.currentThread().interrupt();
+         throw new IllegalStateException("Interrupted while waiting for another node to take the claim over", e);
+      }
+      catch (SQLException e)
+      {
+         throw new IllegalStateException(e);
+      }
+      throw new IllegalStateException("No other node added the reserved row to " + claimTable
+         + " nor dropped it within 30 seconds");
+   }
+
+   private boolean hasReservedRow() throws SQLException
+   {
+      try (Connection connection = dataSource.getConnection();
+           PreparedStatement select = connection.prepareStatement("SELECT COUNT(*) FROM " + claimTable + " WHERE "
+              + table.idColumnName() + " = ?"))
+      {
+         select.setString(1, ISPNLockUpgrade.CLAIM_ID);
+         try (ResultSet count = select.executeQuery())
+         {
+            return count.next() && count.getInt(1) > 0;
+         }
+      }
+      catch (SQLException e)
+      {
+         // Dropped meanwhile
+         if (!tableExists(claimTable))
+         {
+            return false;
+         }
+         throw e;
+      }
    }
 
    @Test
@@ -526,6 +666,11 @@ public class TestISPNLockUpgradeClaim
       return new ISPNLockUpgrade(workspace, lockDataSource, dataSource, table, releaser, STALE_AFTER, POLL_INTERVAL);
    }
 
+   private ISPNLockUpgrade upgrade(DataSource lockDataSource, long staleAfter)
+   {
+      return new ISPNLockUpgrade(workspace, lockDataSource, dataSource, table, this::release, staleAfter, POLL_INTERVAL);
+   }
+
    private int release(List<String> nodes)
    {
       releases.add(nodes.stream().sorted().toList());
@@ -625,9 +770,29 @@ public class TestISPNLockUpgradeClaim
       List<Future<Boolean>> runs =
          executor.invokeAll(List.<Callable<Boolean>>of(first::run, second::run), 1, TimeUnit.MINUTES);
       List<Boolean> upgraded = new ArrayList<>();
+      ExecutionException failure = null;
       for (Future<Boolean> run : runs)
       {
-         upgraded.add(run.get());
+         try
+         {
+            upgraded.add(run.get());
+         }
+         catch (ExecutionException e)
+         {
+            // The failure of one node can be the consequence of the other's: each one is reported
+            if (failure == null)
+            {
+               failure = e;
+            }
+            else
+            {
+               failure.addSuppressed(e.getCause());
+            }
+         }
+      }
+      if (failure != null)
+      {
+         throw failure;
       }
       return upgraded;
    }
