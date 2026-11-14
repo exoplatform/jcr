@@ -28,6 +28,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,6 +47,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
 import javax.jcr.RepositoryException;
@@ -147,7 +151,7 @@ public class TestISPNLockUpgradeClaim
    }
 
    /**
-    * The database of a test, an in-memory HSQLDB one.
+    * The database of a test, an in-memory HSQLDB one, whose catalog is read apart from the schema changes.
     */
    protected DataSource createDataSource() throws SQLException
    {
@@ -155,7 +159,63 @@ public class TestISPNLockUpgradeClaim
       hsqldb.setUrl("jdbc:hsqldb:mem:" + UUID.randomUUID());
       hsqldb.setUser("sa");
       hsqldb.setPassword("");
-      return hsqldb;
+      return catalogApartFromSchemaChanges(hsqldb);
+   }
+
+   /**
+    * The data source, whose reads of the database metadata never run while a schema change does. The two nodes of a
+    * test share one HSQLDB database, which no two nodes of a cluster do: HSQLDB fails a metadata read made while
+    * another session renames a table, when it rebuilds its INFORMATION_SCHEMA. The schema changes still run together.
+    */
+   private static DataSource catalogApartFromSchemaChanges(DataSource dataSource)
+   {
+      ReadWriteLock catalog = new ReentrantReadWriteLock();
+      return proxy(DataSource.class, dataSource, (target, method, args) -> {
+         Object result = invoke(target, method, args);
+         if (!method.getName().equals("getConnection"))
+         {
+            return result;
+         }
+         return proxy(Connection.class, (Connection) result, (connection, connectionMethod, connectionArgs) -> {
+            if (connectionMethod.getName().equals("getMetaData"))
+            {
+               return proxy(DatabaseMetaData.class, connection.getMetaData(),
+                  (metaData, metaDataMethod, metaDataArgs) -> holding(catalog.writeLock(), metaData, metaDataMethod,
+                     metaDataArgs));
+            }
+            Object connectionResult = invoke(connection, connectionMethod, connectionArgs);
+            if (!connectionMethod.getName().equals("createStatement"))
+            {
+               return connectionResult;
+            }
+            return proxy(Statement.class, (Statement) connectionResult, (sql, sqlMethod, sqlArgs) -> {
+               if (sqlMethod.getName().startsWith("execute") && sqlArgs != null && isSchemaChange((String) sqlArgs[0]))
+               {
+                  return holding(catalog.readLock(), sql, sqlMethod, sqlArgs);
+               }
+               return invoke(sql, sqlMethod, sqlArgs);
+            });
+         });
+      });
+   }
+
+   private static boolean isSchemaChange(String sql)
+   {
+      return sql.trim().toUpperCase(Locale.ROOT).matches("(?s)(CREATE|ALTER|DROP)\\s.*");
+   }
+
+   private static Object holding(Lock lock, Object target, Method method, Object[] args)
+      throws Throwable
+   {
+      lock.lock();
+      try
+      {
+         return invoke(target, method, args);
+      }
+      finally
+      {
+         lock.unlock();
+      }
    }
 
    /**
@@ -710,9 +770,29 @@ public class TestISPNLockUpgradeClaim
       List<Future<Boolean>> runs =
          executor.invokeAll(List.<Callable<Boolean>>of(first::run, second::run), 1, TimeUnit.MINUTES);
       List<Boolean> upgraded = new ArrayList<>();
+      ExecutionException failure = null;
       for (Future<Boolean> run : runs)
       {
-         upgraded.add(run.get());
+         try
+         {
+            upgraded.add(run.get());
+         }
+         catch (ExecutionException e)
+         {
+            // The failure of one node can be the consequence of the other's: each one is reported
+            if (failure == null)
+            {
+               failure = e;
+            }
+            else
+            {
+               failure.addSuppressed(e.getCause());
+            }
+         }
+      }
+      if (failure != null)
+      {
+         throw failure;
       }
       return upgraded;
    }
