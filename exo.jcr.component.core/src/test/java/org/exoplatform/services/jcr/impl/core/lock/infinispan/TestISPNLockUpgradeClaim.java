@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -195,6 +196,85 @@ public class TestISPNLockUpgradeClaim
       assertEquals(1, upgraded.stream().filter(Boolean::booleanValue).count());
       assertEquals(List.of(List.of("node1", "node2")), releases);
       assertFalse(tableExists(claimTable));
+   }
+
+   @Test
+   public void testANodeStalledBeforeItsReservedRowDefersToTheNodeThatAddedIt() throws Exception
+   {
+      execute("CREATE TABLE " + lockTable + legacyTable);
+      // The node that renames the table stalls before its reserved row until another node took the claim table over
+      DataSource stalled = onStatement("INSERT INTO " + claimTable, this::awaitAnotherNodesClaim);
+      // A claim stays valid longer than a thread of a loaded machine can go without its heartbeat: no node takes the
+      // other's claim over, so that the node that added the reserved row is the one that upgrades
+      long staleAfter = 2000;
+      Future<Boolean> renaming = executor.submit(upgrade(stalled, staleAfter)::run);
+      long start = System.currentTimeMillis();
+      while (!tableExists(claimTable) && System.currentTimeMillis() - start < 10000)
+      {
+         Thread.sleep(5);
+      }
+      Future<Boolean> other = executor.submit(upgrade(dataSource, staleAfter)::run);
+
+      boolean otherUpgraded = other.get(1, TimeUnit.MINUTES);
+      boolean renamingUpgraded = renaming.get(1, TimeUnit.MINUTES);
+
+      assertTrue(otherUpgraded);
+      assertFalse(renamingUpgraded);
+      assertFalse(tableExists(claimTable));
+   }
+
+   /**
+    * Waits until another node added the reserved row to the claim table, or dropped it, for 30 seconds at most: the
+    * stalled node's insert then always meets the other node's claim, never an empty claim table.
+    */
+   private void awaitAnotherNodesClaim()
+   {
+      long start = System.currentTimeMillis();
+      try
+      {
+         while (System.currentTimeMillis() - start < 30000)
+         {
+            if (!tableExists(claimTable) || hasReservedRow())
+            {
+               return;
+            }
+            Thread.sleep(POLL_INTERVAL);
+         }
+      }
+      catch (InterruptedException e)
+      {
+         Thread.currentThread().interrupt();
+         throw new IllegalStateException("Interrupted while waiting for another node to take the claim over", e);
+      }
+      catch (SQLException e)
+      {
+         throw new IllegalStateException(e);
+      }
+      throw new IllegalStateException("No other node added the reserved row to " + claimTable
+         + " nor dropped it within 30 seconds");
+   }
+
+   private boolean hasReservedRow() throws SQLException
+   {
+      try (Connection connection = dataSource.getConnection();
+           PreparedStatement select = connection.prepareStatement("SELECT COUNT(*) FROM " + claimTable + " WHERE "
+              + table.idColumnName() + " = ?"))
+      {
+         select.setString(1, ISPNLockUpgrade.CLAIM_ID);
+         try (ResultSet count = select.executeQuery())
+         {
+            return count.next() && count.getInt(1) > 0;
+         }
+      }
+      catch (SQLException e)
+      {
+         // Dropped meanwhile
+         if (!tableExists(claimTable))
+         {
+            return false;
+         }
+         throw e;
+      }
    }
 
    @Test
@@ -524,6 +604,11 @@ public class TestISPNLockUpgradeClaim
    private ISPNLockUpgrade upgrade(DataSource lockDataSource, ISPNLockUpgrade.LockReleaser releaser)
    {
       return new ISPNLockUpgrade(workspace, lockDataSource, dataSource, table, releaser, STALE_AFTER, POLL_INTERVAL);
+   }
+
+   private ISPNLockUpgrade upgrade(DataSource lockDataSource, long staleAfter)
+   {
+      return new ISPNLockUpgrade(workspace, lockDataSource, dataSource, table, this::release, staleAfter, POLL_INTERVAL);
    }
 
    private int release(List<String> nodes)
