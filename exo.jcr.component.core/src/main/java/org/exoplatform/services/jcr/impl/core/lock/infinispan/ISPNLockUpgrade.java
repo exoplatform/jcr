@@ -417,8 +417,9 @@ class ISPNLockUpgrade
          LOG.debug("The lock table {} was claimed by another node", lockTable, e);
          return false;
       }
-      insertClaim(connection, claimTable);
-      return true;
+      // A node that stalls here longer than staleAfter finds the reserved row added by another node, which took the
+      // claim table over, or the claim table already dropped: it then defers to that node
+      return insertClaimUnlessPresent(connection, claimTable);
    }
 
    private void insertClaim(Connection connection, String claimTable) throws SQLException
@@ -535,6 +536,8 @@ class ISPNLockUpgrade
       {
          if (i >= lockedNodes.size())
          {
+            // A node that lost the claim right before this drop has released every batch: the node that took the claim
+            // over meanwhile reads the claim table gone and stops, so the drop needs no condition on the claim
             try (Connection connection = lockDataSource.getConnection();
                  Statement statement = connection.createStatement())
             {
