@@ -37,6 +37,7 @@ import junit.framework.TestCase;
 import org.mockito.ArgumentCaptor;
 
 import org.exoplatform.commons.persistence.impl.EntityManagerService;
+import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer.PortalContainerPostInitTask;
@@ -46,6 +47,21 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingQueueDAO;
 
 public class JCRIndexingServiceStartTest extends TestCase {
+
+  // The scheduled tasks set the current container of the thread: restored for the tests that run after this class
+  private ExoContainer currentContainer;
+
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    currentContainer = ExoContainerContext.getCurrentContainerIfPresent();
+  }
+
+  @Override
+  protected void tearDown() throws Exception {
+    ExoContainerContext.setCurrentContainer(currentContainer);
+    super.tearDown();
+  }
 
   public void testTheIndexingTasksAreScheduledWithNoIndexUpdateBeforeTheStart() {
     ExoContainerContext containerContext = mock(ExoContainerContext.class);
