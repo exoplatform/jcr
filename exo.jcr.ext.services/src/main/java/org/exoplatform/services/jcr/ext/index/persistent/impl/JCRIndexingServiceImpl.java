@@ -124,10 +124,14 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
 
   private boolean                                             initialized;
 
-  public JCRIndexingServiceImpl(EntityManagerService entityManagerService,
+  public JCRIndexingServiceImpl(ExoContainerContext containerContext,
+                                EntityManagerService entityManagerService,
                                 RepositoryService repositoryService,
                                 JCRIndexingQueueDAO indexingQueueDAO,
                                 InitParams params) {
+    // The container that owns this service, known from the start: the indexing
+    // tasks are scheduled whatever ran before the start
+    this.container = containerContext == null ? null : containerContext.getContainer();
     this.indexingQueueDAO = indexingQueueDAO;
     this.repositoryService = repositoryService;
     this.entityManagerService = entityManagerService;
@@ -185,14 +189,37 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
   @Override
   public void start() {
     if (container instanceof PortalContainer) {
-      PortalContainer portalContainer = (PortalContainer) container;
-      PortalContainer.addInitTask(portalContainer.getPortalContext(), new PortalContainerPostInitTask() {
+      addInitTask((PortalContainer) container, new PortalContainerPostInitTask() {
         @Override
         public void execute(ServletContext context, PortalContainer portalContainer) {
           scheduleIndexTasks();
         }
       });
+    } else {
+      LOG.info("JCR indexing queue tasks not scheduled: the service runs outside a portal container");
     }
+  }
+
+  void addInitTask(PortalContainer portalContainer, PortalContainerPostInitTask task) {
+    PortalContainer.addInitTask(portalContainer.getPortalContext(), task);
+  }
+
+  /**
+   * Wraps a task scheduled at a fixed rate so that it keeps its schedule: a
+   * throwable that leaves the task cancels all its later runs, silently.
+   *
+   * @param name the task's name, for the log
+   * @param task the task
+   * @return a task that logs any throwable and returns
+   */
+  static Runnable keepingItsSchedule(String name, Runnable task) {
+    return () -> {
+      try {
+        task.run();
+      } catch (Throwable e) { // NOSONAR a throwable leaving a scheduled task would cancel its later runs
+        LOG.error("Error while running the JCR indexing task '{}'", name, e);
+      }
+    };
   }
 
   @Override
@@ -750,7 +777,7 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
     checkStoredLastOperationId();
 
     // Job to index operations retrieved from queue and not indexed locally
-    queueConsumingJobService.scheduleAtFixedRate(() -> {
+    queueConsumingJobService.scheduleAtFixedRate(keepingItsSchedule("queue consumer", () -> {
       if (indexingOperationIsRunning.get()) {
         LOG.debug("Previous QUEUE indexing processing task is always executing, skip this execution");
         return;
@@ -767,13 +794,19 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
         indexingOperationIsRunning.set(false);
         RequestLifeCycle.end();
       }
-    }, 0, queueProcessingPeriod, TimeUnit.SECONDS);
+    }), 0, queueProcessingPeriod, TimeUnit.SECONDS);
 
     // Persist indexing operations made locally
-    queueProducingJobService.scheduleAtFixedRate(() -> persistQueueOperations(), 0, queueProcessingPeriod, TimeUnit.SECONDS);
+    queueProducingJobService.scheduleAtFixedRate(keepingItsSchedule("queue producer", this::persistQueueOperations),
+                                                 0,
+                                                 queueProcessingPeriod,
+                                                 TimeUnit.SECONDS);
 
     // Persist last executed operation id when changed
-    filePersisterThread.scheduleAtFixedRate(() -> persistLastOperationId(), 0, 10, TimeUnit.SECONDS);
+    filePersisterThread.scheduleAtFixedRate(keepingItsSchedule("last operation id persister", this::persistLastOperationId),
+                                            0,
+                                            10,
+                                            TimeUnit.SECONDS);
   }
 
 }
