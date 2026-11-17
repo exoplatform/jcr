@@ -777,7 +777,7 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
     checkStoredLastOperationId();
 
     // Job to index operations retrieved from queue and not indexed locally
-    queueConsumingJobService.scheduleAtFixedRate(keepingItsSchedule("queue consumer", () -> {
+    scheduleKeepingItsSchedule(queueConsumingJobService, "queue consumer", () -> {
       if (indexingOperationIsRunning.get()) {
         LOG.debug("Previous QUEUE indexing processing task is always executing, skip this execution");
         return;
@@ -794,19 +794,30 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
         indexingOperationIsRunning.set(false);
         RequestLifeCycle.end();
       }
-    }), 0, queueProcessingPeriod, TimeUnit.SECONDS);
+    }, queueProcessingPeriod);
 
     // Persist indexing operations made locally
-    queueProducingJobService.scheduleAtFixedRate(keepingItsSchedule("queue producer", this::persistQueueOperations),
-                                                 0,
-                                                 queueProcessingPeriod,
-                                                 TimeUnit.SECONDS);
+    scheduleKeepingItsSchedule(queueProducingJobService,
+                               "queue producer",
+                               this::persistQueueOperations,
+                               queueProcessingPeriod);
 
     // Persist last executed operation id when changed
-    filePersisterThread.scheduleAtFixedRate(keepingItsSchedule("last operation id persister", this::persistLastOperationId),
-                                            0,
-                                            10,
-                                            TimeUnit.SECONDS);
+    scheduleKeepingItsSchedule(filePersisterThread, "last operation id persister", this::persistLastOperationId, 10);
+  }
+
+  /**
+   * Schedules a task at a fixed rate, starting now, through
+   * {@link #keepingItsSchedule(String, Runnable)}, so that an error in one run
+   * does not cancel the next ones.
+   *
+   * @param executor the executor that runs the task
+   * @param name the task's name, for the log
+   * @param task the task
+   * @param periodInSeconds the period between two runs, in seconds
+   */
+  void scheduleKeepingItsSchedule(ScheduledExecutorService executor, String name, Runnable task, long periodInSeconds) {
+    executor.scheduleAtFixedRate(keepingItsSchedule(name, task), 0, periodInSeconds, TimeUnit.SECONDS);
   }
 
 }
