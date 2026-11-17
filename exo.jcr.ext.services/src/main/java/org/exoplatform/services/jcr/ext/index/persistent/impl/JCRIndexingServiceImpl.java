@@ -124,10 +124,14 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
 
   private boolean                                             initialized;
 
-  public JCRIndexingServiceImpl(EntityManagerService entityManagerService,
+  public JCRIndexingServiceImpl(ExoContainerContext containerContext,
+                                EntityManagerService entityManagerService,
                                 RepositoryService repositoryService,
                                 JCRIndexingQueueDAO indexingQueueDAO,
                                 InitParams params) {
+    // The container that owns this service, known from the start: the indexing
+    // tasks are scheduled whatever ran before the start
+    this.container = containerContext == null ? null : containerContext.getContainer();
     this.indexingQueueDAO = indexingQueueDAO;
     this.repositoryService = repositoryService;
     this.entityManagerService = entityManagerService;
@@ -185,14 +189,37 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
   @Override
   public void start() {
     if (container instanceof PortalContainer) {
-      PortalContainer portalContainer = (PortalContainer) container;
-      PortalContainer.addInitTask(portalContainer.getPortalContext(), new PortalContainerPostInitTask() {
+      addInitTask((PortalContainer) container, new PortalContainerPostInitTask() {
         @Override
         public void execute(ServletContext context, PortalContainer portalContainer) {
           scheduleIndexTasks();
         }
       });
+    } else {
+      LOG.info("JCR indexing queue tasks not scheduled: the service runs outside a portal container");
     }
+  }
+
+  void addInitTask(PortalContainer portalContainer, PortalContainerPostInitTask task) {
+    PortalContainer.addInitTask(portalContainer.getPortalContext(), task);
+  }
+
+  /**
+   * Wraps a task scheduled at a fixed rate so that it keeps its schedule: a
+   * throwable that leaves the task cancels all its later runs, silently.
+   *
+   * @param name the task's name, for the log
+   * @param task the task
+   * @return a task that logs any throwable and returns
+   */
+  static Runnable keepingItsSchedule(String name, Runnable task) {
+    return () -> {
+      try {
+        task.run();
+      } catch (Throwable e) { // NOSONAR a throwable leaving a scheduled task would cancel its later runs
+        LOG.error("Error while running the JCR indexing task '{}'", name, e);
+      }
+    };
   }
 
   @Override
@@ -750,14 +777,15 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
     checkStoredLastOperationId();
 
     // Job to index operations retrieved from queue and not indexed locally
-    queueConsumingJobService.scheduleAtFixedRate(() -> {
+    scheduleKeepingItsSchedule(queueConsumingJobService, "queue consumer", () -> {
       if (indexingOperationIsRunning.get()) {
         LOG.debug("Previous QUEUE indexing processing task is always executing, skip this execution");
         return;
       }
-      indexingOperationIsRunning.set(true);
       computeCurrentContainer();
       RequestLifeCycle.begin(entityManagerService);
+      // Set once nothing before the try can throw, so that the finally always clears it
+      indexingOperationIsRunning.set(true);
       try {
         LOG.debug("Running JCR Index from DB QUEUE Task");
         processIndexingQueue();
@@ -767,13 +795,30 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
         indexingOperationIsRunning.set(false);
         RequestLifeCycle.end();
       }
-    }, 0, queueProcessingPeriod, TimeUnit.SECONDS);
+    }, queueProcessingPeriod);
 
     // Persist indexing operations made locally
-    queueProducingJobService.scheduleAtFixedRate(() -> persistQueueOperations(), 0, queueProcessingPeriod, TimeUnit.SECONDS);
+    scheduleKeepingItsSchedule(queueProducingJobService,
+                               "queue producer",
+                               this::persistQueueOperations,
+                               queueProcessingPeriod);
 
     // Persist last executed operation id when changed
-    filePersisterThread.scheduleAtFixedRate(() -> persistLastOperationId(), 0, 10, TimeUnit.SECONDS);
+    scheduleKeepingItsSchedule(filePersisterThread, "last operation id persister", this::persistLastOperationId, 10);
+  }
+
+  /**
+   * Schedules a task at a fixed rate, starting now, through
+   * {@link #keepingItsSchedule(String, Runnable)}, so that an error in one run
+   * does not cancel the next ones.
+   *
+   * @param executor the executor that runs the task
+   * @param name the task's name, for the log
+   * @param task the task
+   * @param periodInSeconds the period between two runs, in seconds
+   */
+  void scheduleKeepingItsSchedule(ScheduledExecutorService executor, String name, Runnable task, long periodInSeconds) {
+    executor.scheduleAtFixedRate(keepingItsSchedule(name, task), 0, periodInSeconds, TimeUnit.SECONDS);
   }
 
 }
