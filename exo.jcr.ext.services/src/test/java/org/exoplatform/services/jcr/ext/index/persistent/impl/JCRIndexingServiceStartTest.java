@@ -16,16 +16,27 @@
  */
 package org.exoplatform.services.jcr.ext.index.persistent.impl;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.TestCase;
 
+import org.mockito.ArgumentCaptor;
+
 import org.exoplatform.commons.persistence.impl.EntityManagerService;
+import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer.PortalContainerPostInitTask;
@@ -55,6 +66,49 @@ public class JCRIndexingServiceStartTest extends TestCase {
     service.start();
 
     assertEquals(1, initTasks.size());
+  }
+
+  public void testTheStartSchedulesThreeTasksThatKeepTheirScheduleAfterAnError() throws Exception {
+    ExoContainerContext containerContext = mock(ExoContainerContext.class);
+    PortalContainer portalContainer = mock(PortalContainer.class);
+    when(containerContext.getContainer()).thenReturn(portalContainer);
+    EntityManagerService entityManagerService = mock(EntityManagerService.class);
+    // The queue consumer catches an Exception only: an Error leaves its body
+    doThrow(new LinkageError("consumer")).when(entityManagerService).startRequest(any(ExoContainer.class));
+    RepositoryService repositoryService = mock(RepositoryService.class);
+    // At the start, no repository: no index directory. In the persister's run, an Error leaves its body
+    when(repositoryService.getCurrentRepository()).thenReturn(null).thenThrow(new LinkageError("persister"));
+    ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
+    List<PortalContainerPostInitTask> initTasks = new ArrayList<>();
+    JCRIndexingServiceImpl service = new JCRIndexingServiceImpl(containerContext,
+                                                                entityManagerService,
+                                                                repositoryService,
+                                                                mock(JCRIndexingQueueDAO.class),
+                                                                clusterNodeParams()) {
+      @Override
+      void addInitTask(PortalContainer container, PortalContainerPostInitTask task) {
+        initTasks.add(task);
+      }
+
+      @Override
+      void scheduleKeepingItsSchedule(ScheduledExecutorService ignored,
+                                      String name,
+                                      Runnable task,
+                                      long periodInSeconds) {
+        super.scheduleKeepingItsSchedule(executor, name, task, periodInSeconds);
+      }
+    };
+    service.start();
+    assertEquals(1, initTasks.size());
+
+    initTasks.get(0).execute(null, portalContainer);
+
+    ArgumentCaptor<Runnable> scheduled = ArgumentCaptor.forClass(Runnable.class);
+    verify(executor, times(3)).scheduleAtFixedRate(scheduled.capture(), eq(0L), anyLong(), eq(TimeUnit.SECONDS));
+    // A throwable leaving a task would cancel its later runs: each scheduled task returns instead
+    for (Runnable task : scheduled.getAllValues()) {
+      task.run();
+    }
   }
 
   public void testAnIndexingTaskKeepsItsScheduleAfterAnError() {
