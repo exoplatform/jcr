@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.ext.index.persistent.impl;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -36,7 +37,6 @@ import junit.framework.TestCase;
 import org.mockito.ArgumentCaptor;
 
 import org.exoplatform.commons.persistence.impl.EntityManagerService;
-import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer.PortalContainerPostInitTask;
@@ -73,8 +73,8 @@ public class JCRIndexingServiceStartTest extends TestCase {
     PortalContainer portalContainer = mock(PortalContainer.class);
     when(containerContext.getContainer()).thenReturn(portalContainer);
     EntityManagerService entityManagerService = mock(EntityManagerService.class);
-    // The queue consumer catches an Exception only: an Error leaves its body
-    doThrow(new LinkageError("consumer")).when(entityManagerService).startRequest(any(ExoContainer.class));
+    // The queue consumer catches an Exception only: an Error leaves its body, once
+    doThrow(new LinkageError("consumer")).doNothing().when(entityManagerService).startRequest(any());
     RepositoryService repositoryService = mock(RepositoryService.class);
     // At the start, no repository: no index directory. In the persister's run, an Error leaves its body
     when(repositoryService.getCurrentRepository()).thenReturn(null).thenThrow(new LinkageError("persister"));
@@ -109,6 +109,11 @@ public class JCRIndexingServiceStartTest extends TestCase {
     for (Runnable task : scheduled.getAllValues()) {
       task.run();
     }
+
+    // The consumer's failed run left no running flag behind: its next run starts a request again
+    clearInvocations(entityManagerService);
+    scheduled.getAllValues().get(0).run();
+    verify(entityManagerService).startRequest(any());
   }
 
   public void testAnIndexingTaskKeepsItsScheduleAfterAnError() {
