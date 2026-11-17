@@ -494,7 +494,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          closeStatements();
 
-         if (!readOnly && getDbConnectionTotalUsed() == 1
+         // A read-only connection whose autocommit is off keeps the transaction its first read opened: ended here,
+         // before the connection goes back to the pool, so that no later borrower reads its snapshot
+         if (getDbConnectionTotalUsed() == 1 && (!readOnly || !dbConnection.getAutoCommit())
             && dbConnection.getTransactionIsolation() > Connection.TRANSACTION_READ_COMMITTED)
          {
             dbConnection.rollback();
