@@ -782,9 +782,10 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
         LOG.debug("Previous QUEUE indexing processing task is always executing, skip this execution");
         return;
       }
-      indexingOperationIsRunning.set(true);
       computeCurrentContainer();
       RequestLifeCycle.begin(entityManagerService);
+      // Set once nothing before the try can throw, so that the finally always clears it
+      indexingOperationIsRunning.set(true);
       try {
         LOG.debug("Running JCR Index from DB QUEUE Task");
         processIndexingQueue();
