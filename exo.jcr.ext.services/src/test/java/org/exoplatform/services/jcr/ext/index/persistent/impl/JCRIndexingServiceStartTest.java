@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.TestCase;
 
@@ -37,7 +38,8 @@ public class JCRIndexingServiceStartTest extends TestCase {
 
   public void testTheIndexingTasksAreScheduledWithNoIndexUpdateBeforeTheStart() {
     ExoContainerContext containerContext = mock(ExoContainerContext.class);
-    when(containerContext.getContainer()).thenReturn(mock(PortalContainer.class));
+    PortalContainer portalContainer = mock(PortalContainer.class);
+    when(containerContext.getContainer()).thenReturn(portalContainer);
     List<PortalContainerPostInitTask> initTasks = new ArrayList<>();
     JCRIndexingServiceImpl service = new JCRIndexingServiceImpl(containerContext,
                                                                 mock(EntityManagerService.class),
@@ -56,11 +58,16 @@ public class JCRIndexingServiceStartTest extends TestCase {
   }
 
   public void testAnIndexingTaskKeepsItsScheduleAfterAnError() {
+    AtomicBoolean ran = new AtomicBoolean();
     Runnable task = JCRIndexingServiceImpl.keepingItsSchedule("test", () -> {
+      ran.set(true);
       throw new LinkageError("test");
     });
 
+    // A throwable leaving the task would cancel its later runs: the wrapper returns normally instead
     task.run();
+
+    assertTrue("The wrapped task must have run", ran.get());
   }
 
   private static InitParams clusterNodeParams() {
