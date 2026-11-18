@@ -54,7 +54,10 @@ public class PersistentIndexChangesFilter extends DefaultChangesFilter implement
    * An index keeps the queue marks as they are when its copy can lack what its
    * marker names, or can land after this registration: the rsync recovery
    * strategies copy the index files as the other node last flushed them, and an
-   * asynchronous reindexing copies the index once the registration is done.
+   * asynchronous reindexing of an empty index copies it in the background. The
+   * search index does not tell, at this point, whether its background
+   * reindexing runs, so every index with asynchronous reindexing keeps its
+   * marks, even one copied before this registration.
    */
   static boolean keepsTheQueueMarks(QueryHandler handler) {
     if (handler instanceof SearchIndex searchIndex) {
