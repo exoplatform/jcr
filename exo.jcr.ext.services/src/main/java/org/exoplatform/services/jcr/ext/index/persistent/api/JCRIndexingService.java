@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.index.persistent.api;
 
-
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 

@@ -19,9 +19,13 @@ package org.exoplatform.services.jcr.ext.index.persistent.filter;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.function.BooleanSupplier;
+
 import junit.framework.TestCase;
 
+import org.exoplatform.services.jcr.impl.core.query.IndexRecovery;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
+import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 
 public class PersistentIndexChangesFilterTest extends TestCase {
@@ -40,6 +44,27 @@ public class PersistentIndexChangesFilterTest extends TestCase {
     SearchIndex handler = handler(SearchIndex.INDEX_RECOVERY_DEFAULT_STRATEGY);
     when(handler.isAsyncReindexing()).thenReturn(true);
     assertTrue(PersistentIndexChangesFilter.keepsTheQueueMarks(handler));
+  }
+
+  public void testTheIndexIsPreparedForACopyWhileItsRecoveryPreparesOne() {
+    IndexRecovery indexRecovery = mock(IndexRecovery.class);
+    QueryHandlerContext context = mock(QueryHandlerContext.class);
+    when(context.getIndexRecovery()).thenReturn(indexRecovery);
+    SearchIndex handler = handler(SearchIndex.INDEX_RECOVERY_DEFAULT_STRATEGY);
+    when(handler.getContext()).thenReturn(context);
+
+    BooleanSupplier preparingACopy = PersistentIndexChangesFilter.preparingACopy(handler);
+
+    assertFalse(preparingACopy.getAsBoolean());
+    when(indexRecovery.isPreparingACopy()).thenReturn(true);
+    assertTrue(preparingACopy.getAsBoolean());
+  }
+
+  public void testAnIndexWithNoRecoveryIsNeverPreparedForACopy() {
+    SearchIndex handler = handler(SearchIndex.INDEX_RECOVERY_DEFAULT_STRATEGY);
+    when(handler.getContext()).thenReturn(mock(QueryHandlerContext.class));
+
+    assertFalse(PersistentIndexChangesFilter.preparingACopy(handler).getAsBoolean());
   }
 
   private static SearchIndex handler(String strategy) {

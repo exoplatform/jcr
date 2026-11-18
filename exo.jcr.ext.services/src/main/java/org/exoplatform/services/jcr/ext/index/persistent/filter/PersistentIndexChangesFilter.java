@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.ext.index.persistent.filter;
 
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
@@ -46,11 +47,20 @@ public class PersistentIndexChangesFilter extends DefaultChangesFilter implement
     super.init();
     if (!keepsTheQueueMarks(handler)) {
       // The index is ready, and may have been copied from another cluster node
-      IndexRecovery indexRecovery = handler.getContext().getIndexRecovery();
       this.jcrIndexingQueueService.registerWorkspaceIndex(searchManager.getWsId(),
                                                           handler.getContext().getIndexDirectory(),
-                                                          () -> indexRecovery != null && indexRecovery.isPreparingACopy());
+                                                          preparingACopy(handler));
     }
+  }
+
+  /**
+   * True while the node prepares a copy of the handler's index for another
+   * node: the recovery that serves the copy is the one the handler's context
+   * holds
+   */
+  static BooleanSupplier preparingACopy(QueryHandler handler) {
+    IndexRecovery indexRecovery = handler.getContext().getIndexRecovery();
+    return () -> indexRecovery != null && indexRecovery.isPreparingACopy();
   }
 
   /**
