@@ -24,6 +24,7 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingService;
 import org.exoplatform.services.jcr.impl.core.query.*;
+import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 
 public class PersistentIndexChangesFilter extends DefaultChangesFilter implements LocalIndexMarker {
 
@@ -43,6 +44,24 @@ public class PersistentIndexChangesFilter extends DefaultChangesFilter implement
     this.jcrIndexingQueueService.init(handler, config);
 
     super.init();
+    if (!isCopiedWithoutAFlush(handler)) {
+      // The index is ready, and may have been copied from another cluster node
+      this.jcrIndexingQueueService.registerWorkspaceIndex(searchManager.getWsId(), handler.getContext().getIndexDirectory());
+    }
+  }
+
+  /**
+   * The rsync recovery strategies copy the index files as the other node last
+   * flushed them, so its marker can name operations the copy lacks: such an
+   * index keeps the queue marks as they are.
+   */
+  static boolean isCopiedWithoutAFlush(QueryHandler handler) {
+    if (handler instanceof SearchIndex searchIndex) {
+      String strategy = searchIndex.getIndexRecoveryStrategy();
+      return SearchIndex.INDEX_RECOVERY_RSYNC_STRATEGY.equals(strategy)
+          || SearchIndex.INDEX_RECOVERY_RSYNC_WITH_DELETE_STRATEGY.equals(strategy);
+    }
+    return false;
   }
 
   /**
