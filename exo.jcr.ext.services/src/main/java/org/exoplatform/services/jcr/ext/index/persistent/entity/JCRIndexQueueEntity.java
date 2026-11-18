@@ -57,6 +57,28 @@ import jakarta.persistence.Table;
               + " ORDER BY idx.id ASC"
       ),
       @NamedQuery(
+          name = "JCRIndexingQueue.findOperationsOfWorkspaceExecutedByClusterNode",
+          query = "SELECT idx FROM JCRIndexingQueue idx"
+              + " WHERE idx.workspace = :workspace"
+              + " AND :clusterNodeName MEMBER OF idx.nodes"
+              + " ORDER BY idx.id ASC"
+      ),
+      @NamedQuery(
+          name = "JCRIndexingQueue.findOperationsOfWorkspaceExecutedByAnotherClusterNodeUpToAnID",
+          query = "SELECT idx FROM JCRIndexingQueue idx"
+              + " WHERE idx.workspace = :workspace"
+              + " AND idx.id <= :lastExecutedId"
+              + " AND idx.modificationDate < :queuedBefore"
+              + " AND :otherClusterNodeName MEMBER OF idx.nodes"
+              + " AND :clusterNodeName NOT MEMBER OF idx.nodes"
+              + " ORDER BY idx.id ASC"
+      ),
+      @NamedQuery(
+          name = "JCRIndexingQueue.findLowestOperationIdNotExecutedByClusterNode",
+          query = "SELECT MIN(idx.id) FROM JCRIndexingQueue idx"
+              + " WHERE :clusterNodeName NOT MEMBER OF idx.nodes"
+      ),
+      @NamedQuery(
           name = "JCRIndexingQueue.deleteAllIndexingOperationsSince",
           query = "Delete FROM JCRIndexingQueue idx WHERE idx.id < :id"
       ),
@@ -156,6 +178,19 @@ public class JCRIndexQueueEntity {
 
   public Set<String> getNodes() {
     return nodes;
+  }
+
+  /**
+   * Removes the cluster node's mark. The marks are replaced by a new set
+   * rather than changed in place: removing the last mark of a set loaded from
+   * the database does not reach the database.
+   */
+  public void removeNode(String nodeName) {
+    if (this.nodes != null && this.nodes.contains(nodeName)) {
+      Set<String> remainingNodes = new HashSet<>(this.nodes);
+      remainingNodes.remove(nodeName);
+      this.nodes = remainingNodes;
+    }
   }
 
   public void addNode(String nodeName) {

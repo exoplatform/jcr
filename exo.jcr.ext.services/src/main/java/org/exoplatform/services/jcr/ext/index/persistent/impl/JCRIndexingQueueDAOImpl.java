@@ -16,6 +16,7 @@
 */
 package org.exoplatform.services.jcr.ext.index.persistent.impl;
 
+import java.util.Calendar;
 import java.util.List;
 
 import org.exoplatform.commons.api.persistence.ExoTransactional;
@@ -25,12 +26,14 @@ import org.exoplatform.services.jcr.ext.index.persistent.entity.JCRIndexQueueEnt
 
 public class JCRIndexingQueueDAOImpl extends GenericDAOJPAImpl<JCRIndexQueueEntity, Long> implements JCRIndexingQueueDAO {
 
+  private static final String CLUSTER_NODE_NAME = "clusterNodeName";
+
   @Override
   @ExoTransactional
   public List<JCRIndexQueueEntity> findAllOperationNotExecutedByClusterNode(int offset, int limit, String clusterNodeName) {
     return getEntityManager().createNamedQuery("JCRIndexingQueue.findAllOperationNotExecutedByClusterNode",
                                                JCRIndexQueueEntity.class)
-                             .setParameter("clusterNodeName", clusterNodeName)
+                             .setParameter(CLUSTER_NODE_NAME, clusterNodeName)
                              .setFirstResult(offset)
                              .setMaxResults(limit)
                              .getResultList();
@@ -46,8 +49,46 @@ public class JCRIndexingQueueDAOImpl extends GenericDAOJPAImpl<JCRIndexQueueEnti
                                                JCRIndexQueueEntity.class)
                              .setParameter("lastExecutedId", lastExecutedId)
                              .setParameter("oldClusterNodeName", oldClusterNodeName)
-                             .setParameter("clusterNodeName", clusterNodeName)
+                             .setParameter(CLUSTER_NODE_NAME, clusterNodeName)
                              .setFirstResult(offset)
+                             .setMaxResults(limit)
+                             .getResultList();
+  }
+
+  @Override
+  public List<JCRIndexQueueEntity> findOperationsOfWorkspaceExecutedByClusterNode(String workspace,
+                                                                                 String clusterNodeName,
+                                                                                 int limit) {
+    return getEntityManager().createNamedQuery("JCRIndexingQueue.findOperationsOfWorkspaceExecutedByClusterNode",
+                                               JCRIndexQueueEntity.class)
+                             .setParameter("workspace", workspace)
+                             .setParameter(CLUSTER_NODE_NAME, clusterNodeName)
+                             .setMaxResults(limit)
+                             .getResultList();
+  }
+
+  @Override
+  @ExoTransactional
+  public Long findLowestOperationIdNotExecutedByClusterNode(String clusterNodeName) {
+    return getEntityManager().createNamedQuery("JCRIndexingQueue.findLowestOperationIdNotExecutedByClusterNode", Long.class)
+                             .setParameter(CLUSTER_NODE_NAME, clusterNodeName)
+                             .getSingleResult();
+  }
+
+  @Override
+  public List<JCRIndexQueueEntity> findOperationsOfWorkspaceExecutedByAnotherClusterNode(String workspace,
+                                                                                        String otherClusterNodeName,
+                                                                                        String clusterNodeName,
+                                                                                        long lastExecutedId,
+                                                                                        Calendar queuedBefore,
+                                                                                        int limit) {
+    return getEntityManager().createNamedQuery("JCRIndexingQueue.findOperationsOfWorkspaceExecutedByAnotherClusterNodeUpToAnID",
+                                               JCRIndexQueueEntity.class)
+                             .setParameter("workspace", workspace)
+                             .setParameter("lastExecutedId", lastExecutedId)
+                             .setParameter("otherClusterNodeName", otherClusterNodeName)
+                             .setParameter("queuedBefore", queuedBefore)
+                             .setParameter(CLUSTER_NODE_NAME, clusterNodeName)
                              .setMaxResults(limit)
                              .getResultList();
   }

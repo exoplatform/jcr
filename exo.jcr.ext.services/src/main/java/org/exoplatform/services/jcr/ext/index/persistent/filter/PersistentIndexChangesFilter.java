@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.ext.index.persistent.filter;
 
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
@@ -24,6 +25,7 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingService;
 import org.exoplatform.services.jcr.impl.core.query.*;
+import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 
 public class PersistentIndexChangesFilter extends DefaultChangesFilter implements LocalIndexMarker {
 
@@ -43,6 +45,41 @@ public class PersistentIndexChangesFilter extends DefaultChangesFilter implement
     this.jcrIndexingQueueService.init(handler, config);
 
     super.init();
+    if (!keepsTheQueueMarks(handler)) {
+      // The index is ready, and may have been copied from another cluster node
+      this.jcrIndexingQueueService.registerWorkspaceIndex(searchManager.getWsId(),
+                                                          handler.getContext().getIndexDirectory(),
+                                                          preparingACopy(handler));
+    }
+  }
+
+  /**
+   * True while the node prepares a copy of the handler's index for another
+   * node: the recovery that serves the copy is the one the handler's context
+   * holds
+   */
+  static BooleanSupplier preparingACopy(QueryHandler handler) {
+    IndexRecovery indexRecovery = handler.getContext().getIndexRecovery();
+    return () -> indexRecovery != null && indexRecovery.isPreparingACopy();
+  }
+
+  /**
+   * An index keeps the queue marks as they are when its copy can lack what its
+   * marker names, or can land after this registration: the rsync recovery
+   * strategies copy the index files as the other node last flushed them, and an
+   * asynchronous reindexing of an empty index copies it in the background. The
+   * search index does not tell, at this point, whether its background
+   * reindexing runs, so every index with asynchronous reindexing keeps its
+   * marks, even one copied before this registration.
+   */
+  static boolean keepsTheQueueMarks(QueryHandler handler) {
+    if (handler instanceof SearchIndex searchIndex) {
+      String strategy = searchIndex.getIndexRecoveryStrategy();
+      return searchIndex.isAsyncReindexing()
+          || SearchIndex.INDEX_RECOVERY_RSYNC_STRATEGY.equals(strategy)
+          || SearchIndex.INDEX_RECOVERY_RSYNC_WITH_DELETE_STRATEGY.equals(strategy);
+    }
+    return false;
   }
 
   /**

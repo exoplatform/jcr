@@ -27,10 +27,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
 
@@ -45,6 +47,7 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingQueueDAO;
+import org.exoplatform.services.jcr.ext.index.persistent.entity.JCRIndexQueueEntity;
 
 public class JCRIndexingServiceStartTest extends TestCase {
 
@@ -143,6 +146,96 @@ public class JCRIndexingServiceStartTest extends TestCase {
     task.run();
 
     assertTrue("The wrapped task must have run", ran.get());
+  }
+
+  public void testTheStopWritesTheChangesStillInMemoryToTheQueueThenTheLastOperationId() {
+    ExoContainerContext containerContext = mock(ExoContainerContext.class);
+    PortalContainer portalContainer = mock(PortalContainer.class);
+    when(containerContext.getContainer()).thenReturn(portalContainer);
+    List<String> calls = new ArrayList<>();
+    JCRIndexingServiceImpl service = new JCRIndexingServiceImpl(containerContext,
+                                                                mock(EntityManagerService.class),
+                                                                mock(RepositoryService.class),
+                                                                mock(JCRIndexingQueueDAO.class),
+                                                                clusterNodeParams()) {
+      @Override
+      public void index(String jcrUUID, String workspaceId, boolean parentChange) {
+        // The queue write, without the transaction its aspect opens in a container
+        calls.add("queue " + jcrUUID + " in " + workspaceId);
+        updateLastNewOperationId(7);
+      }
+
+      @Override
+      public void persistLastOperationId() {
+        calls.add("last operation id");
+      }
+    };
+    // A change made since the producer's last run: in memory only
+    service.applyIndexChangesOnQueue(Collections.emptySet(),
+                                     Collections.singleton("added-uuid"),
+                                     Collections.emptySet(),
+                                     Collections.emptySet(),
+                                     "collaboration");
+    service.stop();
+
+    // The id is written once the queue holds the operations it counts
+    assertEquals(List.of("queue added-uuid in collaboration", "last operation id"), calls);
+  }
+
+  public void testTheStopWritesNoLastOperationIdWhenTheNodeHasNoOperation() {
+    ExoContainerContext containerContext = mock(ExoContainerContext.class);
+    PortalContainer portalContainer = mock(PortalContainer.class);
+    when(containerContext.getContainer()).thenReturn(portalContainer);
+    AtomicBoolean idWritten = new AtomicBoolean();
+    JCRIndexingServiceImpl service = new JCRIndexingServiceImpl(containerContext,
+                                                                mock(EntityManagerService.class),
+                                                                mock(RepositoryService.class),
+                                                                mock(JCRIndexingQueueDAO.class),
+                                                                clusterNodeParams()) {
+      @Override
+      public void persistLastOperationId() {
+        idWritten.set(true);
+      }
+    };
+
+    service.stop();
+
+    assertFalse(idWritten.get());
+  }
+
+  public void testTheConsumerStopsBetweenTwoBatchesWhenTheServerStops() throws Exception {
+    ExoContainerContext containerContext = mock(ExoContainerContext.class);
+    PortalContainer portalContainer = mock(PortalContainer.class);
+    when(containerContext.getContainer()).thenReturn(portalContainer);
+    InitParams params = clusterNodeParams();
+    ValueParam batchNumber = new ValueParam();
+    batchNumber.setName("batch.number");
+    batchNumber.setValue("2");
+    params.addParameter(batchNumber);
+    AtomicInteger appliedBatches = new AtomicInteger();
+    JCRIndexingServiceImpl service = new JCRIndexingServiceImpl(containerContext,
+                                                                mock(EntityManagerService.class),
+                                                                mock(RepositoryService.class),
+                                                                mock(JCRIndexingQueueDAO.class),
+                                                                params) {
+      @Override
+      public List<JCRIndexQueueEntity> findNextOperations(int offset, int limit) {
+        // A backlog of ten full batches
+        return appliedBatches.get() < 10 ? List.of(new JCRIndexQueueEntity(), new JCRIndexQueueEntity()) : List.of();
+      }
+
+      @Override
+      public void applyIndexChangesOnJCR(List<JCRIndexQueueEntity> indexingQueueEntities) {
+        if (appliedBatches.incrementAndGet() == 1) {
+          stop();
+        }
+      }
+    };
+
+    service.applyIndexChangesOnJCR();
+
+    // The operations left stay in the queue for the next start
+    assertEquals(1, appliedBatches.get());
   }
 
   private static InitParams clusterNodeParams() {

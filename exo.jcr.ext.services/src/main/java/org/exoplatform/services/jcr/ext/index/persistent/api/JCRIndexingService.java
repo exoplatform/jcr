@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.ext.index.persistent.api;
 
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
@@ -63,5 +64,21 @@ public interface JCRIndexingService {
    * @param config
    */
   void init(QueryHandler handler, QueryHandlerEntry config);
+
+  /**
+   * Called once a workspace's index is ready at startup. When the index was
+   * copied from another cluster node, the queue operations of the workspace are
+   * marked as that copy holds them, so that this node applies what the copy
+   * lacks.
+   *
+   * @param workspaceId the workspace of the index, as its queue operations name
+   *          it
+   * @param indexDirectory the index's directory
+   * @param preparingACopy true while this node prepares a copy of the index for
+   *          another node: the index's marker is not written meanwhile
+   */
+  default void registerWorkspaceIndex(String workspaceId, String indexDirectory, BooleanSupplier preparingACopy) {
+    // Nothing to mark without a queue
+  }
 
 }
