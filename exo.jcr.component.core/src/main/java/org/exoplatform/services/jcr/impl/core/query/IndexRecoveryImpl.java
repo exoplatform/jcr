@@ -18,6 +18,7 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.core.query.lucene.OfflinePersistentIndex;
+import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -236,6 +237,7 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
         }
   
         public Serializable execute(Serializable[] args) throws Throwable {
+          flushBeforeCopy();
           File indexesZipFile = File.createTempFile("jcr", "indexes");
           DirectoryHelper.compressDirectory(indexDirectory, indexesZipFile);
           indexesZipFiles.add(indexesZipFile);
@@ -454,6 +456,23 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
       {
          throw new RepositoryException(e);
       }
+   }
+
+   /**
+    * Writes the volatile index to the index's files, which the copy is made of:
+    * the copy then holds every change this node applied, its queries' state.
+    */
+   void flushBeforeCopy() throws IOException
+   {
+      QueryHandler handler = searchManager.getHandler();
+      if (!(handler instanceof SearchIndex searchIndex) || searchIndex.getIndex() == null
+         || searchIndex.getIndexerIoModeHandler().getMode() != IndexerIoMode.READ_WRITE)
+      {
+         return;
+      }
+      // A failure refuses the copy: the node that asked for it indexes its
+      // workspace itself rather than receive a copy its queue marks overstate
+      searchIndex.getIndex().flush();
    }
 
     @Override
