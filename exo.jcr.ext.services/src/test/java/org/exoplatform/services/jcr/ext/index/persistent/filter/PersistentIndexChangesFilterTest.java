@@ -27,13 +27,19 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 public class PersistentIndexChangesFilterTest extends TestCase {
 
   public void testAnIndexCopiedWithRsyncKeepsTheQueueMarks() {
-    assertTrue(PersistentIndexChangesFilter.isCopiedWithoutAFlush(handler(SearchIndex.INDEX_RECOVERY_RSYNC_STRATEGY)));
-    assertTrue(PersistentIndexChangesFilter.isCopiedWithoutAFlush(handler(SearchIndex.INDEX_RECOVERY_RSYNC_WITH_DELETE_STRATEGY)));
+    assertTrue(PersistentIndexChangesFilter.keepsTheQueueMarks(handler(SearchIndex.INDEX_RECOVERY_RSYNC_STRATEGY)));
+    assertTrue(PersistentIndexChangesFilter.keepsTheQueueMarks(handler(SearchIndex.INDEX_RECOVERY_RSYNC_WITH_DELETE_STRATEGY)));
   }
 
   public void testAnIndexCopiedAfterAFlushTakesTheQueueMarksOfItsMarker() {
-    assertFalse(PersistentIndexChangesFilter.isCopiedWithoutAFlush(handler(SearchIndex.INDEX_RECOVERY_DEFAULT_STRATEGY)));
-    assertFalse(PersistentIndexChangesFilter.isCopiedWithoutAFlush(mock(QueryHandler.class)));
+    assertFalse(PersistentIndexChangesFilter.keepsTheQueueMarks(handler(SearchIndex.INDEX_RECOVERY_DEFAULT_STRATEGY)));
+    assertFalse(PersistentIndexChangesFilter.keepsTheQueueMarks(mock(QueryHandler.class)));
+  }
+
+  public void testAnIndexReindexedAsynchronouslyKeepsTheQueueMarks() {
+    SearchIndex handler = handler(SearchIndex.INDEX_RECOVERY_DEFAULT_STRATEGY);
+    when(handler.isAsyncReindexing()).thenReturn(true);
+    assertTrue(PersistentIndexChangesFilter.keepsTheQueueMarks(handler));
   }
 
   private static SearchIndex handler(String strategy) {
