@@ -25,12 +25,14 @@ import org.exoplatform.services.jcr.ext.index.persistent.entity.JCRIndexQueueEnt
 
 public class JCRIndexingQueueDAOImpl extends GenericDAOJPAImpl<JCRIndexQueueEntity, Long> implements JCRIndexingQueueDAO {
 
+  private static final String CLUSTER_NODE_NAME = "clusterNodeName";
+
   @Override
   @ExoTransactional
   public List<JCRIndexQueueEntity> findAllOperationNotExecutedByClusterNode(int offset, int limit, String clusterNodeName) {
     return getEntityManager().createNamedQuery("JCRIndexingQueue.findAllOperationNotExecutedByClusterNode",
                                                JCRIndexQueueEntity.class)
-                             .setParameter("clusterNodeName", clusterNodeName)
+                             .setParameter(CLUSTER_NODE_NAME, clusterNodeName)
                              .setFirstResult(offset)
                              .setMaxResults(limit)
                              .getResultList();
@@ -46,7 +48,7 @@ public class JCRIndexingQueueDAOImpl extends GenericDAOJPAImpl<JCRIndexQueueEnti
                                                JCRIndexQueueEntity.class)
                              .setParameter("lastExecutedId", lastExecutedId)
                              .setParameter("oldClusterNodeName", oldClusterNodeName)
-                             .setParameter("clusterNodeName", clusterNodeName)
+                             .setParameter(CLUSTER_NODE_NAME, clusterNodeName)
                              .setFirstResult(offset)
                              .setMaxResults(limit)
                              .getResultList();
@@ -59,7 +61,7 @@ public class JCRIndexingQueueDAOImpl extends GenericDAOJPAImpl<JCRIndexQueueEnti
     return getEntityManager().createNamedQuery("JCRIndexingQueue.findOperationsOfWorkspaceExecutedByClusterNode",
                                                JCRIndexQueueEntity.class)
                              .setParameter("workspace", workspace)
-                             .setParameter("clusterNodeName", clusterNodeName)
+                             .setParameter(CLUSTER_NODE_NAME, clusterNodeName)
                              .setMaxResults(limit)
                              .getResultList();
   }
@@ -68,7 +70,7 @@ public class JCRIndexingQueueDAOImpl extends GenericDAOJPAImpl<JCRIndexQueueEnti
   @ExoTransactional
   public Long findLowestOperationIdNotExecutedByClusterNode(String clusterNodeName) {
     return getEntityManager().createNamedQuery("JCRIndexingQueue.findLowestOperationIdNotExecutedByClusterNode", Long.class)
-                             .setParameter("clusterNodeName", clusterNodeName)
+                             .setParameter(CLUSTER_NODE_NAME, clusterNodeName)
                              .getSingleResult();
   }
 
@@ -83,7 +85,7 @@ public class JCRIndexingQueueDAOImpl extends GenericDAOJPAImpl<JCRIndexQueueEnti
                              .setParameter("workspace", workspace)
                              .setParameter("lastExecutedId", lastExecutedId)
                              .setParameter("otherClusterNodeName", otherClusterNodeName)
-                             .setParameter("clusterNodeName", clusterNodeName)
+                             .setParameter(CLUSTER_NODE_NAME, clusterNodeName)
                              .setMaxResults(limit)
                              .getResultList();
   }
