@@ -68,6 +68,7 @@ import jakarta.persistence.Table;
           query = "SELECT idx FROM JCRIndexingQueue idx"
               + " WHERE idx.workspace = :workspace"
               + " AND idx.id <= :lastExecutedId"
+              + " AND idx.modificationDate < :queuedBefore"
               + " AND :otherClusterNodeName MEMBER OF idx.nodes"
               + " AND :clusterNodeName NOT MEMBER OF idx.nodes"
               + " ORDER BY idx.id ASC"
