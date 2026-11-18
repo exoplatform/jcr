@@ -383,7 +383,7 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
   @ExoTransactional
   void takeTheMarksOfTheIndex(String workspaceId, File markerFile) {
     String[] marker = readWorkspaceMarker(markerFile);
-    if (marker != null && clusterNodeName.equals(marker[1])) {
+    if (marker.length == 2 && clusterNodeName.equals(marker[1])) {
       // This node's own index
       return;
     }
@@ -395,7 +395,7 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
       indexingQueueDAO.updateAll(operations);
       unmarked += operations.size();
     } while (operations.size() == batchNumber);
-    if (marker == null) {
+    if (marker.length != 2) {
       LOG.warn("The index of workspace '{}' has an unreadable marker: the {} queue operations this node applied are applied again",
                workspaceId,
                unmarked);
@@ -423,8 +423,8 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
   }
 
   /**
-   * @return the marker's last operation id and cluster node, or null when the
-   *         file does not hold them
+   * @return the marker's last operation id and cluster node, or an empty array
+   *         when the file does not hold them
    */
   private static String[] readWorkspaceMarker(File markerFile) {
     try {
@@ -435,7 +435,7 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
     } catch (IOException e) {
       LOG.warn("Could not read the index marker {}", markerFile.getAbsolutePath(), e);
     }
-    return null;
+    return new String[0];
   }
 
   private void writeWorkspaceMarker(File directory, long lastOperationId) {
