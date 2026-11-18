@@ -157,7 +157,7 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
     assertTrue(notAppliedByThisNode(copiedWorkspace).isEmpty());
   }
 
-  public void testAnIndexWithNoMarkerKeepsItsMarksAndGetsOne() throws Exception {
+  public void testAnIndexWithNoMarkerKeepsItsMarksAndGetsOne() {
     operation(copiedWorkspace, THIS_NODE);
 
     jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath());
