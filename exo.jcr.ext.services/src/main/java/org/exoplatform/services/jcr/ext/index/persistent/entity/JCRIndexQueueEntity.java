@@ -51,6 +51,27 @@ import jakarta.persistence.Table;
       + " ORDER BY idx.id ASC"
 )
 @NamedQuery(
+  name = "JCRIndexingQueue.findOperationsOfWorkspaceExecutedByClusterNode",
+  query = "SELECT idx FROM JCRIndexingQueue idx"
+      + " WHERE idx.workspace = :workspace"
+      + " AND :clusterNodeName MEMBER OF idx.nodes"
+      + " ORDER BY idx.id ASC"
+)
+@NamedQuery(
+  name = "JCRIndexingQueue.findOperationsOfWorkspaceExecutedByAnotherClusterNodeUpToAnID",
+  query = "SELECT idx FROM JCRIndexingQueue idx"
+      + " WHERE idx.workspace = :workspace"
+      + " AND idx.id <= :lastExecutedId"
+      + " AND :otherClusterNodeName MEMBER OF idx.nodes"
+      + " AND :clusterNodeName NOT MEMBER OF idx.nodes"
+      + " ORDER BY idx.id ASC"
+)
+@NamedQuery(
+  name = "JCRIndexingQueue.findLowestOperationIdNotExecutedByClusterNode",
+  query = "SELECT MIN(idx.id) FROM JCRIndexingQueue idx"
+      + " WHERE :clusterNodeName NOT MEMBER OF idx.nodes"
+)
+@NamedQuery(
   name = "JCRIndexingQueue.deleteAllIndexingOperationsSince",
   query = "Delete FROM JCRIndexingQueue idx WHERE idx.id < :id"
 )
