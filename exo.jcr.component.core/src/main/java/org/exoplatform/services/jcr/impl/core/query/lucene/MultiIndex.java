@@ -547,6 +547,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                         {
                            indexNames.read();
                            refreshIndexList();
+                           // The index init started no flush task, having found no index:
+                           // without it, what this node applies from now on stays in its
+                           // volatile index, out of the files a copy of its index is made of
+                           scheduleFlushTask();
                         }
                         else
                         {
