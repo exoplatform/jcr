@@ -78,6 +78,8 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
   private static final Log                                    LOG                                   =
                                                                   ExoLogger.getLogger(JCRIndexingServiceImpl.class);
 
+  private static final long                                   STOP_WAIT_SECONDS                     = 5;
+
   private static final String                                 CLUSTER_NODE_NAME_PARAMETER           = "cluster.node.name";
 
   private static final String                                 BATCH_NUMBER_PARAM                    = "batch.number";
@@ -224,14 +226,37 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
 
   @Override
   public void stop() {
-    if (!queueProducingJobService.isShutdown() && !queueProducingJobService.isTerminated()) {
-      queueProducingJobService.shutdownNow();
+    // The producer and the persister end without an interrupt, which could cut
+    // a write short: no run of theirs starts once they are shut down
+    if (!queueProducingJobService.isShutdown()) {
+      queueProducingJobService.shutdown();
     }
     if (!queueConsumingJobService.isShutdown() && !queueConsumingJobService.isTerminated()) {
       queueConsumingJobService.shutdownNow();
     }
-    if (!filePersisterThread.isShutdown() && !filePersisterThread.isTerminated()) {
-      filePersisterThread.shutdownNow();
+    if (!filePersisterThread.isShutdown()) {
+      filePersisterThread.shutdown();
+    }
+    // The index changes of the last period are still in memory: written to the
+    // queue now, the other nodes apply them. The queue's monitor makes this run
+    // wait for a run of the producer that started before the shutdown
+    keepingItsSchedule("queue producer at stop", this::persistQueueOperations).run();
+    // After the queue, so that the stored id includes the operations just added,
+    // and after a run of the persister that started before the shutdown
+    awaitTermination(filePersisterThread, "last operation id persister");
+    if (localLastOperationId != null) {
+      // Otherwise this node neither queued nor applied an operation since its start
+      keepingItsSchedule("last operation id persister at stop", this::persistLastOperationId).run();
+    }
+  }
+
+  private static void awaitTermination(ScheduledExecutorService executor, String name) {
+    try {
+      if (!executor.awaitTermination(STOP_WAIT_SECONDS, TimeUnit.SECONDS)) {
+        LOG.warn("The JCR indexing task '{}' did not end within {} seconds of the stop", name, STOP_WAIT_SECONDS);
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     }
   }
 
