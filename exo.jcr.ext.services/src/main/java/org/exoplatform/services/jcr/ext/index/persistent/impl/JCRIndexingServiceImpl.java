@@ -391,7 +391,7 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
     List<JCRIndexQueueEntity> operations;
     do {
       operations = indexingQueueDAO.findOperationsOfWorkspaceExecutedByClusterNode(workspaceId, clusterNodeName, batchNumber);
-      operations.forEach(operation -> operation.getNodes().remove(clusterNodeName));
+      operations.forEach(operation -> operation.removeNode(clusterNodeName));
       indexingQueueDAO.updateAll(operations);
       unmarked += operations.size();
     } while (operations.size() == batchNumber);
