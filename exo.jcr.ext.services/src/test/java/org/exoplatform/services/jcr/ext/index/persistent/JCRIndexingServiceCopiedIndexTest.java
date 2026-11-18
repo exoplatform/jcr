@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -82,6 +83,7 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
   @Override
   protected void tearDown() throws Exception {
     RequestLifeCycle.end();
+    Files.deleteIfExists(pendingMarkerFile().toPath());
     for (File file : indexDirectory.listFiles()) {
       Files.delete(file.toPath());
     }
@@ -101,7 +103,7 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
     // The copy brought the coordinator's marker: the last operation its index holds
     copiedMarker(appliedByBoth.getId(), COORDINATOR);
 
-    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath());
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
 
     assertEquals(Set.of(ownChange.getId(), afterTheCopy.getId()), notAppliedByThisNode(copiedWorkspace));
     assertTrue(notAppliedByThisNode(keptWorkspace).isEmpty());
@@ -115,7 +117,7 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
     JCRIndexQueueEntity parentChangeAppliedByBoth = operation(copiedWorkspace, true, COORDINATOR, THIS_NODE);
     copiedMarker(parentChangeAppliedByBoth.getId(), COORDINATOR);
 
-    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath());
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
 
     assertEquals(Set.of(ownParentChange.getId()), notAppliedByThisNode(copiedWorkspace));
   }
@@ -126,7 +128,7 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
     JCRIndexQueueEntity queuedJustBefore = operation(copiedWorkspace, COORDINATOR, THIS_NODE);
     marker(queuedJustBefore.getId() + ";" + COORDINATOR + ";" + System.currentTimeMillis());
 
-    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath());
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
 
     assertEquals(Set.of(queuedJustBefore.getId()), notAppliedByThisNode(copiedWorkspace));
   }
@@ -145,7 +147,7 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
     }
     copiedMarker(lastAppliedByBoth, COORDINATOR);
 
-    service.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath());
+    service.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
 
     assertEquals(ownChanges, notAppliedByThisNode(copiedWorkspace));
   }
@@ -161,10 +163,60 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
                                                                 thisNodeParams());
     marker("5;" + COORDINATOR + ";1700000000000");
 
-    service.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath());
+    service.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
 
-    // The next start takes the marks from the copied marker again
-    assertEquals("5;" + COORDINATOR + ";1700000000000", Files.readString(markerFile().toPath(), StandardCharsets.UTF_8));
+    // The next start takes the marks from the copied marker again; a copy of
+    // the index meanwhile gets an unreadable marker, which gives everything back
+    assertEquals("5;" + COORDINATOR + ";1700000000000", Files.readString(pendingMarkerFile().toPath(), StandardCharsets.UTF_8));
+    assertFalse(Files.readString(markerFile().toPath(), StandardCharsets.UTF_8).contains(COORDINATOR));
+  }
+
+  public void testTheNextStartTakesTheMarksThatCouldNotBeTaken() throws Exception {
+    JCRIndexQueueEntity ownChange = operation(copiedWorkspace, THIS_NODE);
+    JCRIndexQueueEntity appliedByBoth = operation(copiedWorkspace, COORDINATOR, THIS_NODE);
+    Files.writeString(pendingMarkerFile().toPath(),
+                      appliedByBoth.getId() + ";" + COORDINATOR + ";"
+                          + (System.currentTimeMillis() + 2 * JCRIndexingServiceImpl.IN_FLIGHT_OPERATION_MARGIN));
+    marker("marks pending on " + THIS_NODE);
+
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
+
+    assertEquals(Set.of(ownChange.getId()), notAppliedByThisNode(copiedWorkspace));
+    assertFalse(pendingMarkerFile().exists());
+    assertEquals(THIS_NODE, Files.readString(markerFile().toPath(), StandardCharsets.UTF_8).split(";")[1]);
+  }
+
+  public void testAnIndexCopiedAgainSinceItsMarksWereNotTakenTakesTheMarksOfTheNewCopy() throws Exception {
+    JCRIndexQueueEntity ownChange = operation(copiedWorkspace, THIS_NODE);
+    JCRIndexQueueEntity appliedByTheOldSource = operation(copiedWorkspace, "old-source", THIS_NODE);
+    // Left by a start whose marks failed, then a new copy came from the coordinator
+    Files.writeString(pendingMarkerFile().toPath(),
+                      appliedByTheOldSource.getId() + ";old-source;"
+                          + (System.currentTimeMillis() + 2 * JCRIndexingServiceImpl.IN_FLIGHT_OPERATION_MARGIN));
+    copiedMarker(ownChange.getId() - 1, COORDINATOR);
+
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
+
+    // The new copy's marker names none of them: both are applied again
+    assertEquals(Set.of(ownChange.getId(), appliedByTheOldSource.getId()), notAppliedByThisNode(copiedWorkspace));
+    assertFalse(pendingMarkerFile().exists());
+  }
+
+  public void testTheMarkerIsNotWrittenWhileTheIndexIsPreparedForACopy() throws Exception {
+    AtomicBoolean preparingACopy = new AtomicBoolean();
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), preparingACopy::get);
+    String markerBeforeTheCopy = Files.readString(markerFile().toPath(), StandardCharsets.UTF_8);
+    preparingACopy.set(true);
+    // Applied after the flush that starts the copy
+    jcrIndexingService.index(UUID.randomUUID().toString(), copiedWorkspace, false);
+
+    jcrIndexingService.persistLastOperationId();
+
+    assertEquals(markerBeforeTheCopy, Files.readString(markerFile().toPath(), StandardCharsets.UTF_8));
+    preparingACopy.set(false);
+    jcrIndexingService.index(UUID.randomUUID().toString(), copiedWorkspace, false);
+    jcrIndexingService.persistLastOperationId();
+    assertFalse(markerBeforeTheCopy.equals(Files.readString(markerFile().toPath(), StandardCharsets.UTF_8)));
   }
 
   public void testAnIndexWithAnUnreadableMarkerGetsBackEveryOperationOfItsWorkspace() throws Exception {
@@ -172,7 +224,7 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
     JCRIndexQueueEntity appliedByBoth = operation(copiedWorkspace, COORDINATOR, THIS_NODE);
     marker("not a marker");
 
-    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath());
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
 
     // Applied again rather than lost
     assertEquals(Set.of(ownChange.getId(), appliedByBoth.getId()), notAppliedByThisNode(copiedWorkspace));
@@ -182,7 +234,7 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
     JCRIndexQueueEntity ownChange = operation(copiedWorkspace, THIS_NODE);
     copiedMarker(ownChange.getId(), THIS_NODE);
 
-    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath());
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
 
     assertTrue(notAppliedByThisNode(copiedWorkspace).isEmpty());
   }
@@ -190,14 +242,14 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
   public void testAnIndexWithNoMarkerKeepsItsMarksAndGetsOne() {
     operation(copiedWorkspace, THIS_NODE);
 
-    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath());
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
 
     assertTrue(notAppliedByThisNode(copiedWorkspace).isEmpty());
     assertTrue(markerFile().exists());
   }
 
   public void testTheMarkerFollowsTheLastOperationIdThisNodeStores() throws Exception {
-    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath());
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
     // A queue write moves this node's last operation id forward
     jcrIndexingService.index(UUID.randomUUID().toString(), copiedWorkspace, false);
     String lastOperation = notBlankLastOperation();
@@ -215,7 +267,7 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
     jcrIndexingService.index(UUID.randomUUID().toString(), copiedWorkspace, false);
     notBlankLastOperation();
 
-    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath());
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
 
     // A copy taken now gets every operation from that one on
     assertTrue(Files.readString(markerFile().toPath(), StandardCharsets.UTF_8)
@@ -285,6 +337,11 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
   private void copiedMarker(long lastOperationId, String clusterNode) throws Exception {
     long writtenLater = System.currentTimeMillis() + 2 * JCRIndexingServiceImpl.IN_FLIGHT_OPERATION_MARGIN;
     marker(lastOperationId + ";" + clusterNode + ";" + writtenLater);
+  }
+
+  private File pendingMarkerFile() {
+    return new File(indexDirectory.getAbsoluteFile().getParentFile(),
+                    indexDirectory.getName() + "-" + JCRIndexingServiceImpl.WORKSPACE_LAST_OPERATION_FILE_NAME);
   }
 
   private void marker(String content) throws Exception {

@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +35,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import javax.jcr.RepositoryException;
@@ -79,17 +82,20 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
   public static final String                                  LAST_OPERATION_FILE_NAME              = "lastOperationID";
 
   /**
-   * In each workspace's index directory: the last queue operation the index
-   * holds and the cluster node that wrote it. A copy of the index from another
-   * node brings that node's file along.
-   */
-  /**
    * Each queue operation is written in its own short transaction: the margin
    * covers one, plus the clock difference between two cluster nodes
    */
   public static final long                                    IN_FLIGHT_OPERATION_MARGIN            = 10L * 60 * 1000;
 
+  /**
+   * In each workspace's index directory: an operation id up to which the index
+   * holds every queue operation, the cluster node that wrote it and the time it
+   * read that id. A copy of the index from another node brings that node's file
+   * along.
+   */
   public static final String                                  WORKSPACE_LAST_OPERATION_FILE_NAME    = "queueLastOperationID";
+
+  private static final String                                 PENDING_MARKER_PREFIX                 = "marks pending on ";
 
   private static final Log                                    LOG                                   =
                                                                   ExoLogger.getLogger(JCRIndexingServiceImpl.class);
@@ -136,7 +142,7 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
 
   private File                                                localLastOperationFile                = null;
 
-  private final Map<String, File>                             workspaceIndexDirectories             = new ConcurrentHashMap<>();
+  private final Map<String, WorkspaceIndex>                   workspaceIndexes                      = new ConcurrentHashMap<>();
 
   private int                                                 batchNumber                           = 100;
 
@@ -348,15 +354,21 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
    * the queue gives this node back everything else. An unreadable marker gives
    * back every operation of the workspace, applied twice rather than lost. Each
    * batch of marks is its own transaction; when the marks cannot be taken, the
-   * copied marker stays, so the next start takes them again.
+   * copied marker is kept beside the index directory, where only this node's
+   * next start reads it, and the index's own marker is left unreadable, so that
+   * a copy of the index meanwhile gives every operation back.
    */
   @Override
-  public void registerWorkspaceIndex(String workspaceId, String indexDirectory) {
+  public void registerWorkspaceIndex(String workspaceId, String indexDirectory, BooleanSupplier preparingACopy) {
     if (StringUtils.isBlank(workspaceId) || StringUtils.isBlank(indexDirectory)) {
       return;
     }
     File directory = new File(indexDirectory);
-    File markerFile = new File(directory, WORKSPACE_LAST_OPERATION_FILE_NAME);
+    File servedMarker = new File(directory, WORKSPACE_LAST_OPERATION_FILE_NAME);
+    File pendingMarker = pendingMarkerFile(directory);
+    // A copy made since then brought its own marker, which the pending one does
+    // not describe
+    File markerFile = pendingMarker.exists() && isMarkerPending(servedMarker) ? pendingMarker : servedMarker;
     if (markerFile.exists()) {
       try {
         takeTheMarksOfTheIndex(workspaceId, markerFile);
@@ -364,11 +376,53 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
         LOG.error("Could not mark the queue operations of workspace '{}' as its index holds them: the next start marks them",
                   workspaceId,
                   e);
+        keepTheMarkerForTheNextStart(markerFile, pendingMarker, servedMarker);
         return;
       }
     }
-    workspaceIndexDirectories.put(workspaceId, directory);
-    writeWorkspaceMarkers(List.of(directory));
+    deletePendingMarker(pendingMarker);
+    WorkspaceIndex workspaceIndex = new WorkspaceIndex(directory, preparingACopy == null ? () -> false : preparingACopy);
+    workspaceIndexes.put(workspaceId, workspaceIndex);
+    writeWorkspaceMarkers(List.of(workspaceIndex));
+  }
+
+  /**
+   * The copied marker of an index whose marks this node did not take, read by
+   * this node's next start only: the file sits beside the index directory,
+   * which another node can copy
+   */
+  static File pendingMarkerFile(File indexDirectory) {
+    return new File(indexDirectory.getAbsoluteFile().getParentFile(),
+                    indexDirectory.getName() + "-" + WORKSPACE_LAST_OPERATION_FILE_NAME);
+  }
+
+  private void keepTheMarkerForTheNextStart(File markerFile, File pendingMarker, File servedMarker) {
+    try {
+      if (!markerFile.equals(pendingMarker)) {
+        Files.copy(markerFile.toPath(), pendingMarker.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      }
+      // Unreadable: a copy of the index made before the next start gives every
+      // operation back
+      Files.writeString(servedMarker.toPath(), PENDING_MARKER_PREFIX + clusterNodeName);
+    } catch (IOException e) {
+      LOG.error("Could not keep the index marker {} for the next start", markerFile.getAbsolutePath(), e);
+    }
+  }
+
+  private static boolean isMarkerPending(File servedMarker) {
+    try {
+      return servedMarker.exists() && Files.readString(servedMarker.toPath()).startsWith(PENDING_MARKER_PREFIX);
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
+  private static void deletePendingMarker(File pendingMarker) {
+    try {
+      Files.deleteIfExists(pendingMarker.toPath());
+    } catch (IOException e) {
+      LOG.warn("Could not delete the index marker {} whose marks were taken", pendingMarker.getAbsolutePath(), e);
+    }
   }
 
   /**
@@ -485,17 +539,23 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
 
   /**
    * Writes in each directory the operation id up to which this node applied
-   * every operation, and the time it read it, read before the id
+   * every operation, and the time it read it, read before the id. A directory
+   * whose index is being prepared for a copy keeps its marker: the copy is
+   * made of the files flushed before this id was read, and this id can name
+   * operations applied after that flush. Checked once the id is read, so that
+   * a marker written while the copy starts names only operations applied
+   * before the flush.
    */
-  private void writeWorkspaceMarkers(Collection<File> directories) {
+  private void writeWorkspaceMarkers(Collection<WorkspaceIndex> indexes) {
     long markerTime = System.currentTimeMillis();
     Long markerId = appliedOperationIdBound();
     if (markerId == null) {
       return;
     }
     String content = markerId + ";" + clusterNodeName + ";" + markerTime;
-    for (File directory : directories) {
-      if (!directory.isDirectory()) {
+    for (WorkspaceIndex index : indexes) {
+      File directory = index.directory();
+      if (!directory.isDirectory() || index.preparingACopy().getAsBoolean()) {
         continue;
       }
       try (FileOutputStream outputStream = new FileOutputStream(new File(directory, WORKSPACE_LAST_OPERATION_FILE_NAME))) {
@@ -842,8 +902,8 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
       this.storedLastOperationId.set(id);
       // A copy of a workspace's index brings its marker along, with the
       // operations the index holds
-      if (!workspaceIndexDirectories.isEmpty()) {
-        writeWorkspaceMarkers(workspaceIndexDirectories.values());
+      if (!workspaceIndexes.isEmpty()) {
+        writeWorkspaceMarkers(workspaceIndexes.values());
       }
     } catch (Exception e) {
       LOG.error("Error while writing last operation ID ", e);
@@ -1038,6 +1098,10 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
    */
   void scheduleKeepingItsSchedule(ScheduledExecutorService executor, String name, Runnable task, long periodInSeconds) {
     executor.scheduleAtFixedRate(keepingItsSchedule(name, task), 0, periodInSeconds, TimeUnit.SECONDS);
+  }
+
+
+  private record WorkspaceIndex(File directory, BooleanSupplier preparingACopy) {
   }
 
 }
