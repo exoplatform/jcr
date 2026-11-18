@@ -179,6 +179,19 @@ public class JCRIndexQueueEntity {
     return nodes;
   }
 
+  /**
+   * Removes the cluster node's mark. The marks are replaced by a new set
+   * rather than changed in place: removing the last mark of a set loaded from
+   * the database does not reach the database.
+   */
+  public void removeNode(String nodeName) {
+    if (this.nodes != null && this.nodes.contains(nodeName)) {
+      Set<String> remainingNodes = new HashSet<>(this.nodes);
+      remainingNodes.remove(nodeName);
+      this.nodes = remainingNodes;
+    }
+  }
+
   public void addNode(String nodeName) {
     if (this.nodes == null) {
       this.nodes = new HashSet<>();
