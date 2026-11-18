@@ -46,7 +46,6 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingQueueDAO;
-import org.exoplatform.services.jcr.ext.index.persistent.entity.JCRIndexQueueEntity;
 
 public class JCRIndexingServiceStartTest extends TestCase {
 
@@ -150,20 +149,17 @@ public class JCRIndexingServiceStartTest extends TestCase {
   public void testTheStopWritesTheChangesStillInMemoryToTheQueueThenTheLastOperationId() {
     ExoContainerContext containerContext = mock(ExoContainerContext.class);
     when(containerContext.getContainer()).thenReturn(mock(PortalContainer.class));
-    JCRIndexingQueueDAO queueDAO = mock(JCRIndexingQueueDAO.class);
-    JCRIndexQueueEntity created = mock(JCRIndexQueueEntity.class);
-    when(created.getId()).thenReturn(7L);
-    when(queueDAO.create(any())).thenReturn(created);
     List<String> calls = new ArrayList<>();
     JCRIndexingServiceImpl service = new JCRIndexingServiceImpl(containerContext,
                                                                 mock(EntityManagerService.class),
                                                                 mock(RepositoryService.class),
-                                                                queueDAO,
+                                                                mock(JCRIndexingQueueDAO.class),
                                                                 clusterNodeParams()) {
       @Override
-      public synchronized void persistQueueOperations() {
-        calls.add("queue");
-        super.persistQueueOperations();
+      public void index(String jcrUUID, String workspaceId, boolean parentChange) {
+        // The queue write, without the transaction its aspect opens in a container
+        calls.add("queue " + jcrUUID + " in " + workspaceId);
+        updateLastNewOperationId(7);
       }
 
       @Override
@@ -177,15 +173,10 @@ public class JCRIndexingServiceStartTest extends TestCase {
                                      Collections.emptySet(),
                                      Collections.emptySet(),
                                      "collaboration");
-
     service.stop();
 
-    ArgumentCaptor<JCRIndexQueueEntity> queued = ArgumentCaptor.forClass(JCRIndexQueueEntity.class);
-    verify(queueDAO).create(queued.capture());
-    assertEquals("added-uuid", queued.getValue().getJcrUUID());
-    assertEquals("collaboration", queued.getValue().getWorkspace());
     // The id is written once the queue holds the operations it counts
-    assertEquals(List.of("queue", "last operation id"), calls);
+    assertEquals(List.of("queue added-uuid in collaboration", "last operation id"), calls);
   }
 
   public void testTheStopWritesNoLastOperationIdWhenTheNodeHasNoOperation() {

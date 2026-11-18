@@ -33,4 +33,37 @@ public interface JCRIndexingQueueDAO extends GenericDAO<JCRIndexQueueEntity, Lon
 
   void deleteOperationsByJCRUUID(String removeNodeUUID);
 
+  /**
+   * @param clusterNodeName a cluster node
+   * @return the lowest id of the operations the cluster node did not execute,
+   *         or null when it executed them all
+   */
+  Long findLowestOperationIdNotExecutedByClusterNode(String clusterNodeName);
+
+  /**
+   * @param workspace the workspace of the operations
+   * @param clusterNodeName the cluster node that executed them
+   * @param limit the maximum number of operations returned
+   * @return the operations of the workspace that the cluster node executed, in
+   *         id order
+   */
+  List<JCRIndexQueueEntity> findOperationsOfWorkspaceExecutedByClusterNode(String workspace,
+                                                                          String clusterNodeName,
+                                                                          int limit);
+
+  /**
+   * @param workspace the workspace of the operations
+   * @param otherClusterNodeName the cluster node that executed them
+   * @param clusterNodeName the cluster node that did not execute them
+   * @param lastExecutedId the greatest id returned
+   * @param limit the maximum number of operations returned
+   * @return the operations of the workspace, up to the id, that the other
+   *         cluster node executed and the cluster node did not, in id order
+   */
+  List<JCRIndexQueueEntity> findOperationsOfWorkspaceExecutedByAnotherClusterNode(String workspace,
+                                                                                 String otherClusterNodeName,
+                                                                                 String clusterNodeName,
+                                                                                 long lastExecutedId,
+                                                                                 int limit);
+
 }
