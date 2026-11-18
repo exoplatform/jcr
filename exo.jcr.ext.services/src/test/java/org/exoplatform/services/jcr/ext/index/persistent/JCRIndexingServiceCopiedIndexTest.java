@@ -202,21 +202,33 @@ public class JCRIndexingServiceCopiedIndexTest extends BaseStandaloneTest {
     assertFalse(pendingMarkerFile().exists());
   }
 
+  public void testAnIndexCopiedFromANodeWhoseMarksArePendingGetsBackEveryOperation() throws Exception {
+    JCRIndexQueueEntity ownChange = operation(copiedWorkspace, THIS_NODE);
+    JCRIndexQueueEntity appliedByTheOldSource = operation(copiedWorkspace, "old-source", THIS_NODE);
+    // Left by this node's start whose marks failed, then a copy came from a
+    // node whose own marks are pending
+    Files.writeString(pendingMarkerFile().toPath(),
+                      appliedByTheOldSource.getId() + ";old-source;"
+                          + (System.currentTimeMillis() + 2 * JCRIndexingServiceImpl.IN_FLIGHT_OPERATION_MARGIN));
+    marker("marks pending on " + COORDINATOR);
+
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), () -> false);
+
+    // The copy's marker is unreadable: both are applied again
+    assertEquals(Set.of(ownChange.getId(), appliedByTheOldSource.getId()), notAppliedByThisNode(copiedWorkspace));
+    assertFalse(pendingMarkerFile().exists());
+  }
+
   public void testTheMarkerIsNotWrittenWhileTheIndexIsPreparedForACopy() throws Exception {
-    AtomicBoolean preparingACopy = new AtomicBoolean();
+    AtomicBoolean preparingACopy = new AtomicBoolean(true);
+
     jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), preparingACopy::get);
-    String markerBeforeTheCopy = Files.readString(markerFile().toPath(), StandardCharsets.UTF_8);
-    preparingACopy.set(true);
-    // Applied after the flush that starts the copy
-    jcrIndexingService.index(UUID.randomUUID().toString(), copiedWorkspace, false);
 
-    jcrIndexingService.persistLastOperationId();
-
-    assertEquals(markerBeforeTheCopy, Files.readString(markerFile().toPath(), StandardCharsets.UTF_8));
+    assertFalse(markerFile().exists());
+    // The same check as the one the scheduled marker writes go through
     preparingACopy.set(false);
-    jcrIndexingService.index(UUID.randomUUID().toString(), copiedWorkspace, false);
-    jcrIndexingService.persistLastOperationId();
-    assertFalse(markerBeforeTheCopy.equals(Files.readString(markerFile().toPath(), StandardCharsets.UTF_8)));
+    jcrIndexingService.registerWorkspaceIndex(copiedWorkspace, indexDirectory.getAbsolutePath(), preparingACopy::get);
+    assertEquals(THIS_NODE, Files.readString(markerFile().toPath(), StandardCharsets.UTF_8).split(";")[1]);
   }
 
   public void testAnIndexWithAnUnreadableMarkerGetsBackEveryOperationOfItsWorkspace() throws Exception {

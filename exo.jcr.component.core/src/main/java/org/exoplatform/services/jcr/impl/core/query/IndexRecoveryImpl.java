@@ -467,10 +467,6 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
    }
 
    /**
-    * Writes the volatile index to the index's files, which the copy is made of:
-    * the copy then holds every change this node applied, its queries' state.
-    */
-   /**
     * {@inheritDoc}
     */
    @Override
@@ -479,6 +475,10 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
       return copiesBeingPrepared.get() > 0;
    }
 
+   /**
+    * Writes the volatile index to the index's files, which the copy is made of:
+    * the copy then holds every change this node applied, its queries' state.
+    */
    void flushBeforeCopy() throws IOException
    {
       QueryHandler handler = searchManager.getHandler();
