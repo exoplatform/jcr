@@ -96,4 +96,15 @@ public interface IndexRecovery
     * @throws RepositoryException when an error occurs while retrieving data
     */
   InputStream getIndexFolderInZip() throws RepositoryException;
+
+   /**
+    * @return true while this node prepares a copy of its index for another
+    *         node: a file written in the index directory meanwhile can be part
+    *         of the copy, without the index changes applied after the flush
+    *         that starts it
+    */
+   default boolean isPreparingACopy()
+   {
+      return false;
+   }
 }
