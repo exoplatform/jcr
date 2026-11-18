@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +46,7 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingQueueDAO;
+import org.exoplatform.services.jcr.ext.index.persistent.entity.JCRIndexQueueEntity;
 
 public class JCRIndexingServiceStartTest extends TestCase {
 
@@ -143,6 +145,67 @@ public class JCRIndexingServiceStartTest extends TestCase {
     task.run();
 
     assertTrue("The wrapped task must have run", ran.get());
+  }
+
+  public void testTheStopWritesTheChangesStillInMemoryToTheQueueThenTheLastOperationId() {
+    ExoContainerContext containerContext = mock(ExoContainerContext.class);
+    when(containerContext.getContainer()).thenReturn(mock(PortalContainer.class));
+    JCRIndexingQueueDAO queueDAO = mock(JCRIndexingQueueDAO.class);
+    JCRIndexQueueEntity created = mock(JCRIndexQueueEntity.class);
+    when(created.getId()).thenReturn(7L);
+    when(queueDAO.create(any())).thenReturn(created);
+    List<String> calls = new ArrayList<>();
+    JCRIndexingServiceImpl service = new JCRIndexingServiceImpl(containerContext,
+                                                                mock(EntityManagerService.class),
+                                                                mock(RepositoryService.class),
+                                                                queueDAO,
+                                                                clusterNodeParams()) {
+      @Override
+      public synchronized void persistQueueOperations() {
+        calls.add("queue");
+        super.persistQueueOperations();
+      }
+
+      @Override
+      public void persistLastOperationId() {
+        calls.add("last operation id");
+      }
+    };
+    // A change made since the producer's last run: in memory only
+    service.applyIndexChangesOnQueue(Collections.emptySet(),
+                                     Collections.singleton("added-uuid"),
+                                     Collections.emptySet(),
+                                     Collections.emptySet(),
+                                     "collaboration");
+
+    service.stop();
+
+    ArgumentCaptor<JCRIndexQueueEntity> queued = ArgumentCaptor.forClass(JCRIndexQueueEntity.class);
+    verify(queueDAO).create(queued.capture());
+    assertEquals("added-uuid", queued.getValue().getJcrUUID());
+    assertEquals("collaboration", queued.getValue().getWorkspace());
+    // The id is written once the queue holds the operations it counts
+    assertEquals(List.of("queue", "last operation id"), calls);
+  }
+
+  public void testTheStopWritesNoLastOperationIdWhenTheNodeHasNoOperation() {
+    ExoContainerContext containerContext = mock(ExoContainerContext.class);
+    when(containerContext.getContainer()).thenReturn(mock(PortalContainer.class));
+    AtomicBoolean idWritten = new AtomicBoolean();
+    JCRIndexingServiceImpl service = new JCRIndexingServiceImpl(containerContext,
+                                                                mock(EntityManagerService.class),
+                                                                mock(RepositoryService.class),
+                                                                mock(JCRIndexingQueueDAO.class),
+                                                                clusterNodeParams()) {
+      @Override
+      public void persistLastOperationId() {
+        idWritten.set(true);
+      }
+    };
+
+    service.stop();
+
+    assertFalse(idWritten.get());
   }
 
   private static InitParams clusterNodeParams() {
