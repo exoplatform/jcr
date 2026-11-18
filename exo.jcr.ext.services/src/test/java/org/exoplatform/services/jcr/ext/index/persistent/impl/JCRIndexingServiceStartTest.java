@@ -148,7 +148,8 @@ public class JCRIndexingServiceStartTest extends TestCase {
 
   public void testTheStopWritesTheChangesStillInMemoryToTheQueueThenTheLastOperationId() {
     ExoContainerContext containerContext = mock(ExoContainerContext.class);
-    when(containerContext.getContainer()).thenReturn(mock(PortalContainer.class));
+    PortalContainer portalContainer = mock(PortalContainer.class);
+    when(containerContext.getContainer()).thenReturn(portalContainer);
     List<String> calls = new ArrayList<>();
     JCRIndexingServiceImpl service = new JCRIndexingServiceImpl(containerContext,
                                                                 mock(EntityManagerService.class),
@@ -181,7 +182,8 @@ public class JCRIndexingServiceStartTest extends TestCase {
 
   public void testTheStopWritesNoLastOperationIdWhenTheNodeHasNoOperation() {
     ExoContainerContext containerContext = mock(ExoContainerContext.class);
-    when(containerContext.getContainer()).thenReturn(mock(PortalContainer.class));
+    PortalContainer portalContainer = mock(PortalContainer.class);
+    when(containerContext.getContainer()).thenReturn(portalContainer);
     AtomicBoolean idWritten = new AtomicBoolean();
     JCRIndexingServiceImpl service = new JCRIndexingServiceImpl(containerContext,
                                                                 mock(EntityManagerService.class),
