@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -105,6 +106,39 @@ public class TestIndexRecoveryCopy extends TestCase
       }
    }
 
+   public void testTheIndexIsBeingPreparedForACopyFromTheFlushToTheZip() throws Throwable
+   {
+      MultiIndex index = mock(MultiIndex.class);
+      List<IndexRecoveryImpl> recovery = new ArrayList<>();
+      List<Boolean> preparingAtTheFlush = new ArrayList<>();
+      doAnswer(invocation -> preparingAtTheFlush.add(recovery.get(0).isPreparingACopy())).when(index).flush();
+      RemoteCommand prepare = prepareIndexesForCopy(searchManager(index, IndexerIoMode.READ_WRITE), recovery);
+
+      Serializable zipName = prepare.execute(new Serializable[0]);
+
+      assertEquals(List.of(true), preparingAtTheFlush);
+      assertFalse(recovery.get(0).isPreparingACopy());
+      Files.delete(new File(System.getProperty("java.io.tmpdir"), (String)zipName).toPath());
+   }
+
+   public void testARefusedCopyIsNoLongerBeingPrepared() throws Throwable
+   {
+      MultiIndex index = mock(MultiIndex.class);
+      doThrow(new IOException("disk full")).when(index).flush();
+      List<IndexRecoveryImpl> recovery = new ArrayList<>();
+      RemoteCommand prepare = prepareIndexesForCopy(searchManager(index, IndexerIoMode.READ_WRITE), recovery);
+
+      try
+      {
+         prepare.execute(new Serializable[0]);
+         fail("A copy that lacks the volatile index must be refused");
+      }
+      catch (IOException e)
+      {
+         assertFalse(recovery.get(0).isPreparingACopy());
+      }
+   }
+
    private SearchManager searchManager(MultiIndex index, IndexerIoMode mode) throws Exception
    {
       SearchIndex handler = mock(SearchIndex.class);
@@ -119,6 +153,12 @@ public class TestIndexRecoveryCopy extends TestCase
 
    private static RemoteCommand prepareIndexesForCopy(SearchManager searchManager) throws Exception
    {
+      return prepareIndexesForCopy(searchManager, new ArrayList<>());
+   }
+
+   private static RemoteCommand prepareIndexesForCopy(SearchManager searchManager,
+                                                      List<IndexRecoveryImpl> recovery) throws Exception
+   {
       List<RemoteCommand> commands = new ArrayList<>();
       RPCService rpcService = mock(RPCService.class);
       when(rpcService.registerCommand(any())).thenAnswer(invocation -> {
@@ -126,7 +166,7 @@ public class TestIndexRecoveryCopy extends TestCase
          commands.add(command);
          return command;
       });
-      new IndexRecoveryImpl(rpcService, searchManager);
+      recovery.add(new IndexRecoveryImpl(rpcService, searchManager));
       return commands.stream()
                      .filter(command -> command.getId().contains("prepareIndexesForCopy"))
                      .findFirst()

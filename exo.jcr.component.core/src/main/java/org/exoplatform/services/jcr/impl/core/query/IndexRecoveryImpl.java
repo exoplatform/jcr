@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.RepositoryException;
 
@@ -102,6 +103,8 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
     * List of compressed index folders to send to coordinators
     */
    private List<File> indexesZipFiles = Collections.synchronizedList(new ArrayList<>());
+
+   private final AtomicInteger copiesBeingPrepared = new AtomicInteger();
 
    /**
     * Remote command to switch index between RO/RW state.
@@ -237,11 +240,16 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
         }
   
         public Serializable execute(Serializable[] args) throws Throwable {
-          flushBeforeCopy();
-          File indexesZipFile = File.createTempFile("jcr", "indexes");
-          DirectoryHelper.compressDirectory(indexDirectory, indexesZipFile);
-          indexesZipFiles.add(indexesZipFile);
-          return indexesZipFile.getName();
+          copiesBeingPrepared.incrementAndGet();
+          try {
+            flushBeforeCopy();
+            File indexesZipFile = File.createTempFile("jcr", "indexes");
+            DirectoryHelper.compressDirectory(indexDirectory, indexesZipFile);
+            indexesZipFiles.add(indexesZipFile);
+            return indexesZipFile.getName();
+          } finally {
+            copiesBeingPrepared.decrementAndGet();
+          }
         }
       });
 
@@ -462,6 +470,15 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
     * Writes the volatile index to the index's files, which the copy is made of:
     * the copy then holds every change this node applied, its queries' state.
     */
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean isPreparingACopy()
+   {
+      return copiesBeingPrepared.get() > 0;
+   }
+
    void flushBeforeCopy() throws IOException
    {
       QueryHandler handler = searchManager.getHandler();

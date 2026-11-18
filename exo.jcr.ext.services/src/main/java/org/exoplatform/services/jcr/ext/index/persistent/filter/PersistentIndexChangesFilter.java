@@ -46,7 +46,10 @@ public class PersistentIndexChangesFilter extends DefaultChangesFilter implement
     super.init();
     if (!keepsTheQueueMarks(handler)) {
       // The index is ready, and may have been copied from another cluster node
-      this.jcrIndexingQueueService.registerWorkspaceIndex(searchManager.getWsId(), handler.getContext().getIndexDirectory());
+      IndexRecovery indexRecovery = handler.getContext().getIndexRecovery();
+      this.jcrIndexingQueueService.registerWorkspaceIndex(searchManager.getWsId(),
+                                                          handler.getContext().getIndexDirectory(),
+                                                          () -> indexRecovery != null && indexRecovery.isPreparingACopy());
     }
   }
 
