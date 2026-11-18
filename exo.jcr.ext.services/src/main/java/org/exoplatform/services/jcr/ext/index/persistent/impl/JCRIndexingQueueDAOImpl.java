@@ -53,6 +53,42 @@ public class JCRIndexingQueueDAOImpl extends GenericDAOJPAImpl<JCRIndexQueueEnti
   }
 
   @Override
+  public List<JCRIndexQueueEntity> findOperationsOfWorkspaceExecutedByClusterNode(String workspace,
+                                                                                 String clusterNodeName,
+                                                                                 int limit) {
+    return getEntityManager().createNamedQuery("JCRIndexingQueue.findOperationsOfWorkspaceExecutedByClusterNode",
+                                               JCRIndexQueueEntity.class)
+                             .setParameter("workspace", workspace)
+                             .setParameter("clusterNodeName", clusterNodeName)
+                             .setMaxResults(limit)
+                             .getResultList();
+  }
+
+  @Override
+  @ExoTransactional
+  public Long findLowestOperationIdNotExecutedByClusterNode(String clusterNodeName) {
+    return getEntityManager().createNamedQuery("JCRIndexingQueue.findLowestOperationIdNotExecutedByClusterNode", Long.class)
+                             .setParameter("clusterNodeName", clusterNodeName)
+                             .getSingleResult();
+  }
+
+  @Override
+  public List<JCRIndexQueueEntity> findOperationsOfWorkspaceExecutedByAnotherClusterNode(String workspace,
+                                                                                        String otherClusterNodeName,
+                                                                                        String clusterNodeName,
+                                                                                        long lastExecutedId,
+                                                                                        int limit) {
+    return getEntityManager().createNamedQuery("JCRIndexingQueue.findOperationsOfWorkspaceExecutedByAnotherClusterNodeUpToAnID",
+                                               JCRIndexQueueEntity.class)
+                             .setParameter("workspace", workspace)
+                             .setParameter("lastExecutedId", lastExecutedId)
+                             .setParameter("otherClusterNodeName", otherClusterNodeName)
+                             .setParameter("clusterNodeName", clusterNodeName)
+                             .setMaxResults(limit)
+                             .getResultList();
+  }
+
+  @Override
   @ExoTransactional
   public void deleteOperationsByJCRUUID(String removeNodeUUID) {
     getEntityManager().createNamedQuery("JCRIndexingQueue.deleteOperationsByJCRUUID")

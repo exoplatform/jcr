@@ -64,4 +64,18 @@ public interface JCRIndexingService {
    */
   void init(QueryHandler handler, QueryHandlerEntry config);
 
+  /**
+   * Called once a workspace's index is ready at startup. When the index was
+   * copied from another cluster node, the queue operations of the workspace are
+   * marked as that copy holds them, so that this node applies what the copy
+   * lacks.
+   *
+   * @param workspaceId the workspace of the index, as its queue operations name
+   *          it
+   * @param indexDirectory the index's directory
+   */
+  default void registerWorkspaceIndex(String workspaceId, String indexDirectory) {
+    // Nothing to mark without a queue
+  }
+
 }
