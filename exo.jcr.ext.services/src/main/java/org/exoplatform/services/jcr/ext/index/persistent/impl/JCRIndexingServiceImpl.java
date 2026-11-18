@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rpc.RPCService;
 
+import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletContext;
 
 public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
@@ -81,6 +83,12 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
    * holds and the cluster node that wrote it. A copy of the index from another
    * node brings that node's file along.
    */
+  /**
+   * Each queue operation is written in its own short transaction: the margin
+   * covers one, plus the clock difference between two cluster nodes
+   */
+  public static final long                                    IN_FLIGHT_OPERATION_MARGIN            = 10L * 60 * 1000;
+
   public static final String                                  WORKSPACE_LAST_OPERATION_FILE_NAME    = "queueLastOperationID";
 
   private static final Log                                    LOG                                   =
@@ -248,8 +256,9 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
       filePersisterThread.shutdown();
     }
     // The index changes of the last period are still in memory: written to the
-    // queue now, the other nodes apply them. The queue's monitor makes this run
-    // wait for a run of the producer that started before the shutdown
+    // queue now, the other nodes apply them. This run waits on the service's
+    // monitor for a run of the producer, or of the consumer, that started before
+    // the shutdown: the consumer's run ends after its current batch
     keepingItsSchedule("queue producer at stop", this::persistQueueOperations).run();
     // After the queue, so that the stored id includes the operations just added,
     // and after a run of the persister that started before the shutdown
@@ -331,14 +340,15 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
 
   /**
    * {@inheritDoc} The index's marker names the cluster node whose queue marks
-   * the index matches, and an operation id up to which that node had applied
-   * every operation: another node's marker came with a copy of that node's
-   * index. The operations of the workspace, parent changes included, then lose
-   * this node's marks and get them back only where the other node applied them,
-   * up to that id: the queue gives this node back everything else. An
-   * unreadable marker gives back every operation of the workspace, applied
-   * twice rather than lost. When the marks cannot be taken, the copied marker
-   * stays, so the next start takes them again.
+   * the index matches, an operation id up to which that node had applied every
+   * operation, and the time it read that id: another node's marker came with a
+   * copy of that node's index. The operations of the workspace, parent changes
+   * included, then lose this node's marks and get them back only where the
+   * other node applied them, up to that id and queued well before that time:
+   * the queue gives this node back everything else. An unreadable marker gives
+   * back every operation of the workspace, applied twice rather than lost. Each
+   * batch of marks is its own transaction; when the marks cannot be taken, the
+   * copied marker stays, so the next start takes them again.
    */
   @Override
   public void registerWorkspaceIndex(String workspaceId, String indexDirectory) {
@@ -358,10 +368,7 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
       }
     }
     workspaceIndexDirectories.put(workspaceId, directory);
-    Long markerId = appliedOperationIdBound();
-    if (markerId != null) {
-      writeWorkspaceMarker(directory, markerId);
-    }
+    writeWorkspaceMarkers(List.of(directory));
   }
 
   /**
@@ -369,9 +376,9 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
    *         the queue, or null when the queue cannot tell
    */
   Long appliedOperationIdBound() {
-    checkStoredLastOperationId();
-    long lastOperationId = localLastOperationId.get();
     try {
+      checkStoredLastOperationId();
+      long lastOperationId = localLastOperationId.get();
       Long lowestNotApplied = indexingQueueDAO.findLowestOperationIdNotExecutedByClusterNode(clusterNodeName);
       return lowestNotApplied == null ? lastOperationId : Math.min(lastOperationId, lowestNotApplied - 1);
     } catch (Exception e) {
@@ -380,22 +387,19 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
     }
   }
 
-  @ExoTransactional
   void takeTheMarksOfTheIndex(String workspaceId, File markerFile) {
     String[] marker = readWorkspaceMarker(markerFile);
-    if (marker.length == 2 && clusterNodeName.equals(marker[1])) {
+    if (marker.length == 3 && clusterNodeName.equals(marker[1])) {
       // This node's own index
       return;
     }
     int unmarked = 0;
-    List<JCRIndexQueueEntity> operations;
+    int batchSize;
     do {
-      operations = indexingQueueDAO.findOperationsOfWorkspaceExecutedByClusterNode(workspaceId, clusterNodeName, batchNumber);
-      operations.forEach(operation -> operation.removeNode(clusterNodeName));
-      indexingQueueDAO.updateAll(operations);
-      unmarked += operations.size();
-    } while (operations.size() == batchNumber);
-    if (marker.length != 2) {
+      batchSize = removeTheMarksOfABatch(workspaceId);
+      unmarked += batchSize;
+    } while (batchSize == batchNumber);
+    if (marker.length != 3) {
       LOG.warn("The index of workspace '{}' has an unreadable marker: the {} queue operations this node applied are applied again",
                workspaceId,
                unmarked);
@@ -403,17 +407,13 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
     }
     String indexNode = marker[1];
     long indexLastOperationId = Long.parseLong(marker[0]);
+    Calendar queuedBefore = Calendar.getInstance();
+    queuedBefore.setTimeInMillis(Long.parseLong(marker[2]) - IN_FLIGHT_OPERATION_MARGIN);
     int marked = 0;
     do {
-      operations = indexingQueueDAO.findOperationsOfWorkspaceExecutedByAnotherClusterNode(workspaceId,
-                                                                                         indexNode,
-                                                                                         clusterNodeName,
-                                                                                         indexLastOperationId,
-                                                                                         batchNumber);
-      operations.forEach(operation -> operation.addNode(clusterNodeName));
-      indexingQueueDAO.updateAll(operations);
-      marked += operations.size();
-    } while (operations.size() == batchNumber);
+      batchSize = takeBackTheMarksOfABatch(workspaceId, indexNode, indexLastOperationId, queuedBefore);
+      marked += batchSize;
+    } while (batchSize == batchNumber);
     LOG.info("The index of workspace '{}' was copied from cluster node '{}' up to queue operation {}: {} operations lost this node's mark, {} got it back",
              workspaceId,
              indexNode,
@@ -422,14 +422,59 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
              marked);
   }
 
+  @ExoTransactional
+  int removeTheMarksOfABatch(String workspaceId) {
+    List<JCRIndexQueueEntity> operations =
+                                         indexingQueueDAO.findOperationsOfWorkspaceExecutedByClusterNode(workspaceId,
+                                                                                                        clusterNodeName,
+                                                                                                        batchNumber);
+    operations.forEach(operation -> operation.removeNode(clusterNodeName));
+    updateAndForget(operations);
+    return operations.size();
+  }
+
   /**
-   * @return the marker's last operation id and cluster node, or an empty array
-   *         when the file does not hold them
+   * An operation whose id is below the other node's marker, but whose
+   * transaction committed after the marker was written, was applied by that
+   * node after its copy: the margin leaves the operations queued shortly before
+   * the marker to the queue, which gives them back to this node.
+   */
+  @ExoTransactional
+  int takeBackTheMarksOfABatch(String workspaceId, String indexNode, long indexLastOperationId, Calendar queuedBefore) {
+    List<JCRIndexQueueEntity> operations =
+                                         indexingQueueDAO.findOperationsOfWorkspaceExecutedByAnotherClusterNode(workspaceId,
+                                                                                                               indexNode,
+                                                                                                               clusterNodeName,
+                                                                                                               indexLastOperationId,
+                                                                                                               queuedBefore,
+                                                                                                               batchNumber);
+    operations.forEach(operation -> operation.addNode(clusterNodeName));
+    updateAndForget(operations);
+    return operations.size();
+  }
+
+  /**
+   * Writes the operations and leaves them out of the persistence context, which
+   * would otherwise hold every operation of the workspace's queue history
+   */
+  private void updateAndForget(List<JCRIndexQueueEntity> operations) {
+    indexingQueueDAO.updateAll(operations);
+    EntityManager entityManager = entityManagerService.getEntityManager();
+    if (entityManager != null) {
+      entityManager.flush();
+      entityManager.clear();
+    }
+  }
+
+  /**
+   * @return the marker's last operation id, cluster node and time, or an empty
+   *         array when the file does not hold them
    */
   private static String[] readWorkspaceMarker(File markerFile) {
     try {
       String[] marker = IOUtil.getFileContentAsString(markerFile).trim().split(";");
-      if (marker.length == 2 && StringUtils.isNotBlank(marker[1]) && StringUtils.isNumeric(marker[0])) {
+      if (marker.length == 3 && StringUtils.isNotBlank(marker[1]) && StringUtils.isNumeric(marker[0])
+          && StringUtils.isNumeric(marker[2])) {
         return marker;
       }
     } catch (IOException e) {
@@ -438,14 +483,26 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
     return new String[0];
   }
 
-  private void writeWorkspaceMarker(File directory, long lastOperationId) {
-    if (!directory.isDirectory()) {
+  /**
+   * Writes in each directory the operation id up to which this node applied
+   * every operation, and the time it read it, read before the id
+   */
+  private void writeWorkspaceMarkers(Collection<File> directories) {
+    long markerTime = System.currentTimeMillis();
+    Long markerId = appliedOperationIdBound();
+    if (markerId == null) {
       return;
     }
-    try (FileOutputStream outputStream = new FileOutputStream(new File(directory, WORKSPACE_LAST_OPERATION_FILE_NAME))) {
-      outputStream.write((lastOperationId + ";" + clusterNodeName).getBytes());
-    } catch (IOException e) {
-      LOG.error("Could not write the index marker in {}", directory.getAbsolutePath(), e);
+    String content = markerId + ";" + clusterNodeName + ";" + markerTime;
+    for (File directory : directories) {
+      if (!directory.isDirectory()) {
+        continue;
+      }
+      try (FileOutputStream outputStream = new FileOutputStream(new File(directory, WORKSPACE_LAST_OPERATION_FILE_NAME))) {
+        outputStream.write(content.getBytes());
+      } catch (IOException e) {
+        LOG.error("Could not write the index marker in {}", directory.getAbsolutePath(), e);
+      }
     }
   }
 
@@ -742,14 +799,16 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
     }
   }
 
-  private void applyIndexChangesOnJCR() throws Exception {
+  void applyIndexChangesOnJCR() throws Exception {
     int offset = 0;
     int proceededOperations = 0;
     do {
       List<JCRIndexQueueEntity> indexingQueueEntities = findNextOperations(offset, batchNumber);
       proceededOperations = indexingQueueEntities.size();
       applyIndexChangesOnJCR(indexingQueueEntities);
-    } while (proceededOperations == batchNumber);
+      // Stops between two batches when the server stops: the operations left
+      // stay in the queue for the next start
+    } while (proceededOperations == batchNumber && !queueConsumingJobService.isShutdown());
   }
 
   void updateLastNewOperationId(final long id) {
@@ -783,9 +842,8 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
       this.storedLastOperationId.set(id);
       // A copy of a workspace's index brings its marker along, with the
       // operations the index holds
-      Long markerId = workspaceIndexDirectories.isEmpty() ? null : appliedOperationIdBound();
-      if (markerId != null) {
-        workspaceIndexDirectories.values().forEach(directory -> writeWorkspaceMarker(directory, markerId));
+      if (!workspaceIndexDirectories.isEmpty()) {
+        writeWorkspaceMarkers(workspaceIndexDirectories.values());
       }
     } catch (Exception e) {
       LOG.error("Error while writing last operation ID ", e);

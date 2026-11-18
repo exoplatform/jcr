@@ -16,6 +16,7 @@
 */
 package org.exoplatform.services.jcr.ext.index.persistent.impl;
 
+import java.util.Calendar;
 import java.util.List;
 
 import org.exoplatform.commons.api.persistence.ExoTransactional;
@@ -79,12 +80,14 @@ public class JCRIndexingQueueDAOImpl extends GenericDAOJPAImpl<JCRIndexQueueEnti
                                                                                         String otherClusterNodeName,
                                                                                         String clusterNodeName,
                                                                                         long lastExecutedId,
+                                                                                        Calendar queuedBefore,
                                                                                         int limit) {
     return getEntityManager().createNamedQuery("JCRIndexingQueue.findOperationsOfWorkspaceExecutedByAnotherClusterNodeUpToAnID",
                                                JCRIndexQueueEntity.class)
                              .setParameter("workspace", workspace)
                              .setParameter("lastExecutedId", lastExecutedId)
                              .setParameter("otherClusterNodeName", otherClusterNodeName)
+                             .setParameter("queuedBefore", queuedBefore)
                              .setParameter(CLUSTER_NODE_NAME, clusterNodeName)
                              .setMaxResults(limit)
                              .getResultList();

@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
 
@@ -46,6 +47,7 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingQueueDAO;
+import org.exoplatform.services.jcr.ext.index.persistent.entity.JCRIndexQueueEntity;
 
 public class JCRIndexingServiceStartTest extends TestCase {
 
@@ -199,6 +201,41 @@ public class JCRIndexingServiceStartTest extends TestCase {
     service.stop();
 
     assertFalse(idWritten.get());
+  }
+
+  public void testTheConsumerStopsBetweenTwoBatchesWhenTheServerStops() throws Exception {
+    ExoContainerContext containerContext = mock(ExoContainerContext.class);
+    PortalContainer portalContainer = mock(PortalContainer.class);
+    when(containerContext.getContainer()).thenReturn(portalContainer);
+    InitParams params = clusterNodeParams();
+    ValueParam batchNumber = new ValueParam();
+    batchNumber.setName("batch.number");
+    batchNumber.setValue("2");
+    params.addParameter(batchNumber);
+    AtomicInteger appliedBatches = new AtomicInteger();
+    JCRIndexingServiceImpl service = new JCRIndexingServiceImpl(containerContext,
+                                                                mock(EntityManagerService.class),
+                                                                mock(RepositoryService.class),
+                                                                mock(JCRIndexingQueueDAO.class),
+                                                                params) {
+      @Override
+      public List<JCRIndexQueueEntity> findNextOperations(int offset, int limit) {
+        // A backlog of ten full batches
+        return appliedBatches.get() < 10 ? List.of(new JCRIndexQueueEntity(), new JCRIndexQueueEntity()) : List.of();
+      }
+
+      @Override
+      public void applyIndexChangesOnJCR(List<JCRIndexQueueEntity> indexingQueueEntities) {
+        if (appliedBatches.incrementAndGet() == 1) {
+          stop();
+        }
+      }
+    };
+
+    service.applyIndexChangesOnJCR();
+
+    // The operations left stay in the queue for the next start
+    assertEquals(1, appliedBatches.get());
   }
 
   private static InitParams clusterNodeParams() {
