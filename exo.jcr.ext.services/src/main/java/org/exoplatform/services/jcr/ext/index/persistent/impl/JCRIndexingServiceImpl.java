@@ -409,9 +409,15 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
     }
   }
 
-  private static boolean isMarkerPending(File servedMarker) {
+  /**
+   * Whether the served marker is the one this node left when its marks failed:
+   * another node's pending marker came with a copy, which this node's pending
+   * marker does not describe
+   */
+  private boolean isMarkerPending(File servedMarker) {
     try {
-      return servedMarker.exists() && Files.readString(servedMarker.toPath()).startsWith(PENDING_MARKER_PREFIX);
+      return servedMarker.exists()
+          && (PENDING_MARKER_PREFIX + clusterNodeName).equals(Files.readString(servedMarker.toPath()));
     } catch (IOException e) {
       return false;
     }
@@ -1099,7 +1105,6 @@ public class JCRIndexingServiceImpl implements JCRIndexingService, Startable {
   void scheduleKeepingItsSchedule(ScheduledExecutorService executor, String name, Runnable task, long periodInSeconds) {
     executor.scheduleAtFixedRate(keepingItsSchedule(name, task), 0, periodInSeconds, TimeUnit.SECONDS);
   }
-
 
   private record WorkspaceIndex(File directory, BooleanSupplier preparingACopy) {
   }
