@@ -44,21 +44,23 @@ public class PersistentIndexChangesFilter extends DefaultChangesFilter implement
     this.jcrIndexingQueueService.init(handler, config);
 
     super.init();
-    if (!isCopiedWithoutAFlush(handler)) {
+    if (!keepsTheQueueMarks(handler)) {
       // The index is ready, and may have been copied from another cluster node
       this.jcrIndexingQueueService.registerWorkspaceIndex(searchManager.getWsId(), handler.getContext().getIndexDirectory());
     }
   }
 
   /**
-   * The rsync recovery strategies copy the index files as the other node last
-   * flushed them, so its marker can name operations the copy lacks: such an
-   * index keeps the queue marks as they are.
+   * An index keeps the queue marks as they are when its copy can lack what its
+   * marker names, or can land after this registration: the rsync recovery
+   * strategies copy the index files as the other node last flushed them, and an
+   * asynchronous reindexing copies the index once the registration is done.
    */
-  static boolean isCopiedWithoutAFlush(QueryHandler handler) {
+  static boolean keepsTheQueueMarks(QueryHandler handler) {
     if (handler instanceof SearchIndex searchIndex) {
       String strategy = searchIndex.getIndexRecoveryStrategy();
-      return SearchIndex.INDEX_RECOVERY_RSYNC_STRATEGY.equals(strategy)
+      return searchIndex.isAsyncReindexing()
+          || SearchIndex.INDEX_RECOVERY_RSYNC_STRATEGY.equals(strategy)
           || SearchIndex.INDEX_RECOVERY_RSYNC_WITH_DELETE_STRATEGY.equals(strategy);
     }
     return false;
