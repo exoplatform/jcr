@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.core.nodetype.registration;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeValuesList;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.util.SafeXMLInputFactory;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jibx.runtime.BindingDirectory;
@@ -138,7 +139,7 @@ public class XmlNodeTypeDataPersister implements NodeTypeDataPersister
          IBindingFactory factory = BindingDirectory.getFactory(NodeTypeValuesList.class);
 
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
-         NodeTypeValuesList nodeTypeValuesList = (NodeTypeValuesList)uctx.unmarshalDocument(is, null);
+         NodeTypeValuesList nodeTypeValuesList = (NodeTypeValuesList)SafeXMLInputFactory.unmarshalDocument(uctx, is, null);
          List ntvList = nodeTypeValuesList.getNodeTypeValuesList();
          return converter.convertFromValueToData(ntvList);
       }
