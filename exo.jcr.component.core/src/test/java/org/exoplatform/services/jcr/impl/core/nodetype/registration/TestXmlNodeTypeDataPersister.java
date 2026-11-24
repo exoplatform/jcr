@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
+import org.jibx.runtime.JiBXException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -157,10 +158,10 @@ public class TestXmlNodeTypeDataPersister
       for (Throwable t = e; t != null; t = t.getCause() == t ? null : t.getCause())
       {
          messages.append(t.getMessage()).append('\n');
-         if (t instanceof org.jibx.runtime.JiBXException && ((org.jibx.runtime.JiBXException)t).getRootCause() != null
-            && ((org.jibx.runtime.JiBXException)t).getRootCause() != t.getCause())
+         if (t instanceof JiBXException jibx && jibx.getRootCause() != null
+            && jibx.getRootCause() != t.getCause())
          {
-            messages.append(causeMessages(((org.jibx.runtime.JiBXException)t).getRootCause()));
+            messages.append(causeMessages(jibx.getRootCause()));
          }
       }
       return messages.toString();
