@@ -20,8 +20,8 @@ package org.exoplatform.services.jcr.impl.core.nodetype.registration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -124,17 +124,10 @@ public class TestXmlNodeTypeDataPersister
 
    private void assertRefused(String xml) throws Exception
    {
-      try
-      {
-         read(xml);
-         fail("Document read, values: " + capturedValues());
-      }
-      catch (RepositoryException e)
-      {
-         String messages = causeMessages(e);
-         assertTrue(messages, messages.contains(REFUSAL));
-         assertFalse(messages.contains(MARKER));
-      }
+      RepositoryException e = assertThrows(RepositoryException.class, () -> read(xml));
+      String messages = causeMessages(e);
+      assertTrue(messages, messages.contains(REFUSAL));
+      assertFalse(messages.contains(MARKER));
       verify(converter, never()).convertFromValueToData(anyList());
    }
 
