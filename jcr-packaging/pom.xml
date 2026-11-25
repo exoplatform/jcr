@@ -29,6 +29,10 @@
   <artifactId>jcr-packaging</artifactId>
   <packaging>pom</packaging>
   <name>eXo PLF:: JCR - Addon Packaging</name>
+  <properties>
+    <!-- Generate and publish the CycloneDX SBOM of the deliverable zip -->
+    <sbom.skip>false</sbom.skip>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
